@@ -1,4 +1,5 @@
 import axios from "axios";
+import cookie from "js-cookie";
 import {
   ADMIN_GET_ALL_DEDUCTIONS_FAIL,
   ADMIN_GET_ALL_DEDUCTIONS_REQUEST,
@@ -14,15 +15,19 @@ import {
   ADMIN_UPDATE_DEDUCTION_BY_ID_SUCCESS,
 } from "../types/deduction";
 
-import { cookieTokenValidFunc } from "./auth";
-
 export const adminGetAllDeduction = () => async (dispatch) => {
-  dispatch(cookieTokenValidFunc());
+  const token = cookie.get("token");
+  const config = {
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+  };
   try {
     dispatch({
       type: ADMIN_GET_ALL_DEDUCTIONS_REQUEST,
     });
-    const { data } = await axios.get(`/api/deductions`);
+    const { data } = await axios.get(`/api/deductions`, config);
     dispatch({
       type: ADMIN_GET_ALL_DEDUCTIONS_SUCCESS,
       payload: data,
@@ -39,10 +44,11 @@ export const adminGetAllDeduction = () => async (dispatch) => {
 };
 
 export const adminCreateDeduction = (formData) => async (dispatch) => {
-  dispatch(cookieTokenValidFunc());
+  const token = cookie.get("token");
   const config = {
     headers: {
       "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
     },
   };
 
@@ -68,10 +74,11 @@ export const adminCreateDeduction = (formData) => async (dispatch) => {
 
 export const adminUpdateDeductionById =
   (deductionId, formData) => async (dispatch) => {
-    dispatch(cookieTokenValidFunc());
+    const token = cookie.get("token");
     const config = {
       headers: {
         "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
       },
     };
 
@@ -98,12 +105,17 @@ export const adminUpdateDeductionById =
   };
 
 export const adminDeleteDeductionById = (deductionId) => async (dispatch) => {
-  dispatch(cookieTokenValidFunc());
+  const token = cookie.get("token");
+  const config = {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  };
   try {
     dispatch({
       type: ADMIN_DELETE_DEDUCTION_BY_ID_REQUEST,
     });
-    await axios.delete(`/api/deductions/${deductionId}`);
+    await axios.delete(`/api/deductions/${deductionId}`, config);
     dispatch({
       type: ADMIN_DELETE_DEDUCTION_BY_ID_SUCCESS,
     });

@@ -28,10 +28,18 @@ import {
   CEO_UPLOAD_SIGNATURE_IMAGE_SUCCESS,
 } from "../types/auth";
 
-export const adminLoginStatus = () => async (dispatch) => {
+export const adminLoginStatus = (token) => async (dispatch) => {
+  const token = cookie.get("token");
+
+  const config = {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  };
+
   try {
     dispatch({ type: CHECK_ADMIN_LOGIN_STATUS_REQUEST });
-    const { data } = await axios.get(`/api/users/check/status`);
+    const { data } = await axios.get(`/api/users/admin-status`, config);
     dispatch({
       type: CHECK_ADMIN_LOGIN_STATUS_SUCCESS,
       payload: data,
@@ -61,11 +69,12 @@ export const adminLoginFunc = (formData) => async (dispatch) => {
 
     const body = JSON.stringify(formData);
 
-    await axios.post(`/api/users/login`, body, config);
+    const { data } = await axios.post(`/api/users/login`, body, config);
     dispatch({
       type: LOGIN_ADMIN_USER_SUCCESS,
     });
 
+    cookie.set("token", data?.token);
     dispatch(adminLoginStatus());
   } catch (error) {
     dispatch({
@@ -78,12 +87,18 @@ export const adminLoginFunc = (formData) => async (dispatch) => {
   }
 };
 
-export const adminLoggedinDetails = () => async (dispatch, getState) => {
-  dispatch(cookieTokenValidFunc());
+export const adminLoggedinDetails = () => async (dispatch) => {
+  const token = cookie.get("token");
+
+  const config = {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  };
 
   try {
     dispatch({ type: ADMIN_LOGGEDIN_DETAILS_REQUEST });
-    const { data } = await axios.get(`/api/users/me`);
+    const { data } = await axios.get(`/api/users/admin-details`, config);
     dispatch({ type: ADMIN_LOGGEDIN_DETAILS_SUCCESS, payload: data });
   } catch (error) {
     dispatch({
@@ -97,10 +112,12 @@ export const adminLoggedinDetails = () => async (dispatch, getState) => {
 };
 
 export const ceoUploadSignatureFunc = (signatureImgUrl) => async (dispatch) => {
-  dispatch(cookieTokenValidFunc());
+  const token = cookie.get("token");
+
   const config = {
     headers: {
       "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
     },
   };
 
@@ -125,13 +142,11 @@ export const ceoUploadSignatureFunc = (signatureImgUrl) => async (dispatch) => {
 };
 
 export const adminUpdateDetails = (formData) => async (dispatch, getState) => {
-  const {
-    adminLoginReducer: { adminData },
-  } = getState();
+  const token = cookie.get("token");
   const config = {
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${adminData?.token}`,
+      Authorization: `Bearer ${token}`,
     },
   };
 
@@ -153,74 +168,74 @@ export const adminUpdateDetails = (formData) => async (dispatch, getState) => {
   }
 };
 
-export const adminForgotPasswordFunc = (adminEmail) => async (dispatch) => {
-  const config = {
-    headers: {
-      "Content-Type": "application/json",
-    },
-  };
+// export const adminForgotPasswordFunc = (adminEmail) => async (dispatch) => {
+//   const config = {
+//     headers: {
+//       "Content-Type": "application/json",
+//     },
+//   };
 
-  try {
-    dispatch({ type: ADMIN_FORGOT_PASSWORD_REQUEST });
-    const body = JSON.stringify(adminEmail);
-    await axios.post(`/api/users/forgotPassword`, body, config);
-    dispatch({ type: ADMIN_FORGOT_PASSWORD_SUCCESS });
-  } catch (error) {
-    dispatch({
-      type: ADMIN_FORGOT_PASSWORD_FAIL,
-      payload:
-        error.response && error.response.data.detail
-          ? error.response.data.detail
-          : error.message,
-    });
-  }
-};
+//   try {
+//     dispatch({ type: ADMIN_FORGOT_PASSWORD_REQUEST });
+//     const body = JSON.stringify(adminEmail);
+//     await axios.post(`/api/users/forgotPassword`, body, config);
+//     dispatch({ type: ADMIN_FORGOT_PASSWORD_SUCCESS });
+//   } catch (error) {
+//     dispatch({
+//       type: ADMIN_FORGOT_PASSWORD_FAIL,
+//       payload:
+//         error.response && error.response.data.detail
+//           ? error.response.data.detail
+//           : error.message,
+//     });
+//   }
+// };
 
-export const adminResetPasswordFunc = (token, formData) => async (dispatch) => {
-  const config = {
-    headers: {
-      "Content-Type": "application/json",
-    },
-  };
+// export const adminResetPasswordFunc = (token, formData) => async (dispatch) => {
+//   const config = {
+//     headers: {
+//       "Content-Type": "application/json",
+//     },
+//   };
 
-  try {
-    dispatch({ type: ADMIN_RESET_PASSWORD_REQUEST });
-    const body = JSON.stringify(formData);
-    await axios.patch(`/api/users/resetPassword/${token}`, body, config);
-    dispatch({
-      type: ADMIN_RESET_PASSWORD_SUCCESS,
-    });
-    dispatch(adminLoginStatus());
-  } catch (error) {
-    dispatch({
-      type: ADMIN_RESET_PASSWORD_FAIL,
-      payload:
-        error.response && error.response.data.detail
-          ? error.response.data.detail
-          : error.message,
-    });
-  }
-};
+//   try {
+//     dispatch({ type: ADMIN_RESET_PASSWORD_REQUEST });
+//     const body = JSON.stringify(formData);
+//     await axios.patch(`/api/users/resetPassword/${token}`, body, config);
+//     dispatch({
+//       type: ADMIN_RESET_PASSWORD_SUCCESS,
+//     });
+//     dispatch(adminLoginStatus());
+//   } catch (error) {
+//     dispatch({
+//       type: ADMIN_RESET_PASSWORD_FAIL,
+//       payload:
+//         error.response && error.response.data.detail
+//           ? error.response.data.detail
+//           : error.message,
+//     });
+//   }
+// };
 
-export const cookieTokenValidFunc = () => async (dispatch) => {
-  try {
-    dispatch({ type: CHECK_COOKIE_TOKEN_VALID_REQUEST });
-    const { data } = await axios.get(`/api/users/token/status`);
+// export const cookieTokenValidFunc = () => async (dispatch) => {
+//   try {
+//     dispatch({ type: CHECK_COOKIE_TOKEN_VALID_REQUEST });
+//     const { data } = await axios.get(`/api/users/token/status`);
 
-    dispatch({
-      type: CHECK_COOKIE_TOKEN_VALID_SUCCESS,
-      payload: data,
-    });
-  } catch (error) {
-    dispatch({
-      type: CHECK_COOKIE_TOKEN_VALID_FAIL,
-      payload:
-        error.response && error.response.data.detail
-          ? error.response.data.detail
-          : error.message,
-    });
-  }
-};
+//     dispatch({
+//       type: CHECK_COOKIE_TOKEN_VALID_SUCCESS,
+//       payload: data,
+//     });
+//   } catch (error) {
+//     dispatch({
+//       type: CHECK_COOKIE_TOKEN_VALID_FAIL,
+//       payload:
+//         error.response && error.response.data.detail
+//           ? error.response.data.detail
+//           : error.message,
+//     });
+//   }
+// };
 
 export const logoutAdmin =
   (status = "") =>
@@ -232,5 +247,6 @@ export const logoutAdmin =
     dispatch({
       type: LOGOUT_ADMIN_USER,
     });
+    cookie.remove("token");
     cookie.remove("adminStatusData");
   };

@@ -1,4 +1,5 @@
 import axios from "axios";
+import cookie from "js-cookie";
 import {
   ADMIN_GET_ALL_ALLOWANCES_FAIL,
   ADMIN_GET_ALL_ALLOWANCES_SUCCESS,
@@ -13,13 +14,19 @@ import {
   ADMIN_UPDATE_ALLOWANCE_BY_ID_REQUEST,
   ADMIN_UPDATE_ALLOWANCE_BY_ID_SUCCESS,
 } from "../types/allowance";
-import { cookieTokenValidFunc } from "./auth";
 
 export const adminGetAllAllowance = () => async (dispatch) => {
-  dispatch(cookieTokenValidFunc());
+  const token = cookie.get("token");
+
+  const config = {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  };
+
   try {
     dispatch({ type: ADMIN_GET_ALL_ALLOWANCES_REQUEST });
-    const { data } = await axios.get(`/api/allowances`);
+    const { data } = await axios.get(`/api/allowances`, config);
     dispatch({ type: ADMIN_GET_ALL_ALLOWANCES_SUCCESS, payload: data });
   } catch (error) {
     dispatch({
@@ -33,10 +40,11 @@ export const adminGetAllAllowance = () => async (dispatch) => {
 };
 
 export const adminCreateAllowance = (formdata) => async (dispatch) => {
-  dispatch(cookieTokenValidFunc());
+  const token = cookie.get("token");
   const config = {
     headers: {
       "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
     },
   };
 
@@ -62,10 +70,11 @@ export const adminCreateAllowance = (formdata) => async (dispatch) => {
 
 export const adminUpdateAllowanceById =
   (allowanceId, formData) => async (dispatch) => {
-    dispatch(cookieTokenValidFunc());
+    const token = cookie.get("token");
     const config = {
       headers: {
         "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
       },
     };
 
@@ -91,12 +100,17 @@ export const adminUpdateAllowanceById =
   };
 
 export const adminDeleteAllowanceById = (allowanceId) => async (dispatch) => {
-  dispatch(cookieTokenValidFunc());
+  const token = cookie.get("token");
+  const config = {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  };
   try {
     dispatch({
       type: ADMIN_DELETE_ALLOWANCE_BY_ID_REQUEST,
     });
-    await axios.delete(`/api/allowances/${allowanceId}`);
+    await axios.delete(`/api/allowances/${allowanceId}`, config);
     dispatch({
       type: ADMIN_DELETE_ALLOWANCE_BY_ID_SUCCESS,
     });
