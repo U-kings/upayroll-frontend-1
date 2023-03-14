@@ -1,0 +1,16 @@
+BasePay
+- Post(firstGrossPay, secondGrossPay, thirdGrossPay, fourthGrossPay, cola)
+- Patch(firstGrossPay, secondGrossPay, thirdGrossPay, fourthGrossPay, cola)
+
+SalaryGrade
+- Post(name)
+- Patch(name)
+
+SalaryLevel
+- Post(name)
+- Patch(name)
+
+SalaryStep 
+- Post(name, notchesNumber)
+
+

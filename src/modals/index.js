@@ -1,0 +1,16 @@
+export { default as AddAllowance } from "./AddAddition/index";
+export { default as AddDeduction } from "./AddDeduction/index";
+export { default as Comfirm } from "./Comfirm/index";
+export { default as EditEmployee } from "./EditEmployee/index";
+export { default as LoadingSpinner } from "./LoadingSpinner/index";
+export { default as Spinner } from "./Spinner/index";
+export { default as SelectMonth } from "./SelectMonth/index";
+export { default as Successful } from "./Successful/index";
+export { default as ViewEmployee } from "./ViewPayhead/index";
+export { default as ViewSalaryslip } from "./ViewSalaryslip/index";
+export { default as ViewBankSchedule } from "./ViewBankSchedule/index";
+export { default as ViewVoucher } from "./ViewVoucher/index";
+export { default as Comment } from "./Comment/index";
+export { default as UploadSlips } from "./UploadSlips/index";
+export { default as BankScheduleOption } from "./BankScheduleOption/index";
+export { default as DownloadOption } from "./DownloadOption/index";

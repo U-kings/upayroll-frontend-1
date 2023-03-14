@@ -1,0 +1,15 @@
+export { default as SideNav } from "./SideNav/index";
+export { default as Header } from "./Header/index";
+export { default as SignoutButton } from "./SignoutButton/index";
+export { default as DropdownList } from "./DropdownList/index";
+export { default as TaxTable } from "./TaxTable/index";
+export { default as AllowanceTable } from "./AdditionTable/index";
+export { default as DeductionTable } from "./DeductionTable/index";
+export { default as MonthlyPayheadTable } from "./MonthlyPayheadTable/index";
+export { default as SearchBar } from "./SearchBar/index";
+export { default as BasePay } from "./BasePay/index";
+export { default as StaffGrade } from "./StaffGrade/index";
+export { default as SalaryLevel } from "./SalaryLevel/index";
+export { default as Step } from "./Step/index";
+export { default as ErrorBox } from "./ErrorBox/index";
+export { default as ScreenResolution } from "./ScreenResolution/index";
