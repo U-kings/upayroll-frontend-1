@@ -22,7 +22,7 @@ import { useHistory } from "react-router-dom";
 import { logoutAdmin } from "../../actions/auth";
 import { ADMIN_GET_ALL_DEDUCTIONS_RESET } from "../../types/deduction";
 
-const Loan = () => {
+const Loan = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
   // dispatch init
   const dispatch = useDispatch();
 
@@ -60,9 +60,9 @@ const Loan = () => {
 
   const onSave = (e) => {
     e.preventDefault();
-    if (formData?._id) {
+    if (formData?.id) {
       dispatch(
-        adminUpdateDepartmentById(formData?._id, {
+        adminUpdateDepartmentById(formData?.id, {
           name: formData.name,
         })
       );
@@ -74,9 +74,9 @@ const Loan = () => {
   const onSelect = (id) => {
     let findDp;
     if (departments.length > 0) {
-      findDp = departments.find((el) => String(el?._id) === String(id));
+      findDp = departments.find((el) => String(el?.id) === String(id));
       if (findDp) {
-        setForm({ name: findDp?.name, _id: findDp?._id });
+        setForm({ name: findDp?.name, id: findDp?.id });
       }
     }
   };
@@ -139,9 +139,9 @@ const Loan = () => {
 
   return (
     <>
-      {loadingDepartments && <LoadingSpinner />}
+      {loadingDepartments && <LoadingSpinner toggle={toggle} />}
       {departmentId && (
-        <Comfirm
+        <Comfirm toggle={toggle}
           isOpen4={isOpen4}
           popup4={popup4}
           setIsOpen4={setIsOpen4}
@@ -158,15 +158,26 @@ const Loan = () => {
       />
       <DashboardContainer>
         <DashboardContent>
-          <SideNav userRole={userRole} loan={loan} />
-          <Mainbody>
+          <SideNav
+            userRole={userRole}
+            loan={loan}
+            toggle={toggle}
+            toggleMenu={toggleMenu}
+            mobileToggle={mobileToggle}
+            toggleMobileMenu={toggleMobileMenu}
+          />
+          <Mainbody toggle={toggle}>
             <Header
               text="Loan"
               userRole={userRole}
               userRoleName={userRoleName}
               profileimg={profileImg}
+              toggle={toggle}
+              toggleMenu={toggleMenu}
+              mobileToggle={mobileToggle}
+              toggleMobileMenu={toggleMobileMenu}
             />
-            <Container style={{display: "none"}}>
+            <Container style={{ display: "none" }}>
               <div className="container__content">
                 <div className="form__content">
                   <form onSubmit={onSave}>
@@ -210,7 +221,7 @@ const Loan = () => {
                           createDepartmentLoading ||
                           updateDepartmentLoading
                         }
-                        value={formData?._id ? "Edit" : "Save"}
+                        value={formData?.id ? "Edit" : "Save"}
                       />
                       <input
                         className="cancel__btn margin__left"
@@ -234,7 +245,7 @@ const Loan = () => {
                       </thead>
                       <tbody>
                         {departments?.map((el, indexes) => (
-                          <tr key={el?._id}>
+                          <tr key={el?.id}>
                             <td>{++indexes}</td>
                             <td>{el?.name?.toUpperCase()}</td>
                             <td>
@@ -242,7 +253,7 @@ const Loan = () => {
                                 <div
                                   title="Edit"
                                   className="icons"
-                                  onClick={(e) => onSelect(el?._id)}
+                                  onClick={(e) => onSelect(el?.id)}
                                 >
                                   {" "}
                                   <FontAwesomeIcon
@@ -252,7 +263,7 @@ const Loan = () => {
                                 <div
                                   title="Delete"
                                   className="icons"
-                                  onClick={(e) => popup4(el?._id)}
+                                  onClick={(e) => popup4(el?.id)}
                                 >
                                   {" "}
                                   <FontAwesomeIcon

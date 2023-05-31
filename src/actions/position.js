@@ -1,4 +1,5 @@
 import axios from "axios";
+import cookie from "js-cookie";
 import {
   ADMIN_CREATE_POSITION_FAIL,
   ADMIN_CREATE_POSITION_REQUEST,
@@ -13,32 +14,39 @@ import {
   ADMIN_UPDATE_POSITION_BY_ID_REQUEST,
   ADMIN_UPDATE_POSITION_BY_ID_SUCCESS,
 } from "../types/position";
-import { cookieTokenValidFunc } from "./auth";
+
+const proxyUrl = process.env.REACT_APP_PROXY_URL;
 
 export const adminGetAllPosition = () => async (dispatch) => {
-  dispatch(cookieTokenValidFunc());
-
+  const token = cookie.get("token");
+  const config = {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  };
   try {
     dispatch({ type: ADMIN_GET_ALL_POSITION_REQUEST });
-    const { data } = await axios.get(`/api/positions`);
+    const { data } = await axios.get(`${proxyUrl}/api/positions`, config);
     dispatch({ type: ADMIN_GET_ALL_POSITION_SUCCESS, payload: data });
   } catch (error) {
     dispatch({
       type: ADMIN_GET_ALL_POSITION_FAIL,
       payload:
-        error.response && error.response.data.detail
-          ? error.response.data.detail
-          : error.message,
+        error?.response &&
+        (error?.response?.data?.detail || error?.response?.data?.errors)
+          ? error?.response?.data?.detail ||
+            error?.response?.data?.errors?.map((el) => el?.msg)?.join(" ")
+          : error?.message,
     });
   }
 };
 
 export const adminCreatePosition = (departId, formData) => async (dispatch) => {
-  dispatch(cookieTokenValidFunc());
-
+  const token = cookie.get("token");
   const config = {
     headers: {
       "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
     },
   };
 
@@ -47,7 +55,11 @@ export const adminCreatePosition = (departId, formData) => async (dispatch) => {
       type: ADMIN_CREATE_POSITION_REQUEST,
     });
     const body = JSON.stringify(formData);
-    await axios.post(`/api/positions/${departId}/create`, body, config);
+    await axios.post(
+      `${proxyUrl}/api/positions/${departId}/create`,
+      body,
+      config
+    );
     dispatch({
       type: ADMIN_CREATE_POSITION_SUCCESS,
     });
@@ -55,20 +67,22 @@ export const adminCreatePosition = (departId, formData) => async (dispatch) => {
     dispatch({
       type: ADMIN_CREATE_POSITION_FAIL,
       payload:
-        error.response && error.response.data.detail
-          ? error.response.data.detail
-          : error.message,
+        error?.response &&
+        (error?.response?.data?.detail || error?.response?.data?.errors)
+          ? error?.response?.data?.detail ||
+            error?.response?.data?.errors?.map((el) => el?.msg)?.join(" ")
+          : error?.message,
     });
   }
 };
 
 export const adminUpdatePositionById =
   (postId, departId, formData) => async (dispatch) => {
-    dispatch(cookieTokenValidFunc());
-
+    const token = cookie.get("token");
     const config = {
       headers: {
         "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
       },
     };
 
@@ -78,7 +92,7 @@ export const adminUpdatePositionById =
       });
       const body = JSON.stringify(formData);
       await axios.patch(
-        `/api/positions/${postId}/${departId}/update`,
+        `${proxyUrl}/api/positions/${postId}/${departId}/update`,
         body,
         config
       );
@@ -98,13 +112,18 @@ export const adminUpdatePositionById =
   };
 
 export const adminDeletePositionById = (postId) => async (dispatch) => {
-  dispatch(cookieTokenValidFunc());
+  const token = cookie.get("token");
+  const config = {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  };
 
   try {
     dispatch({
       type: ADMIN_DELETE_POSITION_BY_ID_REQUEST,
     });
-    await axios.delete(`/api/positions/${postId}`);
+    await axios.delete(`${proxyUrl}/api/positions/${postId}`, config);
     dispatch({
       type: ADMIN_DELETE_POSITION_BY_ID_SUCCESS,
     });
@@ -113,9 +132,11 @@ export const adminDeletePositionById = (postId) => async (dispatch) => {
     dispatch({
       type: ADMIN_DELETE_POSITION_BY_ID_FAIL,
       payload:
-        error.response && error.response.data.detail
-          ? error.response.data.detail
-          : error.message,
+        error?.response &&
+        (error?.response?.data?.detail || error?.response?.data?.errors)
+          ? error?.response?.data?.detail ||
+            error?.response?.data?.errors?.map((el) => el?.msg)?.join(" ")
+          : error?.message,
     });
   }
 };

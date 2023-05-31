@@ -31,12 +31,12 @@ const ViewBankSchedule = ({ isOpen, popup, bankSchedule }) => {
                   </thead>
                   <tbody>
                     {bankSchedule?.map((el, indexes) => (
-                      <tr key={el?._id}>
+                      <tr key={el?.id}>
                         <td>{++indexes}</td>
-                        <td>{el?.salarySlip?.employee?.user?.name}</td>
-                        <td>{el?.salarySlip?.employee?.employeeBank}</td>
+                        <td>{el?.paySlip?.employee?.user?.name}</td>
+                        <td>{el?.paySlip?.employee?.employeeBank}</td>
                         <td>
-                          {el?.salarySlip?.employee?.employeeBankAcctNumber}
+                          {el?.paySlip?.employee?.employeeBankAcctNumber}
                         </td>
                         <td>{commafy(el?.amount)}</td>
                         <td>{el?.remark}</td>

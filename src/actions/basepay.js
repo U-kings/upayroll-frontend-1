@@ -1,3 +1,5 @@
+import axios from "axios";
+import cookie from "js-cookie";
 import {
   HR_GET_BASEPAY_FAIL,
   HR_GET_BASEPAY_REQUEST,
@@ -10,67 +12,79 @@ import {
   HR_UPDATE_BASEPAY_BY_ID_SUCCESS,
 } from "../types/basepay";
 
-import axios from "axios";
+// import { cookieTokenValidFunc } from "../actions/auth";
+import { hrGetSalaryStepsFunc } from "./salarysteps";
 
-import { cookieTokenValidFunc } from "../actions/auth";
-import {
-  hrGetSalaryStepsFunc,
-} from "./salarysteps";
+const proxyUrl = process.env.REACT_APP_PROXY_URL;
 
 export const hrGetBasePayFunc = () => async (dispatch) => {
-  dispatch(cookieTokenValidFunc());
-
+  const token = cookie.get("token");
+  // dispatch(cookieTokenValidFunc());
+  const config = {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  };
   try {
     dispatch({ type: HR_GET_BASEPAY_REQUEST });
-    const { data } = await axios.get(`/api/basepay`);
+    const { data } = await axios.get(`${proxyUrl}/api/basepay`, config);
     dispatch({ type: HR_GET_BASEPAY_SUCCESS, payload: data });
   } catch (error) {
     dispatch({
       type: HR_GET_BASEPAY_FAIL,
       payload:
-        error.response && error.response.data.detail
-          ? error.response.data.detail
-          : error.message,
+        error?.response &&
+        (error?.response?.data?.detail || error?.response?.data?.errors)
+          ? error?.response?.data?.detail ||
+            error?.response?.data?.errors?.map((el) => el?.msg)?.join(" ")
+          : error?.message,
     });
   }
 };
 
 export const hrCreateBasePayFunc = (formData) => async (dispatch) => {
-  dispatch(cookieTokenValidFunc());
+  const token = cookie.get("token");
+  const companyId = cookie.get("companyId");
+  // dispatch(cookieTokenValidFunc());
   const config = {
     headers: {
       "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
     },
   };
   try {
     dispatch({ type: HR_CREATE_BASEPAY_REQUEST });
-    const body = JSON.stringify(formData);
-    await axios.post(`/api/basepay`, body, config);
+    const body = JSON.stringify({ ...formData, companyId: companyId });
+    await axios.post(`${proxyUrl}/api/basepay`, body, config);
     dispatch({ type: HR_CREATE_BASEPAY_SUCCESS });
     dispatch(hrGetBasePayFunc());
   } catch (error) {
     dispatch({
       type: HR_CREATE_BASEPAY_FAIL,
       payload:
-        error.response && error.response.data.detail
-          ? error.response.data.detail
-          : error.message,
+        error?.response &&
+        (error?.response?.data?.detail || error?.response?.data?.errors)
+          ? error?.response?.data?.detail ||
+            error?.response?.data?.errors?.map((el) => el?.msg)?.join(" ")
+          : error?.message,
     });
   }
 };
 
 export const hrUpdateBasePayFunc =
   (basePayId, formData) => async (dispatch) => {
-    dispatch(cookieTokenValidFunc());
+    const token = cookie.get("token");
+    const companyId = cookie.get("companyId");
     const config = {
       headers: {
         "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
       },
     };
     try {
       dispatch({ type: HR_UPDATE_BASEPAY_BY_ID_REQUEST });
-      const body = JSON.stringify(formData);
-      await axios.patch(`/api/basepay/${basePayId}`, body, config);
+      const body = JSON.stringify({ ...formData, companyId: companyId });
+      await axios.patch(`${proxyUrl}/api/basepay/${basePayId}`, body, config);
       dispatch({ type: HR_UPDATE_BASEPAY_BY_ID_SUCCESS });
       dispatch(hrGetBasePayFunc());
       dispatch(hrGetSalaryStepsFunc());

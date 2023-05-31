@@ -23,7 +23,7 @@ import {
 } from "../../types/banklist";
 import { trancateWord } from "../../hooks/functions";
 
-const Bank = () => {
+const Bank = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
   // dispatch init
   const dispatch = useDispatch();
 
@@ -80,8 +80,8 @@ const Bank = () => {
       bankEmailAddress: removeExtraSpace(bankEmailAddress),
       bankPhoneNo: removeExtraSpace(bankPhoneNo),
     });
-    if (formData?._id) {
-      dispatch(accountantUpdateBankByIdFunc(formData?._id, formData));
+    if (formData?.id) {
+      dispatch(accountantUpdateBankByIdFunc(formData?.id, formData));
     } else {
       dispatch(accountantCreateBankFunc(formData));
     }
@@ -90,7 +90,7 @@ const Bank = () => {
   const onSelect = (id) => {
     let findBank;
     if (banks.length > 0) {
-      findBank = banks.find((el) => String(el?._id) === String(id));
+      findBank = banks.find((el) => String(el?.id) === String(id));
       if (findBank) {
         setFormData({
           name: removeExtraSpace(findBank?.name),
@@ -98,7 +98,7 @@ const Bank = () => {
           bankAddress: removeExtraSpace(findBank?.bankAddress),
           bankEmailAddress: removeExtraSpace(findBank?.bankEmailAddress),
           bankPhoneNo: findBank?.bankPhoneNo,
-          _id: findBank?._id,
+          id: findBank?.id,
         });
       }
     }
@@ -137,12 +137,13 @@ const Bank = () => {
         dispatch(adminGetAllBanksFunc());
       }
     }
-    if (userRole === "Internal Auditor" || userRole === "CEO") {
-      history.push("dashboard");
-    } else if (userRole === "HR") {
-      history.push("dashboard");
-    } else if (userRole === "Employee") {
-      history.push("dashboard");
+    if (
+      userRole === "Internal Auditor" ||
+      userRole === "CEO" ||
+      userRole === "HR" ||
+      userRole === "Employee"
+    ) {
+      history.push("/dashboard");
     }
 
     if (createBankSuccess && !createBankError && !createBankLoading) {
@@ -170,9 +171,8 @@ const Bank = () => {
   return (
     <>
       {(loadingAllBanks || createBankLoading || updateBankLoading) && (
-        <LoadingSpinner />
-      )}
-
+        <LoadingSpinner toggle={toggle} />
+        )}
       <Successful
         isOpen7={
           isOpen7 ||
@@ -184,13 +184,24 @@ const Bank = () => {
       />
       <DashboardContainer>
         <DashboardContent>
-          <SideNav userRole={userRole} bnklst={bnklst} />
-          <Mainbody>
+          <SideNav
+            userRole={userRole}
+            bnklst={bnklst}
+            toggle={toggle}
+            toggleMenu={toggleMenu}
+            mobileToggle={mobileToggle}
+            toggleMobileMenu={toggleMobileMenu}
+          />
+          <Mainbody toggle={toggle}>
             <Header
               text="Bank"
               userRole={userRole}
               userRoleName={userRoleName}
               profileimg={profileImg}
+              toggle={toggle}
+              toggleMenu={toggleMenu}
+              mobileToggle={mobileToggle}
+              toggleMobileMenu={toggleMobileMenu}
             />
             <Container>
               {/* <h1>Departments </h1> */}
@@ -295,7 +306,7 @@ const Bank = () => {
                           !bankEmailAddress ||
                           !bankAddress
                         }
-                        value={formData?._id ? "Edit" : "Save"}
+                        value={formData?.id ? "Edit" : "Save"}
                       />
                       <input
                         className="cancel__btn margin__left"
@@ -322,18 +333,18 @@ const Bank = () => {
                       </thead>
                       <tbody>
                         {banks?.map((el, indexes) => (
-                          <tr key={el?._id}>
+                          <tr key={el?.id}>
                             <td>{++indexes}</td>
                             <td>{el?.name?.toUpperCase()}</td>
                             <td>{el?.accountNumber}</td>
-                            <td >{trancateWord(el?.bankAddress)}</td>
+                            <td>{trancateWord(el?.bankAddress)}</td>
                             <td>{trancateWord(el?.bankEmailAddress)}</td>
                             <td>{el?.bankPhoneNo}</td>
                             <td>
                               <div className="action__icons">
                                 <div
                                   className="icons"
-                                  onClick={(e) => onSelect(el?._id)}
+                                  onClick={(e) => onSelect(el?.id)}
                                 >
                                   {" "}
                                   <FontAwesomeIcon

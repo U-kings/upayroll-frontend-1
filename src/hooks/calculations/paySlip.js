@@ -6,14 +6,18 @@ const convertToFloat = (amount) => {
 };
 
 export const commafy = (num) => {
-  let str = num.toString().split(".");
-  if (str[0].length >= 3) {
-    str[0] = str[0].replace(/(\d)(?=(\d{3})+$)/g, "$1,");
+  if (num) {
+    let str = num?.toString().split(".");
+    if (str[0].length >= 3) {
+      str[0] = str[0].replace(/(\d)(?=(\d{3})+$)/g, "$1,");
+    }
+    if (str[1] && str[1].length >= 5) {
+      str[1] = str[1].replace(/(\d{3})/g, "$1 ");
+    }
+    return str.join(".");
+  } else if (num === 0) {
+    return 0;
   }
-  if (str[1] && str[1].length >= 5) {
-    str[1] = str[1].replace(/(\d{3})/g, "$1 ");
-  }
-  return str.join(".");
 };
 
 export const decimalFormat = (num) => {
@@ -64,10 +68,10 @@ export const calculatePaySlip = (
     const notchId = user?.notch?.notchId;
     const stepId = user?.notch?.stepId;
     const findNotchId = user?.salaryStep?.notches?.find(
-      (el) => String(el?._id) === String(notchId)
+      (el) => String(el?.id) === String(notchId)
     );
     let findStepId;
-    if (String(user?.salaryStep?._id) === String(stepId)) {
+    if (String(user?.salaryStep?.id) === String(stepId)) {
       findStepId = true;
     } else {
       findStepId = false;

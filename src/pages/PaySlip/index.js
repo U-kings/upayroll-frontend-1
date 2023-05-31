@@ -11,7 +11,7 @@ import {
   EmpContainer,
 } from "../../styles/library";
 
-const PaySlip = () => {
+const PaySlip = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
   // history init
   const history = useHistory();
 
@@ -73,12 +73,23 @@ const PaySlip = () => {
       {/* <DashboardContainer onClick={closeOption}> */}
       <DashboardContainer>
         <DashboardContent>
-          <SideNav psl={psl} userRole={userRole} />
-          <Mainbody>
+          <SideNav
+            psl={psl}
+            userRole={userRole}
+            toggle={toggle}
+            toggleMenu={toggleMenu}
+            mobileToggle={mobileToggle}
+            toggleMobileMenu={toggleMobileMenu}
+          />
+          <Mainbody toggle={toggle}>
             <Header
               text="Pay Slip"
               userRole={userRole}
               profileimg={profileImg}
+              toggle={toggle}
+              toggleMenu={toggleMenu}
+              mobileToggle={mobileToggle}
+              toggleMobileMenu={toggleMobileMenu}
             />
             <Container>
               <EmpContainer>
@@ -152,7 +163,7 @@ const PaySlip = () => {
                         ?.sort((a, b) => b - a)
                         ?.map((employee) => {
                           return (
-                            <tr key={employee?._id}>
+                            <tr key={employee?.id}>
                               {userRole === "HR" && (
                                 <td>
                                   <input
@@ -178,7 +189,7 @@ const PaySlip = () => {
                                     <div
                                       title="View Pay Slip"
                                       className="icons"
-                                      onClick={(e) => popup2(employee?._id)}
+                                      onClick={(e) => popup2(employee?.id)}
                                     >
                                       {" "}
                                       <FontAwesomeIcon
@@ -188,7 +199,7 @@ const PaySlip = () => {
                                     <div
                                       title="Delete Employee"
                                       className="icons"
-                                      onClick={(e) => popup4(employee?._id)}
+                                      onClick={(e) => popup4(employee?.id)}
                                     >
                                       {" "}
                                       <FontAwesomeIcon

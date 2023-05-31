@@ -1,31 +1,27 @@
 // color design tokens export
 export const tokensDark = {
   grey: {
-    0: "#ffffff", // manually adjusted
-    10: "#f6f6f6", // manually adjusted
-    50: "#f0f0f0", // manually adjusted
-    100: "#e1e1e3",
-    200: "#c2c4c7",
-    300: "#a4a6aa",
-    400: "#85898e",
-    500: "#676b72",
-    600: "#52565b",
-    700: "#3e4044",
-    800: "#292b2e",
-    900: "#151517",
-    1000: "#000000", // manually adjusted
+    100: "#d6d6d6",
+    200: "#adadad",
+    300: "#858585",
+    400: "#5c5c5c",
+    500: "#333333",
+    600: "#292929",
+    700: "#1f1f1f",
+    800: "#141414",
+    900: "#0a0a0a",
   },
   primary: {
     // blue
-    100: "#cdd3df",
-    200: "#9ba8bf",
-    300: "#697c9e",
-    400: "#37517e",
-    500: "#05255e",
-    600: "#041e4b",
-    700: "#031638",
-    800: "#020f26",
-    900: "#010713",
+    100: "#cdebef",
+    200: "#9bd7df",
+    300: "#68c4ce",
+    400: "#36b0be",
+    500: "#049cae",
+    600: "#037d8b",
+    700: "#025e68",
+    800: "#023e46",
+    900: "#011f23",
   },
   secondary: {
     // white
@@ -41,17 +37,15 @@ export const tokensDark = {
     1000: "#313131",
   },
   blue: {
-    50: "#003063",
-    100: "#cdd3df",
-    200: "#9ba8bf",
-    300: "#697c9e",
-    400: "#578DEF",
-    500: "#05255e",
-    600: "#2364D9",
-    700: "#031638",
-    800: "#020f26",
-    900: "#010713",
-    1000: "#060a20",
+    100: "#cdebef",
+    200: "#9bd7df",
+    300: "#68c4ce",
+    400: "#36b0be",
+    500: "#049cae",
+    600: "#037d8b",
+    700: "#025e68",
+    800: "#023e46",
+    900: "#011f23",
   },
   red: {
     100: "#ffd7d5",
@@ -63,6 +57,17 @@ export const tokensDark = {
     700: "#99221c",
     800: "#661612",
     900: "#330b09",
+  },
+  yellow: {
+    100: "#ffeee5",
+    200: "#ffdecc",
+    300: "#ffcdb2",
+    400: "#ffbd99",
+    500: "#ffac7f",
+    600: "#cc8a66",
+    700: "#99674c",
+    800: "#664533",
+    900: "#332219",
   },
 };
 
@@ -113,6 +118,10 @@ export const themeSettings = (mode) => {
               ...tokensDark.red,
               main: tokensDark.red[500],
             },
+            yellow: {
+              ...tokensDark.yellow,
+              main: tokensDark.yellow[500],
+            },
             background: {
               default: tokensDark.primary[600],
               alt: tokensDark.primary[500],
@@ -142,6 +151,10 @@ export const themeSettings = (mode) => {
               ...tokensLight.red,
               main: tokensDark.red[500],
             },
+            yellow: {
+              ...tokensLight.yellow,
+              main: tokensDark.yellow[500],
+            },
             background: {
               default: tokensDark.grey[0],
               alt: tokensDark.grey[50],
@@ -149,31 +162,31 @@ export const themeSettings = (mode) => {
           }),
     },
     typography: {
-      fontFamily: ["Roboto", "sans-serif"].join(","),
+      fontFamily: ["Outfit", "sans-serif"].join(","),
       fontSize: 24,
       // fontSize: 12,
       h1: {
-        fontFamily: ["Roboto", "sans-serif"].join(","),
+        fontFamily: ["Outfit", "sans-serif"].join(","),
         fontSize: 40,
       },
       h2: {
-        fontFamily: ["Roboto", "sans-serif"].join(","),
+        fontFamily: ["Outfit", "sans-serif"].join(","),
         fontSize: 32,
       },
       h3: {
-        fontFamily: ["Roboto", "sans-serif"].join(","),
+        fontFamily: ["Outfit", "sans-serif"].join(","),
         fontSize: 24,
       },
       h4: {
-        fontFamily: ["Roboto", "sans-serif"].join(","),
+        fontFamily: ["Outfit", "sans-serif"].join(","),
         fontSize: 20,
       },
       h5: {
-        fontFamily: ["Roboto", "sans-serif"].join(","),
+        fontFamily: ["Outfit", "sans-serif"].join(","),
         fontSize: 16,
       },
       h6: {
-        fontFamily: ["Roboto", "sans-serif"].join(","),
+        fontFamily: ["Outfit", "sans-serif"].join(","),
         fontSize: 14,
       },
     },
@@ -189,7 +202,7 @@ export const themeSettings = (mode) => {
               boxShadow: "none",
               // border: "none",
               color: "inherit",
-              // border: "inherit",
+              border: "inherit",
             },
           },
           contained: {

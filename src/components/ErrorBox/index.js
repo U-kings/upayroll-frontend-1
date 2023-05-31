@@ -2,8 +2,23 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React, { useState, useEffect } from "react";
 import { COLORS } from "../../values/colors";
 
-const ErrorBox = ({ errorMessage }) => {
-  const Errorbox = (
+const ErrorBox = ({ errorMessage, fixed }) => {
+  const Errorbox = fixed ? (
+    <div className="error__msg2">
+      <p>
+        <FontAwesomeIcon
+          style={{
+            fontSize: "1.5rem",
+            color: `${COLORS.red}`,
+            marginRight: ".5rem",
+            marginTop: ".5rem",
+          }}
+          icon={["fas", "info-circle"]}
+        />
+        {errorMessage}
+      </p>
+    </div>
+  ) : (
     <div className="error__msg">
       <p>
         <FontAwesomeIcon

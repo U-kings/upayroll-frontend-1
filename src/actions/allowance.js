@@ -15,9 +15,10 @@ import {
   ADMIN_UPDATE_ALLOWANCE_BY_ID_SUCCESS,
 } from "../types/allowance";
 
+const proxyUrl = process.env.REACT_APP_PROXY_URL;
+
 export const adminGetAllAllowance = () => async (dispatch) => {
   const token = cookie.get("token");
-
   const config = {
     headers: {
       Authorization: `Bearer ${token}`,
@@ -26,7 +27,7 @@ export const adminGetAllAllowance = () => async (dispatch) => {
 
   try {
     dispatch({ type: ADMIN_GET_ALL_ALLOWANCES_REQUEST });
-    const { data } = await axios.get(`/api/allowances`, config);
+    const { data } = await axios.get(`${proxyUrl}/api/allowances`, config);
     dispatch({ type: ADMIN_GET_ALL_ALLOWANCES_SUCCESS, payload: data });
   } catch (error) {
     dispatch({
@@ -53,7 +54,7 @@ export const adminCreateAllowance = (formdata) => async (dispatch) => {
       type: ADMIN_CREATE_ALLOWANCE_REQUEST,
     });
     const body = JSON.stringify(formdata);
-    await axios.post(`/api/allowances`, body, config);
+    await axios.post(`${proxyUrl}/api/allowances`, body, config);
     dispatch({
       type: ADMIN_CREATE_ALLOWANCE_SUCCESS,
     });
@@ -83,7 +84,11 @@ export const adminUpdateAllowanceById =
         type: ADMIN_UPDATE_ALLOWANCE_BY_ID_REQUEST,
       });
       const body = JSON.stringify(formData);
-      await axios.patch(`/api/allowances/${allowanceId}`, body, config);
+      await axios.patch(
+        `${proxyUrl}/api/allowances/${allowanceId}`,
+        body,
+        config
+      );
       dispatch({
         type: ADMIN_UPDATE_ALLOWANCE_BY_ID_SUCCESS,
       });
@@ -110,7 +115,7 @@ export const adminDeleteAllowanceById = (allowanceId) => async (dispatch) => {
     dispatch({
       type: ADMIN_DELETE_ALLOWANCE_BY_ID_REQUEST,
     });
-    await axios.delete(`/api/allowances/${allowanceId}`, config);
+    await axios.delete(`${proxyUrl}/api/allowances/${allowanceId}`, config);
     dispatch({
       type: ADMIN_DELETE_ALLOWANCE_BY_ID_SUCCESS,
     });

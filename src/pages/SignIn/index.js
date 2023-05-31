@@ -7,7 +7,7 @@ import {
   SignUpLink,
 } from "../../styles/SigninElements";
 import { useDispatch, useSelector } from "react-redux";
-import { Link, useHistory } from "react-router-dom";
+import { useHistory } from "react-router-dom";
 import { Spinner } from "../../modals";
 import { adminLoginFunc } from "../../actions/auth";
 import { ErrorBox } from "../../components";
@@ -43,7 +43,7 @@ const SignIn = () => {
 
   useEffect(() => {
     if (adminInfo?.isAuthenticated && adminInfo?.user?.name) {
-      history.push("/dashboard");
+      history.push("dashboard");
     }
 
     if (adminLogin?.success) {
@@ -60,7 +60,7 @@ const SignIn = () => {
 
   useEffect(() => {
     if (cookieValid.status) {
-      history.push("/dashboard");
+      history.push("dashboard");
       dispatch({ type: CHECK_COOKIE_TOKEN_VALID_RESET });
     }
   }, [dispatch, history, cookieValid]);
@@ -69,7 +69,13 @@ const SignIn = () => {
 
   const onSubmit = (e) => {
     e.preventDefault();
-    dispatch(adminLoginFunc({ email, password }));
+    // dispatch(apiResource());
+    dispatch(
+      adminLoginFunc({
+        email: email?.toString()?.trim(),
+        password: password?.toString()?.trim(),
+      })
+    );
   };
 
   return (
@@ -119,10 +125,9 @@ const SignIn = () => {
                     type="email"
                     name="email"
                     value={email}
-                    placeholder="Enter Email"
+                    placeholder="Enter email"
                     onChange={onChange}
-                    autocomplete="new-password"
-                    readOnly
+                    autoComplete="new-password"
                     required
                   />
                 </div>
@@ -133,9 +138,9 @@ const SignIn = () => {
                   <input
                     type={PasswordInputType}
                     name="password"
-                    autocomplete="new-password"
+                    autoComplete="new-password"
                     value={password}
-                    placeholder="Enter Password"
+                    placeholder="Enter password"
                     onChange={onChange}
                     required
                   />

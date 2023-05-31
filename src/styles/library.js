@@ -17,55 +17,58 @@ export const DashboardContent = styled.div`
 
 export const Box = styled.div`
   /* width: 30rem; */
+  width: 100%;
   flex: 1;
   padding: 3rem;
   color: ${COLORS.white};
   border-radius: 0.5rem;
   margin-right: 2rem;
+  gap: 1rem;
   margin-bottom: 1rem;
   :last-child {
     margin-right: 0;
+    // margin-left: 1rem;
   }
-  &.b1{
+  &.b1 {
     background-image: linear-gradient(
       to right,
       rgb(30, 144, 255),
       rgb(0, 191, 255)
     );
   }
-  &.b2{
+  &.b2 {
     background-image: linear-gradient(
       to right,
-      rgb(254,90,29),
-      rgb(255,117,24)
+      rgb(254, 90, 29),
+      rgb(255, 117, 24)
     );
   }
-  &.b3{
+  &.b3 {
     background-image: linear-gradient(
       to right,
-      rgb(186,85,211),
-      rgb(183,104,162)
+      rgb(186, 85, 211),
+      rgb(183, 104, 162)
     );
   }
-  &.b4{
+  &.b4 {
     background-image: linear-gradient(
       to right,
-      rgb(255,0,56),
-      rgb(255,0,40)
+      rgb(255, 0, 56),
+      rgb(255, 0, 40)
     );
   }
-  &.b5{
+  &.b5 {
     background-image: linear-gradient(
       to right,
-      rgb(50,205,50),
-      rgb(127,255,0)
+      rgb(50, 205, 50),
+      rgb(127, 255, 0)
     );
   }
-  &.b6{
+  &.b6 {
     background-image: linear-gradient(
       to right,
-      rgb(1,121,111),
-      rgb(0,116,116)
+      rgb(1, 121, 111),
+      rgb(0, 116, 116)
     );
   }
 
@@ -84,11 +87,12 @@ export const LinkButton = styled(Link)`
   /* left: 10rem; */
   /* height: 4rem; */
   /* margin-left: .2rem; */
-  /* width: 100%; */
+  // width: 100%;
 
   & .green__btn {
     background-color: ${COLORS.green};
     /* height: 3rem; */
+    // width: 100%;
     padding: 0.55rem 0.9rem;
     transition: all 150ms ease-in-out;
     &:hover {
@@ -99,15 +103,23 @@ export const LinkButton = styled(Link)`
   &.gen_payslip {
     background-color: ${COLORS.blue2};
   }
+
+  @media only screen and (max-width: 1024px) {
+    width: 100%;
+    & .green__btn {
+      width: 100%;
+    }
+  }
 `;
 export const Mainbody = styled.div`
-  width: ${({ isOpen9 }) => (isOpen9 ? "100%" : "83%")};
+  width: ${({ toggle }) => (toggle ? "95.5%" : "83%")};
   overflow: auto;
   position: fixed;
   height: 100%;
   -ms-overflow-style: none;
   scrollbar-width: none;
-  margin-left: ${({ isOpen9 }) => (isOpen9 ? "55px" : "17%")};
+  right: 0;
+  // margin-left: ${({ toggle }) => (toggle ? "70px" : "17%")};
   top: 0;
   background-color: ${COLORS.white2};
   transition: 360ms ease-in-out;
@@ -129,6 +141,12 @@ export const Mainbody = styled.div`
     background: ${COLORS.grey3};
     border-radius: 0.3rem;
   }
+
+  @media only screen and (max-width: 1024px) {
+    width: 100%;
+    margin-left: 0;
+    // display: none;
+  }
 `;
 
 export const TopHeader = styled.div`
@@ -136,19 +154,22 @@ export const TopHeader = styled.div`
   position: sticky;
   top: 0;
   z-index: 99;
+  padding: 0 2rem;
+  // height: 55px;
   background-color: ${COLORS.white};
   box-shadow: 0 0.3rem 0.5rem rgba(0, 0, 0, 0.04);
   justify-content: space-between;
   display: flex;
   align-items: center;
   transition: 360ms ease-in-out;
+  over-flow: hidden;
 
   & .icons {
     width: 3.2rem;
     height: 3.2rem;
     font-size: 2rem;
-    margin-top: 1rem;
-    margin-left: 2rem;
+    // margin-top: 1rem;
+    // margin-left: 2rem;
     padding: 0.4rem;
   }
 
@@ -160,12 +181,37 @@ export const TopHeader = styled.div`
     color: ${COLORS.grey2};
     padding: 1rem 2.5rem;
     font-weight: 500;
+    // white-space: nowrap;
   }
   & h2 {
-    justify-content: center;
-    font-size: 3rem;
+    font-size: 1.3rem;
+    cursor: pointer;
+    margin: auto;
+    padding: 0 0.5rem;
     color: ${COLORS.grey2};
+    justify-content: center;
     font-weight: 500;
+  }
+  & .menu2 {
+    display: none;
+    margin: auto 0;
+  }
+
+  & .menu {
+    display: block;
+    margin: auto 0;
+  }
+  @media only screen and (max-width: 1024px) {
+    padding: 1rem 1rem;
+    & .menu {
+      display: none;
+    }
+    & .menu2 {
+      display: block;
+    }
+    & h1 {
+      padding: 1rem 0.5rem;
+    }
   }
 `;
 
@@ -202,6 +248,7 @@ export const EmpContainer = styled.div`
   & .search__container {
     /* margin-left: auto; */
     display: flex;
+    // width: 100%;
     position: relative;
 
     & .search__icon {
@@ -218,7 +265,42 @@ export const EmpContainer = styled.div`
       border-radius: 0.3rem;
     }
   }
-  `;
+
+  & .top__btn {
+  }
+
+  & .emp__control {
+  }
+
+  @media only screen and (max-width: 1024px) {
+    margin: 1rem 0;
+
+    & .top__btn {
+      width: 100%;
+    }
+
+    & .search__container {
+      width: 100%;
+
+      & .search__icon {
+        left: 1rem;
+      }
+      & .search__input {
+        width: 100%;
+        margin-left: 0;
+      }
+    }
+
+    & .emp__control {
+      width: 100%;
+      margin-bottom: 1rem;
+    }
+
+    & .mobile__margin__top {
+      margin-top: 1rem;
+    }
+  }
+`;
 
 export const Container = styled.div`
   background-color: ${COLORS.white2};
@@ -227,13 +309,13 @@ export const Container = styled.div`
   /* position: fixed; */
   /* margin-bottom: 2rem; */
 
-  &.inner__container{
+  &.inner__container {
     padding: 1rem;
   }
-  
+
   & .profile__settings {
     /* width: 520px; */
-    padding: 0 30%;
+    padding: 2rem 30%;
     margin: auto;
     font-size: 0.5rem;
     overflow: auto;
@@ -256,16 +338,6 @@ export const Container = styled.div`
       margin: 0;
       font-size: 2.8rem;
     }
-
-    & .settings__pic {
-      width: 13rem;
-      height: 13rem;
-      border-radius: 50%;
-      margin: 2rem 0;
-      background-repeat: no-repeat;
-      background-size: cover;
-      background-position-y: -2rem;
-    }
     & .profile__save {
       background-color: ${COLORS.green};
     }
@@ -274,6 +346,20 @@ export const Container = styled.div`
   & .exportfile__container {
     width: 31%;
     margin: auto;
+    padding: 0 0 4rem 0;
+
+    & h1 {
+      margin: 0;
+      font-weight: 400;
+    }
+    & h2 {
+      font-weight: 400;
+      & span {
+        margin: 0 1rem;
+        font-size: 1.5rem;
+        color: ${COLORS?.blue};
+      }
+    }
   }
 
   & h1 {
@@ -340,7 +426,8 @@ export const Container = styled.div`
     & .taxtable__body {
       box-shadow: 0 0 0.8rem rgba(0, 0, 0, 0.109);
       width: 100%;
-      padding: 1.5rem;
+      padding: 1rem;
+      // padding: 1.5rem;
       background-color: ${COLORS.white};
     }
 
@@ -383,6 +470,40 @@ export const Container = styled.div`
       margin: 0;
       border-radius: 0.3rem;
       box-shadow: 0.2rem 0 1.3rem rgba(0, 0, 0, 0.109);
+    }
+  }
+
+  @media only screen and (max-width: 1024px) {
+    & .container__content {
+      display: block;
+      padding: 0;
+
+      & .table__body {
+        width: 100%;
+        margin-left: 0;
+        margin-top: 1rem;
+      }
+      & .form__content {
+        width: 100%;
+      }
+
+      & .import__text {
+        margin-top: 7rem;
+        text-align: center;
+      }
+    }
+
+    & .profile__settings {
+      padding: 2rem 0;
+    }
+
+    & .exportfile__container {
+      width: 100%;
+      margin: auto;
+    }
+
+    &.inner__container {
+      padding: 0;
     }
   }
 `;
@@ -447,10 +568,28 @@ export const NewEmp = styled.div`
     margin-top: 1rem;
     color: ${COLORS.white4};
     background-color: ${COLORS.blue};
-    transition: ease-in-out 0.3s;
+    transition: 360ms ease-in-out;
   }
   & .add__emp:hover {
     background-color: ${COLORS.blue2};
+  }
+
+  & .staffId,
+  .workdays {
+    width: 20rem;
+  }
+
+  @media only screen and (max-width: 1024px) {
+    padding: 3rem 1.5rem 1.5rem 1.5rem;
+
+    & .staffId,
+    .workdays {
+      width: 100%;
+    }
+
+    & h1 {
+      margin-top: 4rem;
+    }
   }
 `;
 
@@ -473,6 +612,10 @@ export const BackLink = styled(Link)`
     margin: 0;
     padding: 0;
   }
+
+  @media only screen and (max-width: 1024px) {
+    left: 3%;
+  }
 `;
 
 export const ImportExcelLink = styled(Link)`
@@ -492,6 +635,10 @@ export const ImportExcelLink = styled(Link)`
       background-color: ${COLORS.green2};
     }
   }
+
+  @media only screen and (max-width: 1024px) {
+    right: 3%;
+  }
 `;
 
 //////////////////////////////////
@@ -501,13 +648,23 @@ export const ImportExcelLink = styled(Link)`
 export const DropDownContainer = styled("div")`
   text-align: left;
 
-  & .month__header,
-  .dropdown__header {
+  & .dropdown__header {
     padding: 0.55rem 3rem 0.55rem 1rem;
   }
-  
+
   & .month__header {
-    /* width: 100px; */
+    padding: 0.55rem 3rem 0.55rem 1rem;
+    width: 13rem;
+  }
+
+  @media only screen and (max-width: 1024px) {
+    width: 100%;
+    & .month__header {
+      width: 100%;
+    }
+    & .dropdown__header {
+      width: 100%;
+    }
   }
 `;
 
@@ -542,6 +699,7 @@ export const DropDownListContainer = styled("div")`
 `;
 
 export const DropDownList = styled("ul")`
+  overflow: auto;
   width: 100%;
   position: absolute;
   box-sizing: border-box;
@@ -580,8 +738,9 @@ export const ListItem = styled("li")`
 //////////////////////////////////
 
 export const ProfileContainer = styled("div")`
-  margin-right: 2rem;
   position: relative;
+  display: flex;
+  margin: auto auto auto 1rem;
   width: 3.5rem;
   height: 3.5rem;
   border-radius: 50%;
@@ -593,16 +752,6 @@ export const ProfileContainer = styled("div")`
   display: flex;
   justify-content: center;
   transition: 230ms ease-in-out;
-
-  & .profile__img {
-    /* padding-top: 0.9rem; */
-    text-align: center;
-    color: white;
-    margin: auto;
-    width: 30px;
-    height: 30px;
-    border-radius: 50%;
-  }
 `;
 
 export const ProfileContent = styled("div")`
@@ -626,14 +775,6 @@ export const ProfileContent = styled("div")`
     right: 1rem;
     width: 2rem;
     height: 2rem;
-  }
-
-  & .profile__img2 {
-    width: 10rem;
-    height: 10rem;
-    border-radius: 50%;
-    margin: auto;
-    justify-content: center;
   }
 
   & .content {
@@ -858,9 +999,19 @@ export const ModalContainer2 = styled.div`
 
 export const ViewSalaryContainer = styled.section`
   background-color: ${COLORS.white};
+  // width: 35rem;
   width: 100%;
   padding: 0.8rem;
   border-radius: 0.3rem;
+
+  & .row3 {
+    display: flex;
+    width: 100%;
+
+    & .flex__1 {
+      flex: 1;
+    }
+  }
 
   & .blue {
     height: 20px;
@@ -887,10 +1038,10 @@ export const ViewSalaryContainer = styled.section`
   & h2 {
     font-size: 1.4rem;
     margin: 0.1rem 0;
-    text-align: left;
+    // text-align: left;
     width: 100%;
     padding: 0.1rem 0.7rem;
-    width: 200px;
+    // width: 200px;
     font-weight: bold;
   }
 
@@ -969,13 +1120,12 @@ export const ScreenResolutionContainer = styled.div`
     right: 0;
     bottom: 0;
     /* background-color: ${COLORS.white2}; */
-    width: 100vw;
-    height: 100vh;
+    // width: 100vw;
+    // height: 100vh;
   }
 `;
 export const ScreenResolutionContent = styled.div`
   display: flex;
-  width: 100vw;
   & h1 {
     padding: 3rem;
     border-radius: 0.3rem;

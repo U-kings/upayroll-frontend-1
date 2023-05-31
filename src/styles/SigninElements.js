@@ -13,11 +13,13 @@ export const SigninContainer = styled.div`
 
   & .signin__container {
     display: flex;
+    height: 100vh;
   }
   & .sigin__img {
     background-image: url(${imgBg});
     /* background-position-y: 25rem; */
   }
+
   & .forgotpassword__img {
     background-image: url(${imgBg2});
     /* padding: 20px; */
@@ -49,6 +51,15 @@ export const SigninContainer = styled.div`
       width: inherit;
     }
   }
+
+  @media only screen and (max-width: 1024px) {
+    & .sigin__img {
+      display: none;
+    }
+    & .forgotpassword__img {
+      display: none;
+    }
+  }
 `;
 export const SigninContent = styled.div`
   /* width: 50%; */
@@ -57,36 +68,37 @@ export const SigninContent = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
-  
+  // padding-top: 30rem;
+
   & .form__container {
-      padding-top: 10rem;
+    // padding-top: 10rem;
     width: 37rem;
     padding: 2rem 2rem;
     border-radius: 0.8rem;
     background-color: ${COLORS.white2};
     box-shadow: 0 0 2rem rgba(0, 0, 0, 0.09);
-    
+
     & .signin__row__text {
       display: flex;
     }
-    
+
     & .logo {
-        background-image: url(${imgLogo});
-        background-size: cover;
+      background-image: url(${imgLogo});
+      background-size: cover;
       margin: auto 0.2rem auto auto;
       width: 37px;
       height: 37px;
     }
-}
-& p {
+  }
+  & p {
     font-weight: 500;
     font-size: 1.4rem;
     color: ${COLORS.black2};
     margin-bottom: 1rem;
     position: relative;
     text-align: center;
-}
-& h2 {
+  }
+  & h2 {
     text-align: center;
     margin-bottom: 1.5rem;
   }

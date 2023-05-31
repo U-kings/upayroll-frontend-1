@@ -1,4 +1,5 @@
 import React from "react";
+import cookie from "js-cookie";
 import { commafy } from "../../hooks/calculations/paySlip";
 // import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -9,11 +10,13 @@ import {
 import { COLORS } from "../../values/colors";
 import uridiumLogo from "../../resources/uridium.png";
 import productLogo from "../../resources/productLogo.PNG";
+import { useState } from "react";
 
 const ViewSalaryslip = ({ isOpen8, popup8, paySlip, monthlypayheads }) => {
   // redux state
   // const { adminInfo } = useSelector((state) => state.adminLoginStatus);
   // const [userRole] = useState(adminInfo?.user?.role || "");
+  const [companyLogo] = useState(cookie.get("companyLogo"));
 
   const printSlip = () => {
     window.print();
@@ -24,7 +27,7 @@ const ViewSalaryslip = ({ isOpen8, popup8, paySlip, monthlypayheads }) => {
       <ModalBackground isOpen8={isOpen8} onClick={popup8} />
       <ModalContainer className="view__slip" isOpen8={isOpen8}>
         <ViewSalaryContainer>
-          <div className="row justify__btw">
+          <div className="row3 justify__btw">
             <div
               style={{ backgroundColor: `${COLORS.blue2}` }}
               className="blue"
@@ -34,14 +37,18 @@ const ViewSalaryslip = ({ isOpen8, popup8, paySlip, monthlypayheads }) => {
               className="black"
             ></div>
           </div>
-          <div className="row">
-            <img
-              className="margin__top"
-              src={uridiumLogo}
-              alt="Uridium logo"
-              height="35"
-            ></img>
-            <div>
+          <div className="row3">
+            <div className="flex__1">
+              <img
+                // className="margin__top"
+                style={{margin:"auto"}}
+                src={companyLogo}
+                // src={uridiumLogo}
+                alt="Uridium logo"
+                height="35"
+              ></img>
+            </div>
+            <div className="flex__1">
               <h1 className="payslip__text aligntext__right full__width">
                 e-PAYSLIP
               </h1>
@@ -53,11 +60,11 @@ const ViewSalaryslip = ({ isOpen8, popup8, paySlip, monthlypayheads }) => {
               </p>
             </div>
           </div>
-          <div className="row justify__btw margin__top">
+          <div className="row3 justify__btw margin__top">
             <h2>Staff ID Card No:</h2>
             <h2 className="aligntext__right">{paySlip?.employee?.staffId}</h2>
           </div>
-          <div className="row justify__btw">
+          <div className="row3 justify__btw">
             <h2>Full Name:</h2>
             <h2 className="aligntext__right">{`${paySlip?.employee?.user?.name}`}</h2>
           </div>
@@ -83,10 +90,10 @@ const ViewSalaryslip = ({ isOpen8, popup8, paySlip, monthlypayheads }) => {
             paySlip?.employee?.employeeType !== "Intern" && (
               <div>
                 {monthlypayheads
-                  ?.filter((data) => data.payType === "GROSS SALARY")
+                  ?.filter((data) => data?.payType === "GROSS SALARY")
                   .map(({ name, percentage }, indexes) => (
                     <div
-                      className="row"
+                      className="row3"
                       style={{ backgroundColor: `${COLORS.white4}` }}
                       key={++indexes}
                     >
@@ -94,12 +101,12 @@ const ViewSalaryslip = ({ isOpen8, popup8, paySlip, monthlypayheads }) => {
                         {name} :
                       </p>
                       <p style={{ fontWeight: "400" }}>{`${
-                        paySlip?.uWallet &&
+                        paySlip?.grossPay &&
                         commafy(
                           Number(
                             Number(
                               Math.round(
-                                (percentage / 100) * paySlip?.uWallet + "e" + 2
+                                (percentage / 100) * paySlip?.grossPay + "e" + 2
                               ) +
                                 "e-" +
                                 2
@@ -109,7 +116,7 @@ const ViewSalaryslip = ({ isOpen8, popup8, paySlip, monthlypayheads }) => {
                       }`}</p>
                     </div>
                   ))}
-                <div className="row">
+                {/* <div className="row">
                   <p style={{ width: "100%", fontWeight: "bold" }}>
                     U-Wallet(Keep alive):{" "}
                   </p>
@@ -122,19 +129,19 @@ const ViewSalaryslip = ({ isOpen8, popup8, paySlip, monthlypayheads }) => {
                         )
                       )}
                   </p>
-                </div>
+                </div> */}
               </div>
             )}
-          <div className="row">
+          <div className="row3">
             <p style={{ width: "100%", fontWeight: "bold" }}>GROSSPAY : </p>
             <p style={{ fontWeight: "bold" }}> {commafy(paySlip?.grossPay)}</p>
           </div>
-          <div className="row">
+          <div className="row3">
             <div style={{ borderRight: `solid 2px ${COLORS.white}` }}>
               <h2 className="bg">Additions</h2>
               {paySlip?.allowances.length > 0 ? (
                 paySlip?.allowances?.map(({ allowance, fee, feeType }) => (
-                  <p key={allowance?._id} style={{ whiteSpace: "nowrap" }}>
+                  <p key={allowance?.id} style={{ whiteSpace: "nowrap" }}>
                     {allowance?.name} :{" "}
                     {feeType === "Amount" && `${commafy(fee)}`}
                     {feeType === "Percentage" &&
@@ -159,7 +166,7 @@ const ViewSalaryslip = ({ isOpen8, popup8, paySlip, monthlypayheads }) => {
                 paySlip?.deductions?.map(({ deduction, fee, feeType }) => (
                   <p
                     className="aligntext__right"
-                    key={deduction?._id}
+                    key={deduction?.id}
                     style={{ whiteSpace: "nowrap" }}
                   >
                     {deduction?.name} :{" "}
@@ -208,11 +215,11 @@ const ViewSalaryslip = ({ isOpen8, popup8, paySlip, monthlypayheads }) => {
                 </div> */}
               </>
             )}
-          <div className="row">
+          <div className="row3">
             <h2 className="bg">Total Additions</h2>
             <h2 className="bg aligntext__right">Total Deductions</h2>
           </div>
-          <div className="row justify__btw">
+          <div className="row3 justify__btw">
             <h2>{`${commafy(paySlip?.totalEarnings)}`}</h2>
             <h2 className="aligntext__right">
               {commafy(paySlip?.deductionTotal)}
@@ -228,7 +235,7 @@ const ViewSalaryslip = ({ isOpen8, popup8, paySlip, monthlypayheads }) => {
               )
             )}
           </h2>
-          <div className="row justify__btw">
+          <div className="row3 justify__btw">
             <div>
               <input
                 className="btn__padding margin__top save__btn"

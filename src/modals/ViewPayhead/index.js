@@ -16,7 +16,7 @@ import {
 } from "../../types/employee";
 import { ErrorBox } from "../../components";
 import { Comfirm } from "..";
-const ViewEmployee = ({ isOpen2, popup2, setIsOpen2, employee }) => {
+const ViewEmployee = ({ isOpen2, popup2, setIsOpen2, employee, toggle }) => {
   // dispatch
   const dispatch = useDispatch();
   const {
@@ -68,7 +68,7 @@ const ViewEmployee = ({ isOpen2, popup2, setIsOpen2, employee }) => {
 
   const addNewAllowance = (newAll) => {
     const findAl = employeeAllowance.find(
-      (el) => String(el?.allowance?._id) === String(newAll?.allowance?._id)
+      (el) => String(el?.allowance?.id) === String(newAll?.allowance?.id)
     );
     if (!findAl) {
       setEmployeeAllowance([newAll, ...employeeAllowance]);
@@ -77,22 +77,22 @@ const ViewEmployee = ({ isOpen2, popup2, setIsOpen2, employee }) => {
 
   const removeAllowance = (id) => {
     const findAl = employeeAllowance.find(
-      (el) => String(el?.allowance?._id) === String(id)
+      (el) => String(el?.allowance?.id) === String(id)
     );
 
     if (findAl?.new) {
       const newAllowance = employeeAllowance.filter(
-        (el) => String(el?.allowance?._id) !== String(findAl?.allowance._id)
+        (el) => String(el?.allowance?.id) !== String(findAl?.allowance.id)
       );
       setEmployeeAllowance([...newAllowance]);
     } else {
-      dispatch(adminDeleteEmployeeAllowance(employee?._id, id));
+      dispatch(adminDeleteEmployeeAllowance(employee?.id, id));
     }
   };
 
   const addNewDeduction = (newDeduct) => {
     const findDeduct = employeeDeduction.find(
-      (el) => String(el?.deduction?._id) === String(newDeduct?.deduction?._id)
+      (el) => String(el?.deduction?.id) === String(newDeduct?.deduction?.id)
     );
     if (!findDeduct) {
       setEmployeeDeduction([newDeduct, ...employeeDeduction]);
@@ -101,16 +101,16 @@ const ViewEmployee = ({ isOpen2, popup2, setIsOpen2, employee }) => {
 
   const removeDeduction = (id) => {
     const findDeduct = employeeDeduction.find(
-      (el) => String(el?.deduction?._id) === String(id)
+      (el) => String(el?.deduction?.id) === String(id)
     );
 
     if (findDeduct?.new) {
       const newDeduction = employeeDeduction.filter(
-        (el) => String(el?.deduction?._id) !== String(findDeduct?.deduction._id)
+        (el) => String(el?.deduction?.id) !== String(findDeduct?.deduction.id)
       );
       setEmployeeDeduction([...newDeduction]);
     } else {
-      dispatch(adminDeleteEmployeeDeduction(employee?._id, id));
+      dispatch(adminDeleteEmployeeDeduction(employee?.id, id));
     }
   };
 
@@ -119,7 +119,7 @@ const ViewEmployee = ({ isOpen2, popup2, setIsOpen2, employee }) => {
     if (employeeAllowance.length > 0) {
       postEmployeeAllowance = employeeAllowance.map((el) => {
         return {
-          allowance: el.allowance._id,
+          allowance: el.allowance.id,
           fee: el.fee,
           feeType: el.feeType,
           remark: el.remark,
@@ -132,7 +132,7 @@ const ViewEmployee = ({ isOpen2, popup2, setIsOpen2, employee }) => {
     if (employeeDeduction.length > 0) {
       postEmployeeDeduction = employeeDeduction.map((el) => {
         return {
-          deduction: el.deduction._id,
+          deduction: el.deduction.id,
           fee: el.fee,
           feeType: el.feeType,
           remark: el.remark,
@@ -142,7 +142,7 @@ const ViewEmployee = ({ isOpen2, popup2, setIsOpen2, employee }) => {
       postEmployeeDeduction = [];
     }
     dispatch(
-      adminEmployeeTopUp(employee?._id, {
+      adminEmployeeTopUp(employee?.id, {
         allowancesArr: postEmployeeAllowance,
         deductionsArr: postEmployeeDeduction,
       })
@@ -181,7 +181,7 @@ const ViewEmployee = ({ isOpen2, popup2, setIsOpen2, employee }) => {
 
   return (
     <>
-      <Comfirm />
+      <Comfirm toggle={toggle} />
       <AddAllowance
         isOpen5={isOpen5}
         popup5={popup5}
@@ -229,7 +229,7 @@ const ViewEmployee = ({ isOpen2, popup2, setIsOpen2, employee }) => {
               </div>
               {employeeAllowance?.length > 0 &&
                 employeeAllowance?.map((el) => (
-                  <div className="list__items" key={el?.allowance?._id}>
+                  <div className="list__items" key={el?.allowance?.id}>
                     <div className="item" title={el?.remark}>
                       <div className="row line">
                         <p>{el?.allowance?.name}</p>
@@ -242,7 +242,7 @@ const ViewEmployee = ({ isOpen2, popup2, setIsOpen2, employee }) => {
                             title="Delete"
                             className="delete"
                             icon={["fas", "trash-alt"]}
-                            onClick={(e) => removeAllowance(el?.allowance?._id)}
+                            onClick={(e) => removeAllowance(el?.allowance?.id)}
                           />
                         </div>
                       </div>
@@ -262,7 +262,7 @@ const ViewEmployee = ({ isOpen2, popup2, setIsOpen2, employee }) => {
               </div>
               {employeeDeduction?.length > 0 &&
                 employeeDeduction?.map((el) => (
-                  <div className="list__items" key={el?.deduction?._id}>
+                  <div className="list__items" key={el?.deduction?.id}>
                     <div className="item" title={el?.remark}>
                       <div className="row line">
                         <p>{el?.deduction?.name}</p>
@@ -275,7 +275,7 @@ const ViewEmployee = ({ isOpen2, popup2, setIsOpen2, employee }) => {
                             title="Delete"
                             className="delete"
                             icon={["fas", "trash-alt"]}
-                            onClick={(e) => removeDeduction(el?.deduction?._id)}
+                            onClick={(e) => removeDeduction(el?.deduction?.id)}
                           />
                         </div>
                       </div>

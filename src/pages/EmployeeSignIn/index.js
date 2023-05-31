@@ -16,7 +16,7 @@ import {
   LOGIN_ADMIN_USER_RESET,
 } from "../../types/auth";
 
-const EmployeeSignIn = () => {
+const EmployeeSignIn = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
   const dispatch = useDispatch();
   const adminLogin = useSelector((state) => state.adminLoginReducer);
   const { adminInfo } = useSelector((state) => state.adminLoginStatus);
@@ -37,7 +37,7 @@ const EmployeeSignIn = () => {
 
   useEffect(() => {
     if (adminInfo?.isAuthenticated && adminInfo?.user?.name) {
-      history.push("/dashboard");
+      history.push("dashboard");
     }
 
     if (adminLogin?.success) {

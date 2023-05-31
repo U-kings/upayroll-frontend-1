@@ -15,6 +15,8 @@ import {
   ADMIN_UPDATE_DEDUCTION_BY_ID_SUCCESS,
 } from "../types/deduction";
 
+const proxyUrl = process.env.REACT_APP_PROXY_URL;
+
 export const adminGetAllDeduction = () => async (dispatch) => {
   const token = cookie.get("token");
   const config = {
@@ -27,7 +29,7 @@ export const adminGetAllDeduction = () => async (dispatch) => {
     dispatch({
       type: ADMIN_GET_ALL_DEDUCTIONS_REQUEST,
     });
-    const { data } = await axios.get(`/api/deductions`, config);
+    const { data } = await axios.get(`${proxyUrl}/api/deductions`, config);
     dispatch({
       type: ADMIN_GET_ALL_DEDUCTIONS_SUCCESS,
       payload: data,
@@ -45,6 +47,7 @@ export const adminGetAllDeduction = () => async (dispatch) => {
 
 export const adminCreateDeduction = (formData) => async (dispatch) => {
   const token = cookie.get("token");
+
   const config = {
     headers: {
       "Content-Type": "application/json",
@@ -57,7 +60,7 @@ export const adminCreateDeduction = (formData) => async (dispatch) => {
       type: ADMIN_CREATE_DEDUCTION_REQUEST,
     });
     const body = JSON.stringify(formData);
-    await axios.post(`/api/deductions`, body, config);
+    await axios.post(`${proxyUrl}/api/deductions`, body, config);
     dispatch({
       type: ADMIN_CREATE_DEDUCTION_SUCCESS,
     });
@@ -75,6 +78,7 @@ export const adminCreateDeduction = (formData) => async (dispatch) => {
 export const adminUpdateDeductionById =
   (deductionId, formData) => async (dispatch) => {
     const token = cookie.get("token");
+
     const config = {
       headers: {
         "Content-Type": "application/json",
@@ -88,7 +92,11 @@ export const adminUpdateDeductionById =
       });
 
       const body = JSON.stringify(formData);
-      await axios.patch(`/api/deductions/${deductionId}`, body, config);
+      await axios.patch(
+        `${proxyUrl}/api/deductions/${deductionId}`,
+        body,
+        config
+      );
       dispatch({
         type: ADMIN_UPDATE_DEDUCTION_BY_ID_SUCCESS,
       });
@@ -106,6 +114,7 @@ export const adminUpdateDeductionById =
 
 export const adminDeleteDeductionById = (deductionId) => async (dispatch) => {
   const token = cookie.get("token");
+
   const config = {
     headers: {
       Authorization: `Bearer ${token}`,
@@ -115,7 +124,7 @@ export const adminDeleteDeductionById = (deductionId) => async (dispatch) => {
     dispatch({
       type: ADMIN_DELETE_DEDUCTION_BY_ID_REQUEST,
     });
-    await axios.delete(`/api/deductions/${deductionId}`, config);
+    await axios.delete(`${proxyUrl}/api/deductions/${deductionId}`, config);
     dispatch({
       type: ADMIN_DELETE_DEDUCTION_BY_ID_SUCCESS,
     });

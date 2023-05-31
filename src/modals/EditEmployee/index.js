@@ -8,19 +8,21 @@ import {
 } from "../../actions/department";
 import { adminUpdateEmployeeById } from "../../actions/employee";
 import LoadingSpinner from "../LoadingSpinner";
-import { DropdownList } from "../../components";
+import { DropdownList, ErrorBox } from "../../components";
 // import { adminGetAllBanksFunc } from "../../actions/banklist";
 import { hrGetSalaryLevelsFunc } from "../../actions/salarylevel";
 import { hrGetSalaryStepsFunc } from "../../actions/salarysteps";
 import { hrGetAllStaffGradesFunc } from "../../actions/staffgrade";
 import { banks } from "../../values/banks";
 import { employeeDataValidation } from "../../hooks/validations/employeeDataValidation";
+import { formatDate } from "../../hooks/functions";
 const EditEmployee = ({
   isOpen3,
   popup3,
   employee,
   setCurrentEmployee,
   month,
+  toggle,
 }) => {
   // dispatch init
   const dispatch = useDispatch();
@@ -33,9 +35,11 @@ const EditEmployee = ({
   const { salaryGrades } = useSelector((state) => state.hrGetStaffGrade);
   const { salaryLevels } = useSelector((state) => state.hrGetSalaryLevel);
   const { salarySteps } = useSelector((state) => state.hrGetSteps);
-  const { success: updateSuccess, isLoading: updateLoading } = useSelector(
-    (state) => state.adminUpdateEmployee
-  );
+  const {
+    success: updateSuccess,
+    isLoading: updateLoading,
+    error: updateError,
+  } = useSelector((state) => state.adminUpdateEmployee);
 
   // const { banks } = useSelector((state) => state.adminGetAllBanks);
   // func state
@@ -134,11 +138,11 @@ const EditEmployee = ({
 
   useEffect(() => {
     dispatch(getAllDepartment());
-    dispatch(getPositionsByDepartment(employee?.department?._id));
+    dispatch(getPositionsByDepartment(employee?.department?.id));
     // dispatch(adminGetAllBanksFunc());
     dispatch(hrGetAllStaffGradesFunc());
-    dispatch(hrGetSalaryLevelsFunc(employee?.salaryLevel?.salaryGrade?._id));
-    dispatch(hrGetSalaryStepsFunc(employee?.salaryStep?.salaryLevel?._id));
+    dispatch(hrGetSalaryLevelsFunc(employee?.salaryLevel?.salaryGrade?.id));
+    dispatch(hrGetSalaryStepsFunc(employee?.salaryStep?.salaryLevel?.id));
     // eslint-disable-next-line
   }, [dispatch]);
 
@@ -195,7 +199,7 @@ const EditEmployee = ({
   const onOptionClicked4 = (department) => () => {
     setSelectedOption4(department);
     setIsOpen4(false);
-    dispatch(getPositionsByDepartment(department?._id));
+    dispatch(getPositionsByDepartment(department?.id));
     setSelectedOption5(null);
   };
 
@@ -208,7 +212,7 @@ const EditEmployee = ({
   // salary grade
   const onOptionClickedSalaryGrade = (salaryGrade) => () => {
     setSalaryGrade(salaryGrade);
-    dispatch(hrGetSalaryLevelsFunc(salaryGrade?._id));
+    dispatch(hrGetSalaryLevelsFunc(salaryGrade?.id));
     setIsOpenSalaryGrade(false);
     setSalaryLevel(null);
     setSalaryStep(null);
@@ -218,7 +222,7 @@ const EditEmployee = ({
   // salary level
   const onOptionClickedSalarylevel = (salaryLevel) => () => {
     setSalaryLevel(salaryLevel);
-    dispatch(hrGetSalaryStepsFunc(salaryLevel?._id));
+    dispatch(hrGetSalaryStepsFunc(salaryLevel?.id));
     setIsOpenSalaryLevel(false);
     setSalaryStep(null);
     setNotch(null);
@@ -273,14 +277,19 @@ const EditEmployee = ({
     e.preventDefault();
 
     const gender = selectedOption;
-    const departId = selectedOption5?.department?._id;
-    const postId = selectedOption5?._id;
+    const departId = selectedOption5?.department?.id;
+    const postId = selectedOption5?.id;
 
     dispatch(
       adminUpdateEmployeeById(
-        employee?._id,
+        employee?.id,
+        departId,
+        postId,
         {
           ...employeeFormData,
+          dob: formatDate(dob),
+          noOfWorkingDays: parseInt(noOfWorkingDays),
+          joinDate: formatDate(joinDate),
           gender,
           employeeType: selectedOption2,
           employeeBank: selectedOption6.name,
@@ -290,25 +299,40 @@ const EditEmployee = ({
             selectedOption2 === "Contract" || selectedOption2 === "Intern"
               ? contractSalary
               : null,
-          salaryLevel:
+          salaryLevelId:
             selectedOption2 !== "Contract" && selectedOption2 !== "Intern"
-              ? salaryStep?.salaryLevel?._id
+              ? salaryStep?.salaryLevelId
               : null,
-          salaryStep:
+          salaryStepId:
             selectedOption2 !== "Contract" && selectedOption2 !== "Intern"
-              ? salaryStep?._id
+              ? salaryStep?.id
               : null,
-          notch:
+          notchId:
             notch &&
             notch.name !== "No Notch" &&
             selectedOption2 !== "Contract" &&
             selectedOption2 !== "Intern"
-              ? {
-                  name: notch?.name,
-                  notchId: notch?._id,
-                  stepId: salaryStep?._id,
-                }
+              ? notch?.id
               : null,
+          // salaryLevel:
+          //   selectedOption2 !== "Contract" && selectedOption2 !== "Intern"
+          //     ? salaryStep?.salaryLevel?.id
+          //     : null,
+          // salaryStep:
+          //   selectedOption2 !== "Contract" && selectedOption2 !== "Intern"
+          //     ? salaryStep?.id
+          //     : null,
+          // notch:
+          //   notch &&
+          //   notch.name !== "No Notch" &&
+          //   selectedOption2 !== "Contract" &&
+          //   selectedOption2 !== "Intern"
+          //     ? {
+          //         name: notch?.name,
+          //         notchId: notch?.id,
+          //         stepId: salaryStep?.id,
+          //       }
+          //     : null,
         },
         month
       )
@@ -322,11 +346,12 @@ const EditEmployee = ({
 
   return (
     <>
-      {updateLoading && <LoadingSpinner />}
+      {updateLoading && <LoadingSpinner toggle={toggle} />}
 
       <ModalBackground isOpen3={isOpen3} onClick={popup3} />
       <ModalContainer className="edit__emp" isOpen3={isOpen3}>
         <NewEmp className="edit__emp" onClick={closeOption}>
+          {updateError && <ErrorBox errorMessage={updateError} fixed={true} />}
           <h1>Edit Employee</h1>
           <form onSubmit={onSubmit}>
             <div className="input__row">
@@ -567,7 +592,7 @@ const EditEmployee = ({
                         salaryStep?.notches
                           ? [
                               {
-                                _id: "238HS4329D",
+                                id: "238HS4329D",
                                 name: "No Notch",
                                 amount: 0,
                                 stepId: null,
@@ -677,8 +702,8 @@ const EditEmployee = ({
               className={
                 // !selectedOption ||
                 !selectedOption2 ||
-                // !selectedOption4 ||
-                // !selectedOption5 ||
+                !selectedOption4 ||
+                !selectedOption5 ||
                 !selectedOption6.name ||
                 updateLoading ||
                 (selectedOption2 !== "Contract" && selectedOption2 !== "Intern"
@@ -693,8 +718,8 @@ const EditEmployee = ({
               disabled={
                 // !selectedOption ||
                 !selectedOption2 ||
-                // !selectedOption4 ||
-                // !selectedOption5 ||
+                !selectedOption4 ||
+                !selectedOption5 ||
                 !selectedOption6.name ||
                 updateLoading ||
                 (selectedOption2 !== "Contract" && selectedOption2 !== "Intern"

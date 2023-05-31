@@ -23,7 +23,7 @@ import {
 } from "../../types/position";
 import { logoutAdmin } from "../../actions/auth";
 
-const Position = () => {
+const Position = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
   // hsitory init
   const history = useHistory();
   // dispatch init
@@ -69,10 +69,10 @@ const Position = () => {
   const onSelect = (id) => {
     let findPos;
     if (positions?.length > 0) {
-      findPos = positions.find((el) => String(el?._id) === String(id));
+      findPos = positions.find((el) => String(el?.id) === String(id));
       if (findPos) {
         setSelectedOption(findPos?.department);
-        setFormData({ name: findPos?.name, _id: findPos?._id });
+        setFormData({ name: findPos?.name, id: findPos?.id });
       }
     }
   };
@@ -103,15 +103,15 @@ const Position = () => {
 
   const onSave = (e) => {
     e.preventDefault();
-    if (formData?._id) {
+    if (formData?.id) {
       dispatch(
-        adminUpdatePositionById(formData?._id, selectedOption?._id, {
+        adminUpdatePositionById(formData?.id, selectedOption?.id, {
           name: formData.name,
         })
       );
     } else {
       dispatch(
-        adminCreatePosition(selectedOption?._id, { name: formData.name })
+        adminCreatePosition(selectedOption?.id, { name: formData.name })
       );
     }
   };
@@ -153,7 +153,7 @@ const Position = () => {
   return (
     <>
       {(loadingDepartments || loadingPositions || updatePositionLoading) && (
-        <LoadingSpinner />
+        <LoadingSpinner toggle={toggle} />
       )}
 
       <Successful
@@ -164,7 +164,7 @@ const Position = () => {
       />
 
       {positionId && (
-        <Comfirm
+        <Comfirm toggle={toggle}
           isOpen4={isOpen4}
           popup4={popup4}
           setIsOpen4={setIsOpen4}
@@ -174,13 +174,24 @@ const Position = () => {
       )}
       <DashboardContainer>
         <DashboardContent>
-          <SideNav userRole={userRole} psn={psn} />
-          <Mainbody>
+          <SideNav
+            userRole={userRole}
+            psn={psn}
+            toggle={toggle}
+            toggleMenu={toggleMenu}
+            mobileToggle={mobileToggle}
+            toggleMobileMenu={toggleMobileMenu}
+          />
+          <Mainbody toggle={toggle}>
             <Header
               text="Positions"
               userRole={userRole}
               userRoleName={userRoleName}
               profileimg={profileImg}
+              toggle={toggle}
+              toggleMenu={toggleMenu}
+              mobileToggle={mobileToggle}
+              toggleMobileMenu={toggleMobileMenu}
             />
             <Container>
               <div className="container__content">
@@ -235,7 +246,7 @@ const Position = () => {
                           createPositionLoading ||
                           updatePositionLoading
                         }
-                        value={formData?._id ? "Edit" : "Save"}
+                        value={formData?.id ? "Edit" : "Save"}
                       />
                       <input
                         className="cancel__btn margin__left"
@@ -259,7 +270,7 @@ const Position = () => {
                       </thead>
                       <tbody>
                         {positions?.map((position, indexes) => (
-                          <tr key={position?._id}>
+                          <tr key={position?.id}>
                             <td>{++indexes}</td>
                             <td>{position?.department?.name}</td>
                             <td>{position?.name}</td>
@@ -268,23 +279,23 @@ const Position = () => {
                                 <div
                                   title="Edit"
                                   className="icons"
-                                  onClick={(e) => onSelect(position?._id)}
+                                  onClick={(e) => onSelect(position?.id)}
                                 >
                                   {" "}
                                   <FontAwesomeIcon
                                     icon={["fas", "edit"]}
                                   />{" "}
                                 </div>
-                                <div
+                                {/* <div
                                   title="Delete"
                                   className="icons"
-                                  onClick={(e) => popup4(position?._id)}
+                                  onClick={(e) => popup4(position?.id)}
                                 >
                                   {" "}
                                   <FontAwesomeIcon
                                     icon={["fas", "trash-alt"]}
                                   />{" "}
-                                </div>
+                                </div> */}
                               </div>
                             </td>
                           </tr>

@@ -89,7 +89,7 @@ const DeductionTable = ({
                 </thead>
                 <tbody>
                   {deductions?.map((el, indexes) => (
-                    <tr key={el?._id}>
+                    <tr key={el?.id}>
                       <td>{indexes + 1}</td>
                       <td>{el?.name}</td>
                       <td>
@@ -97,7 +97,7 @@ const DeductionTable = ({
                           <div
                             title="Edit"
                             className="icons"
-                            onClick={(e) => onClick2(el?._id, "deduction")}
+                            onClick={(e) => onClick2(el?.id, "deduction")}
                           >
                             {" "}
                             <FontAwesomeIcon icon={["fas", "edit"]} />{" "}
@@ -105,7 +105,7 @@ const DeductionTable = ({
                           <div
                             title="Delete"
                             className="icons"
-                            onClick={(e) => onClick3(el?._id, "deduction")}
+                            onClick={(e) => onClick3(el?.id, "deduction")}
                           >
                             {" "}
                             <FontAwesomeIcon icon={["fas", "trash-alt"]} />{" "}

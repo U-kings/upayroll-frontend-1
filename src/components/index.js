@@ -1,4 +1,8 @@
 export { default as SideNav } from "./SideNav/index";
+export { default as SidebarComp } from "./common/SidebarComp/index";
+export { default as NavbarComp } from "./common/NavbarComp/index";
+export { default as ButtonComp } from "./common/ButtonComp/index";
+export { default as Navbar } from "./Navbar/index";
 export { default as Header } from "./Header/index";
 export { default as SignoutButton } from "./SignoutButton/index";
 export { default as DropdownList } from "./DropdownList/index";
@@ -11,5 +15,6 @@ export { default as BasePay } from "./BasePay/index";
 export { default as StaffGrade } from "./StaffGrade/index";
 export { default as SalaryLevel } from "./SalaryLevel/index";
 export { default as Step } from "./Step/index";
+export { default as PayStructureTable } from "./PayStructureTable/index";
 export { default as ErrorBox } from "./ErrorBox/index";
-export { default as ScreenResolution } from "./ScreenResolution/index";
+export { default as Footer } from "./Footer/index";

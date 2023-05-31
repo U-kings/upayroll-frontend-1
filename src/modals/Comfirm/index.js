@@ -129,6 +129,7 @@ const Comfirm = ({
   setUploadBulk,
   uploadBulk,
   uploadRejectBulkAct,
+  toggle,
 }) => {
   // dispatch init
   const dispatch = useDispatch();
@@ -522,11 +523,11 @@ const Comfirm = ({
     } else if (generateBulkPayslipSuccess && !generateBulkPayslipError) {
       dispatch({ type: ADMIN_GENERATE_BULK_PAYSLIPS_RESET });
 
-      history.push("/payroll");
+      history.push("payroll");
     } else if (generatePayslipSuccess && !generatePayslipError) {
       dispatch({ type: GENERATE_PAYSLIP_RESET });
 
-      history.push("/payroll");
+      history.push("payroll");
     } else if (deleteBulkEmployeeSuccess && !deleteBulkEmployeeError) {
       dispatch({ type: ADMIN_DELETE_BULK_EMPLOYEES_BY_IDS_RESET });
     } else if (deleteSalarySlipSuccess && !deleteSalarySlipError) {
@@ -534,7 +535,7 @@ const Comfirm = ({
       setDelBulkPayslip(false);
       setCurrentSlip(null);
       setIsOpen4(false);
-      // history.push("/payroll");
+      // history.push("payroll");
     } else if (adminDeleteBulkPayslipSuccess && !adminDeleteBulkPayslipError) {
       dispatch({ type: ADMIN_DELETE_BULK_PAYSLIPS_RESET });
       setDelBulkPayslip(false);
@@ -592,7 +593,7 @@ const Comfirm = ({
       setVoucherBulk(false);
       setIsOpen4(false);
       setCurrentSlip(false);
-      // history.push("/voucher");
+      // history.push("voucher");
     } else if (
       auditorPreApprovedVoucherSuccess &&
       !auditorPreApprovedVoucherError
@@ -613,7 +614,7 @@ const Comfirm = ({
       dispatch({ type: ACCOUNTANT_CREATE_BANKSCHEDULE_RESET });
       setBankScheduleBulk(false);
       setIsOpen4(false);
-      // history.push("/bank-schedule");
+      // history.pushbank-schedule");
     } else if (
       accountantDeleteBanksheduleByIdSuccess &&
       !accountantDeleteBanksheduleByIdError
@@ -688,37 +689,53 @@ const Comfirm = ({
 
   return (
     <>
-      {deleteAllowanceLoading && <LoadingSpinner />}
-      {deleteDeductionLoading && <LoadingSpinner />}
-      {deleteDepartmentLoading && <LoadingSpinner />}
-      {deletePositionLoading && <LoadingSpinner />}
-      {deleteStaffLevelLoading && <LoadingSpinner />}
-      {deleteMonthlyPayheadLoading && <LoadingSpinner />}
-      {deleteBulkEmployeeLoading && <LoadingSpinner />}
+      {deleteAllowanceLoading && <LoadingSpinner toggle={toggle} />}
+      {deleteDeductionLoading && <LoadingSpinner toggle={toggle} />}
+      {deleteDepartmentLoading && <LoadingSpinner toggle={toggle} />}
+      {deletePositionLoading && <LoadingSpinner toggle={toggle} />}
+      {deleteStaffLevelLoading && <LoadingSpinner toggle={toggle} />}
+      {deleteMonthlyPayheadLoading && <LoadingSpinner toggle={toggle} />}
+      {deleteBulkEmployeeLoading && <LoadingSpinner toggle={toggle} />}
       {(generateBulkPayslipLoading || generatePayslipLoading) && (
-        <LoadingSpinner />
+        <LoadingSpinner toggle={toggle} />
       )}
       {(adminDeleteBulkPayslipLoading || deleteSalarySlipLoading) && (
-        <LoadingSpinner />
+        <LoadingSpinner toggle={toggle} />
       )}
-      {hrSetNotApprovedSalaryslipsIsLoading && <LoadingSpinner />}
-      {auditorSetPreApprovedSalaryslipsLoading && <LoadingSpinner />}
-      {ceoSetApprovedSalaryslipsLoading && <LoadingSpinner />}
-      {ceoApprovedBankScheduleLoading && <LoadingSpinner />}
-      {accountantCreateNotApprovedLoading && <LoadingSpinner />}
-      {auditorPreApprovedVoucherLoading && <LoadingSpinner />}
-      {ceoApproveVoucherLoading && <LoadingSpinner />}
-      {accountantCreateBankScheduleLoading && <LoadingSpinner />}
-      {accountantDeleteBanksheduleByIdLoading && <LoadingSpinner />}
-      {rejectNotApprovedSalaryLoading && <LoadingSpinner />}
-      {rejectPreApprovedSalaryloading && <LoadingSpinner />}
-      {rejectNotApprovedBankVouchersLoading && <LoadingSpinner />}
-      {rejectPreApprovedBankVouchersLoading && <LoadingSpinner />}
-      {accountantDeleteVoucherByIdLoading && <LoadingSpinner />}
-      {accountantDeleteBulkVouchersLoading && <LoadingSpinner />}
-      {auditorAndCeoRejectExcelPayslipsLoading && <LoadingSpinner />}
-      {deleteStaffGradeLoading && <LoadingSpinner />}
-      {deleteSalaryLevelLoading && <LoadingSpinner />}
+      {hrSetNotApprovedSalaryslipsIsLoading && (
+        <LoadingSpinner toggle={toggle} />
+      )}
+      {auditorSetPreApprovedSalaryslipsLoading && (
+        <LoadingSpinner toggle={toggle} />
+      )}
+      {ceoSetApprovedSalaryslipsLoading && <LoadingSpinner toggle={toggle} />}
+      {ceoApprovedBankScheduleLoading && <LoadingSpinner toggle={toggle} />}
+      {accountantCreateNotApprovedLoading && <LoadingSpinner toggle={toggle} />}
+      {auditorPreApprovedVoucherLoading && <LoadingSpinner toggle={toggle} />}
+      {ceoApproveVoucherLoading && <LoadingSpinner toggle={toggle} />}
+      {accountantCreateBankScheduleLoading && (
+        <LoadingSpinner toggle={toggle} />
+      )}
+      {accountantDeleteBanksheduleByIdLoading && (
+        <LoadingSpinner toggle={toggle} />
+      )}
+      {rejectNotApprovedSalaryLoading && <LoadingSpinner toggle={toggle} />}
+      {rejectPreApprovedSalaryloading && <LoadingSpinner toggle={toggle} />}
+      {rejectNotApprovedBankVouchersLoading && (
+        <LoadingSpinner toggle={toggle} />
+      )}
+      {rejectPreApprovedBankVouchersLoading && (
+        <LoadingSpinner toggle={toggle} />
+      )}
+      {accountantDeleteVoucherByIdLoading && <LoadingSpinner toggle={toggle} />}
+      {accountantDeleteBulkVouchersLoading && (
+        <LoadingSpinner toggle={toggle} />
+      )}
+      {auditorAndCeoRejectExcelPayslipsLoading && (
+        <LoadingSpinner toggle={toggle} />
+      )}
+      {deleteStaffGradeLoading && <LoadingSpinner toggle={toggle} />}
+      {deleteSalaryLevelLoading && <LoadingSpinner toggle={toggle} />}
 
       <Successful
         isOpen7={

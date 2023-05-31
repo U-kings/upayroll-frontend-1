@@ -5,17 +5,21 @@ import {
   SigninForm,
 } from "../../styles/SigninElements";
 import { useDispatch, useSelector } from "react-redux";
-import { useHistory } from "react-router-dom";
-import { LoadingSpinner } from "../../modals";
+import { useHistory, useLocation } from "react-router-dom";
+import { LoadingSpinner, Spinner, Successful } from "../../modals";
 import { adminResetPasswordFunc } from "../../actions/auth";
 import { ADMIN_RESET_PASSWORD_RESET } from "../../types/auth";
 import { ErrorBox } from "../../components";
 
-const NewPassword = () => {
+const NewPassword = ({ toggle }) => {
   const dispatch = useDispatch();
   const { adminInfo } = useSelector((state) => state.adminLoginStatus);
   const history = useHistory();
-  const tokenId = history.location.pathname.split("/")[2];
+  const location = useLocation();
+  const url = location.search;
+  // const { resetToken } = useParams();
+  const resetToken = new URLSearchParams(url).get("token");
+  // const resetToken = this.props.match.params.resetToken;
 
   const {
     success,
@@ -37,40 +41,53 @@ const NewPassword = () => {
 
   useEffect(() => {
     if (adminInfo?.isAuthenticated && adminInfo?.user?.name) {
-      history.push("/dashboard");
-    }
-
-    if (success && !resetPasswordError) {
-      dispatch({ type: ADMIN_RESET_PASSWORD_RESET });
-      setFormData({
-        newPassword: "",
-        confirmPassword: "",
-      });
+      history.push("dashboard");
     }
   }, [adminInfo, history, success, resetPasswordError, dispatch]);
 
   useEffect(() => {
-    if(showError){
+    if (showError) {
       setTimeout(() => {
         setShowError(null);
       }, 5000);
     }
   }, [showError]);
-  
 
   const { newPassword, confirmPassword } = formData;
 
   const onSubmit = (e) => {
     e.preventDefault();
     if (newPassword === confirmPassword) {
-      dispatch(adminResetPasswordFunc(tokenId, { newPassword }));
+      dispatch(adminResetPasswordFunc(resetToken, { newPassword }));
     } else {
-      setShowError("Password did not match")
+      setShowError("Password did not match");
     }
   };
+
+  const popup7 = () => {
+    if (success && !resetPasswordError) {
+      dispatch({ type: ADMIN_RESET_PASSWORD_RESET });
+      setFormData({
+        newPassword: "",
+        confirmPassword: "",
+      });
+      history.push("signin");
+    }
+  };
+
   return (
     <>
-      {resetPasswordLoading && <LoadingSpinner />}
+      {/* {resetPasswordLoading && <Spinner />} */}
+      {resetPasswordLoading && <Spinner />}
+      {/* <LoadingSpinner toggle={toggle} /> */}
+      {/* <Spinner /> */}
+      {success && (
+        <Successful
+          message="Password Changed Successfully!"
+          isOpen7={success && !resetPasswordError}
+          popup7={popup7}
+        />
+      )}
       <SigninContainer>
         <div className="signin__container">
           <div className="newpassword__img"></div>

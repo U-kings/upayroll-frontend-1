@@ -1,4 +1,5 @@
 import axios from "axios";
+import cookie from "js-cookie";
 import {
   GET_ALL_DEPARTMENTS_FAIL,
   GET_ALL_DEPARTMENTS_REQUEST,
@@ -17,16 +18,23 @@ import {
   ADMIN_UPDATE_DEPARTMENT_BY_ID_SUCCESS,
 } from "../types/department";
 
-import { cookieTokenValidFunc } from "./auth";
+// import { cookieTokenValidFunc } from "./auth";
+
+const proxyUrl = process.env.REACT_APP_PROXY_URL;
 
 export const getAllDepartment = () => async (dispatch) => {
-  dispatch(cookieTokenValidFunc());
+  const token = cookie.get("token");
+  const config = {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  };
   try {
     dispatch({
       type: GET_ALL_DEPARTMENTS_REQUEST,
     });
 
-    const { data } = await axios.get(`/api/departments`);
+    const { data } = await axios.get(`${proxyUrl}/api/departments`, config);
     dispatch({
       type: GET_ALL_DEPARTMENTS_SUCCESS,
       payload: data,
@@ -35,18 +43,26 @@ export const getAllDepartment = () => async (dispatch) => {
     dispatch({
       type: GET_ALL_DEPARTMENTS_FAIL,
       payload:
-        error.response && error.response.data.detail
-          ? error.response.data.detail
-          : error.message,
+        error?.response &&
+        (error?.response?.data?.detail || error?.response?.data?.errors)
+          ? error?.response?.data?.detail ||
+            error?.response?.data?.errors?.map((el) => el?.msg)?.join(" ")
+          : error?.message,
     });
   }
 };
 
 export const getPositionsByDepartment = (id) => async (dispatch) => {
-  dispatch(cookieTokenValidFunc());
+  const token = cookie.get("token");
+  const config = {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  };
+
   try {
     dispatch({ type: GET_POSITION_BY_DEPARTMENT_REQUEST });
-    const { data } = await axios.get(`/api/positions/${id}`);
+    const { data } = await axios.get(`${proxyUrl}/api/positions/${id}`, config);
     dispatch({
       type: GET_POSITION_BY_DEPARTMENT_SUCCESS,
       payload: data,
@@ -55,18 +71,21 @@ export const getPositionsByDepartment = (id) => async (dispatch) => {
     dispatch({
       type: GET_POSITION_BY_DEPARTMENT_FAIL,
       payload:
-        error.response && error.response.data.detail
-          ? error.response.data.detail
-          : error.message,
+        error?.response &&
+        (error?.response?.data?.detail || error?.response?.data?.errors)
+          ? error?.response?.data?.detail ||
+            error?.response?.data?.errors?.map((el) => el?.msg)?.join(" ")
+          : error?.message,
     });
   }
 };
 
 export const adminCreateDepartment = (formData) => async (dispatch) => {
-  dispatch(cookieTokenValidFunc());
+  const token = cookie.get("token");
   const config = {
     headers: {
       "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
     },
   };
   try {
@@ -74,7 +93,7 @@ export const adminCreateDepartment = (formData) => async (dispatch) => {
       type: ADMIN_CREATE_DEPARTMENT_REQUEST,
     });
     const body = JSON.stringify(formData);
-    await axios.post(`/api/departments`, body, config);
+    await axios.post(`${proxyUrl}/api/departments`, body, config);
     dispatch({
       type: ADMIN_CREATE_DEPARTMENT_SUCCESS,
     });
@@ -82,20 +101,22 @@ export const adminCreateDepartment = (formData) => async (dispatch) => {
     dispatch({
       type: ADMIN_CREATE_DEPARTMENT_FAIL,
       payload:
-        error.response && error.response.data.detail
-          ? error.response.data.detail
-          : error.message,
+        error?.response &&
+        (error?.response?.data?.detail || error?.response?.data?.errors)
+          ? error?.response?.data?.detail ||
+            error?.response?.data?.errors?.map((el) => el?.msg)?.join(" ")
+          : error?.message,
     });
   }
 };
 
 export const adminUpdateDepartmentById =
   (departId, formData) => async (dispatch) => {
-    dispatch(cookieTokenValidFunc());
-
+    const token = cookie.get("token");
     const config = {
       headers: {
         "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
       },
     };
     try {
@@ -103,7 +124,7 @@ export const adminUpdateDepartmentById =
         type: ADMIN_UPDATE_DEPARTMENT_BY_ID_REQUEST,
       });
       const body = JSON.stringify(formData);
-      await axios.patch(`/api/departments/${departId}`, body, config);
+      await axios.patch(`${proxyUrl}/api/departments/${departId}`, body, config);
       dispatch({
         type: ADMIN_UPDATE_DEPARTMENT_BY_ID_SUCCESS,
       });
@@ -120,12 +141,17 @@ export const adminUpdateDepartmentById =
   };
 
 export const adminDeleteDepartmentById = (departId) => async (dispatch) => {
-  dispatch(cookieTokenValidFunc());
+  const token = cookie.get("token");
+  const config = {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  };
   try {
     dispatch({
       type: ADMIN_DELETE_DEPARTMENT_BY_ID_REQUEST,
     });
-    await axios.delete(`/api/departments/${departId}`);
+    await axios.delete(`${proxyUrl}/api/departments/${departId}`, config);
     dispatch({
       type: ADMIN_DELETE_DEPARTMENT_BY_ID_SUCCESS,
     });
@@ -134,9 +160,11 @@ export const adminDeleteDepartmentById = (departId) => async (dispatch) => {
     dispatch({
       type: ADMIN_DELETE_DEPARTMENT_BY_ID_FAIL,
       payload:
-        error.response && error.response.data.detail
-          ? error.response.data.detail
-          : error.message,
+        error?.response &&
+        (error?.response?.data?.detail || error?.response?.data?.errors)
+          ? error?.response?.data?.detail ||
+            error?.response?.data?.errors?.map((el) => el?.msg)?.join(" ")
+          : error?.message,
     });
   }
 };

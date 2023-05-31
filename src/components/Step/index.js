@@ -10,7 +10,7 @@ import { Container } from "../../styles/library";
 import DropdownList from "../DropdownList";
 import { Comfirm, LoadingSpinner, Successful } from "../../modals";
 
-const Step = ({ salarySteps, staffGrade, salaryLevels }) => {
+const Step = ({ salarySteps, staffGrade, salaryLevels, toggle }) => {
   // dispatch init
   const dispatch = useDispatch();
 
@@ -47,7 +47,7 @@ const Step = ({ salarySteps, staffGrade, salaryLevels }) => {
   const onOptionClicked = (staffgrade) => () => {
     setSelectedOption(staffgrade);
     const filteredSalaryLevels = salaryLevels.filter(
-      (el) => String(el.salaryGrade._id) === String(staffgrade._id)
+      (el) => String(el.salaryGrade.id) === String(staffgrade.id)
     );
     setSalaryLevels2([...filteredSalaryLevels]);
     setIsOpen(false);
@@ -61,11 +61,11 @@ const Step = ({ salarySteps, staffGrade, salaryLevels }) => {
   };
   const onSave = (e) => {
     e.preventDefault();
-    if (formData?._id) {
-      // dispatch(hrUpdateSalaryStepsFunc({ step, notch }, formData?._id));
+    if (formData?.id) {
+      // dispatch(hrUpdateSalaryStepsFunc({ step, notch }, formData?.id));
     } else {
       dispatch(
-        hrCreateSalaryStepFunc(selectedOption2?._id, selectedOption?._id, {
+        hrCreateSalaryStepFunc(selectedOption2?.id, selectedOption?.id, {
           name: name.trim(),
           notchesNumber,
         })
@@ -102,12 +102,12 @@ const Step = ({ salarySteps, staffGrade, salaryLevels }) => {
   const onSelect = (id) => {
     let findPos;
     if (salarySteps?.length > 0) {
-      findPos = salarySteps.find((el) => String(el?._id) === String(id));
+      findPos = salarySteps.find((el) => String(el?.id) === String(id));
       if (findPos) {
         setFormData({
           name: findPos?.name,
           notchesNumber: findPos?.notches?.length,
-          _id: findPos?._id,
+          id: findPos?.id,
         });
         setSelectedOption(findPos?.salaryLevel?.salaryGrade);
         setSelectedOption2(findPos?.salaryLevel);
@@ -124,8 +124,8 @@ const Step = ({ salarySteps, staffGrade, salaryLevels }) => {
   return (
     <>
       {" "}
-      {createStepsLoading && <LoadingSpinner />}
-      {updateStepsLoading && <LoadingSpinner />}
+      {createStepsLoading && <LoadingSpinner toggle={toggle} />}
+      {updateStepsLoading && <LoadingSpinner toggle={toggle} />}
       <Successful
         isOpen7={updateStepsSuccess && !updateStepsError}
         popup7={popup7}
@@ -137,7 +137,7 @@ const Step = ({ salarySteps, staffGrade, salaryLevels }) => {
         message="Step Created Successfully!"
       />{" "}
       {stepsId && (
-        <Comfirm
+        <Comfirm toggle={toggle}
           isOpen4={isOpen3}
           popup4={popup}
           setIsOpen4={setIsOpen3}
@@ -225,7 +225,7 @@ const Step = ({ salarySteps, staffGrade, salaryLevels }) => {
                     updateStepsLoading ||
                     createStepsLoading
                   }
-                  value={formData?._id ? "Edit" : "Save"}
+                  value={formData?.id ? "Edit" : "Save"}
                 />
                 <input
                   className="cancel__btn margin__left"
@@ -251,7 +251,7 @@ const Step = ({ salarySteps, staffGrade, salaryLevels }) => {
                 </thead>
                 <tbody>
                   {salarySteps?.map((el, indexes) => (
-                    <tr key={el?._id}>
+                    <tr key={el?.id}>
                       <td>{++indexes}</td>
                       <td>{el?.salaryLevel?.salaryGrade?.name}</td>
                       <td>{el?.salaryLevel?.name}</td>
@@ -260,14 +260,14 @@ const Step = ({ salarySteps, staffGrade, salaryLevels }) => {
                         <div className="action__icons">
                           <div
                             className="icons"
-                            onClick={(e) => onSelect(el?._id)}
+                            onClick={(e) => onSelect(el?.id)}
                           >
                             {" "}
                             <FontAwesomeIcon icon={["fas", "edit"]} />{" "}
                           </div>
                           {/* <div
                             className="icons"
-                            onClick={(e) => popup(el?._id)}
+                            onClick={(e) => popup(el?.id)}
                           >
                             {" "}
                             <FontAwesomeIcon icon={["fas", "trash-alt"]} />{" "}
@@ -302,7 +302,7 @@ const Step = ({ salarySteps, staffGrade, salaryLevels }) => {
               </thead>
               <tbody>
                 {salarySteps?.map((el, indexes) => (
-                  <tr key={el?._id}>
+                  <tr key={el?.id}>
                     <td>{++indexes}</td>
                     <td>{el?.salaryLevel?.salaryGrade?.name}</td>
                     <td>{el?.salaryLevel?.name}</td>
@@ -354,12 +354,12 @@ const Step = ({ salarySteps, staffGrade, salaryLevels }) => {
                       <div className="action__icons">
                         <div
                           className="icons"
-                          onClick={(e) => onSelect(el?._id)}
+                          onClick={(e) => onSelect(el?.id)}
                         >
                           {" "}
                           <FontAwesomeIcon icon={["fas", "edit"]} />{" "}
                         </div>
-                        <div className="icons" onClick={(e) => popup(el?._id)}>
+                        <div className="icons" onClick={(e) => popup(el?.id)}>
                           {" "}
                           <FontAwesomeIcon icon={["fas", "trash-alt"]} />{" "}
                         </div>

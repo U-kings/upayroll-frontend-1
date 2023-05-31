@@ -1,4 +1,5 @@
 import axios from "axios";
+import cookie from "js-cookie";
 import {
   AUDITOR_GET_NOT_APPROVED_GENERATED_LOANS_FAIL,
   AUDITOR_GET_NOT_APPROVED_GENERATED_LOANS_REQUEST,
@@ -43,12 +44,19 @@ import {
   HR_GET_REJECTED_GENERATED_LOANS_REQUEST,
   HR_GET_REJECTED_GENERATED_LOANS_SUCCESS,
 } from "../types/employeeloan";
-import { cookieTokenValidFunc } from "./auth";
+// import { cookieTokenValidFunc } from "./auth";
+
+const proxyUrl = process.env.REACT_APP_PROXY_URL;
 
 export const hrGetGeneratedEmployeeLoansFunc =
   (month = "", type = "") =>
   async (dispatch) => {
-    dispatch(cookieTokenValidFunc());
+    const token = cookie.get("token");
+    const config = {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    };
 
     try {
       if (type === "Rejected") {
@@ -57,7 +65,8 @@ export const hrGetGeneratedEmployeeLoansFunc =
       } else {
         dispatch({ type: HR_GET_ALL_GENERATED_LOANS_REQUEST });
         const { data } = await axios.get(
-          `/api/employeeloan${month && `?month=${month}`}`
+          `${proxyUrl}/api/employeeloan${month && `?month=${month}`}`,
+          config
         );
         dispatch({
           type: HR_GET_ALL_GENERATED_LOANS_SUCCESS,
@@ -77,9 +86,11 @@ export const hrGetGeneratedEmployeeLoansFunc =
 
 export const hrApprovesEmployeeRequestLoanFunc =
   (formData) => async (dispatch) => {
+    const token = cookie.get("token");
     const config = {
       headers: {
         "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
       },
     };
 
@@ -87,11 +98,15 @@ export const hrApprovesEmployeeRequestLoanFunc =
       generatedLoansArr: formData,
     });
 
-    dispatch(cookieTokenValidFunc());
+    // dispatch(cookieTokenValidFunc());
 
     try {
       dispatch({ type: HR_APPROVES_GENERATED_LOANS_REQUEST });
-      await axios.patch(`/api/employeeloan/create/notapproved`, body, config);
+      await axios.patch(
+        `${proxyUrl}/api/employeeloan/create/notapproved`,
+        body,
+        config
+      );
       dispatch({ type: HR_APPROVES_GENERATED_LOANS_SUCCESS });
     } catch (error) {
       dispatch({
@@ -105,10 +120,17 @@ export const hrApprovesEmployeeRequestLoanFunc =
   };
 
 export const hrGetRejectedEmployeeLoansFunc = (month) => async (dispatch) => {
+  const token = cookie.get("token");
+  const config = {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  };
   try {
     dispatch({ type: HR_GET_REJECTED_GENERATED_LOANS_REQUEST });
     const { data } = await axios.get(
-      `/api/employeeloan/rejected?statusLevel=not approved,pre approved&month=${month}`
+      `${proxyUrl}/api/employeeloan/rejected?statusLevel=not approved,pre approved&month=${month}`,
+      config
     );
     dispatch({
       type: HR_GET_REJECTED_GENERATED_LOANS_SUCCESS,
@@ -118,20 +140,28 @@ export const hrGetRejectedEmployeeLoansFunc = (month) => async (dispatch) => {
     dispatch({
       type: HR_GET_REJECTED_GENERATED_LOANS_FAIL,
       payload:
-        error.response && error.response.data.detail
-          ? error.response.data.detail
-          : error.message,
+        error?.response &&
+        (error?.response?.data?.detail || error?.response?.data?.errors)
+          ? error?.response?.data?.detail ||
+            error?.response?.data?.errors?.map((el) => el?.msg)?.join(" ")
+          : error?.message,
     });
   }
 };
 
 export const auditorGetNotApprovedGeneratedEmployeeLoansFunc =
   (month) => async (dispatch) => {
-    dispatch(cookieTokenValidFunc());
+    const token = cookie.get("token");
+    const config = {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    };
     try {
       dispatch({ type: AUDITOR_GET_NOT_APPROVED_GENERATED_LOANS_REQUEST });
       const { data } = await axios.get(
-        `/api/employeeloan/notapproved?month=${month}`
+        `${proxyUrl}/api/employeeloan/notapproved?month=${month}`,
+        config
       );
       dispatch({
         type: AUDITOR_GET_NOT_APPROVED_GENERATED_LOANS_SUCCESS,
@@ -150,18 +180,24 @@ export const auditorGetNotApprovedGeneratedEmployeeLoansFunc =
 
 export const auditorSetPreApprovedGeneratedEmployeeLoanFunc =
   (formData) => async (dispatch) => {
+    const token = cookie.get("token");
     const config = {
       headers: {
         "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
       },
     };
-    dispatch(cookieTokenValidFunc());
+    // dispatch(cookieTokenValidFunc());
     const body = JSON.stringify({
       notApprovedEmployeeLoansArr: formData,
     });
     try {
       dispatch({ type: AUDITOR_SET_PRE_APPROVED_GENERATED_LOANS_REQUEST });
-      await axios.patch(`/api/employeeloan/create/preapproved`, body, config);
+      await axios.patch(
+        `${proxyUrl}/api/employeeloan/create/preapproved`,
+        body,
+        config
+      );
       dispatch({
         type: AUDITOR_SET_PRE_APPROVED_GENERATED_LOANS_SUCCESS,
       });
@@ -178,9 +214,11 @@ export const auditorSetPreApprovedGeneratedEmployeeLoanFunc =
 
 export const auditorRejectNotApprovedEmployeeLoansFunc =
   (formData) => async (dispatch) => {
+    const token = cookie.get("token");
     const config = {
       headers: {
         "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
       },
     };
 
@@ -188,10 +226,14 @@ export const auditorRejectNotApprovedEmployeeLoansFunc =
       notApprovedEmployeeLoansArr: formData,
     });
 
-    dispatch(cookieTokenValidFunc());
+    // dispatch(cookieTokenValidFunc());
     try {
       dispatch({ type: AUDITOR_REJECT_NOT_APPROVED_GENERATED_LOANS_REQUEST });
-      await axios.patch(`/api/employeeloan/reject/notapproved`, body, config);
+      await axios.patch(
+        `${proxyUrl}/api/employeeloan/reject/notapproved`,
+        body,
+        config
+      );
       dispatch({ type: AUDITOR_REJECT_NOT_APPROVED_GENERATED_LOANS_SUCCESS });
     } catch (error) {
       dispatch({
@@ -206,10 +248,19 @@ export const auditorRejectNotApprovedEmployeeLoansFunc =
 
 export const ceoGetPreApprovedGeneratedEmployeeLoansFunc =
   () => async (dispatch) => {
-    dispatch(cookieTokenValidFunc());
+    const token = cookie.get("token");
+    const config = {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    };
+
     try {
       dispatch({ type: CEO_GET_PRE_APPROVED_GENERATED_LOANS_REQUEST });
-      const { data } = await axios.get(`/api/employeeloan/preapproved`);
+      const { data } = await axios.get(
+        `${proxyUrl}/api/employeeloan/preapproved`,
+        config
+      );
       dispatch({
         type: CEO_GET_PRE_APPROVED_GENERATED_LOANS_SUCCESS,
         payload: data?.preApprovedEmployeeLoans,
@@ -227,11 +278,19 @@ export const ceoGetPreApprovedGeneratedEmployeeLoansFunc =
 
 export const ceoGetApprovedGeneratedEmployeeLoansFunc =
   () => async (dispatch) => {
-    dispatch(cookieTokenValidFunc());
+    const token = cookie.get("token");
+    const config = {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    };
 
     try {
       dispatch({ type: CEO_GET_APPROVED_GENERATED_LOANS_REQUEST });
-      const { data } = await axios.get(`/api/employeeloan/approved`);
+      const { data } = await axios.get(
+        `${proxyUrl}/api/employeeloan/approved`,
+        config
+      );
       dispatch({
         type: CEO_GET_APPROVED_GENERATED_LOANS_SUCCESS,
         payload: data?.approvedEmployeeLoans,
@@ -249,19 +308,24 @@ export const ceoGetApprovedGeneratedEmployeeLoansFunc =
 
 export const ceoSetApprovedGeneratedEmployeeLoansFunc =
   (formData) => async (dispatch) => {
+    const token = cookie.get("token");
     const config = {
       headers: {
         "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
       },
     };
 
     const body = JSON.stringify({
       preApprovedEmployeeLoansArr: formData,
     });
-    dispatch(cookieTokenValidFunc());
     try {
       dispatch({ type: CEO_SET_APPROVED_GENERATED_LOANS_REQUEST });
-      await axios.patch(`/api/employeeloan/create/approved`, body, config);
+      await axios.patch(
+        `${proxyUrl}/api/employeeloan/create/approved`,
+        body,
+        config
+      );
       dispatch({ type: CEO_SET_APPROVED_GENERATED_LOANS_SUCCESS });
     } catch (error) {
       dispatch({
@@ -276,19 +340,24 @@ export const ceoSetApprovedGeneratedEmployeeLoansFunc =
 
 export const ceoRejectPreApprovedEmployeeLoansFunc =
   (formData) => async (dispatch) => {
+    const token = cookie.get("token");
     const config = {
       headers: {
         "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
       },
     };
     const body = JSON.stringify({
       preApprovedEmployeeLoansArr: formData,
     });
-    dispatch(cookieTokenValidFunc());
     try {
       dispatch({ CEO_REJECT_PRE_APPROVED_GENERATED_LOANS_REQUEST });
 
-      await axios.patch(`/api/employeeloan/reject/preapproved`, body, config);
+      await axios.patch(
+        `${proxyUrl}/api/employeeloan/reject/preapproved`,
+        body,
+        config
+      );
       dispatch({ type: CEO_REJECT_PRE_APPROVED_GENERATED_LOANS_SUCCESS });
     } catch (error) {
       dispatch({
@@ -303,10 +372,15 @@ export const ceoRejectPreApprovedEmployeeLoansFunc =
 
 export const hrDeleteGeneratedEmployeeLoanById =
   (empLoanId) => async (dispatch) => {
-    dispatch(cookieTokenValidFunc());
+    const token = cookie.get("token");
+    const config = {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    };
     try {
       dispatch({ type: HR_DELETE_EMPLOYEE_LOAN_BY_ID_REQUEST });
-      await axios.delete(`/api/employeeloan/${empLoanId}`);
+      await axios.delete(`${proxyUrl}/api/employeeloan/${empLoanId}`, config);
       dispatch({ type: HR_DELETE_EMPLOYEE_LOAN_BY_ID_SUCCESS });
     } catch (error) {
       dispatch({
@@ -321,9 +395,11 @@ export const hrDeleteGeneratedEmployeeLoanById =
 
 export const hrBulkDeleteGeneratedEmployeeLoans =
   (generatedLoansArr) => async (dispatch) => {
+    const token = cookie.get("token");
     const config = {
       headers: {
         "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
       },
     };
 
@@ -331,10 +407,13 @@ export const hrBulkDeleteGeneratedEmployeeLoans =
       employeeLoansArr: generatedLoansArr,
     });
 
-    dispatch(cookieTokenValidFunc());
     try {
       dispatch({ type: HR_BULK_DELETE_EMPLOYEE_LOANS_REQUEST });
-      await axios.patch(`/api/employeeloan/delete-bulk`, body, config);
+      await axios.patch(
+        `${proxyUrl}/api/employeeloan/delete-bulk`,
+        body,
+        config
+      );
       dispatch({ type: HR_BULK_DELETE_EMPLOYEE_LOANS_SUCCESS });
     } catch (error) {
       dispatch({
@@ -349,11 +428,17 @@ export const hrBulkDeleteGeneratedEmployeeLoans =
 
 export const employeeGetAllGeneratedLoansRequestFunc =
   () => async (dispatch) => {
-    dispatch(cookieTokenValidFunc());
+    const token = cookie.get("token");
+    const config = {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    };
     try {
       dispatch({ type: EMPLOYEE_GET_GENERATED_LOANS_REQUEST });
       const { data } = await axios.get(
-        `/api/employeeloan/generated-loans/employee`
+        `${proxyUrl}/api/employeeloan/generated-loans/employee`,
+        config
       );
       dispatch({
         type: EMPLOYEE_GET_GENERATED_LOANS_SUCCESS,
@@ -372,17 +457,22 @@ export const employeeGetAllGeneratedLoansRequestFunc =
 
 export const employeeAskForLoanRequestFunc =
   (loanId, formData) => async (dispatch) => {
+    const token = cookie.get("token");
     const config = {
       headers: {
         "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
       },
     };
 
     const body = JSON.stringify(formData);
-    dispatch(cookieTokenValidFunc());
     try {
       dispatch({ type: EMPLOYEE_ASK_FOR_LOAN_REQUEST });
-      await axios.post(`/api/employeeloan/${loanId}/create`, body, config);
+      await axios.post(
+        `${proxyUrl}/api/employeeloan/${loanId}/create`,
+        body,
+        config
+      );
       dispatch({ type: EMPLOYEE_ASK_FOR_LOAN_SUCCESS });
     } catch (error) {
       dispatch({

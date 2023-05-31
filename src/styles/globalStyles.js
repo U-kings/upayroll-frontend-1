@@ -5,17 +5,19 @@ export const GlobalStyle = createGlobalStyle`
     *,html{
         /* font-size: 61.6%; */
         font-size: 62.5%;
+        // font-size: 70.5%;
         margin: 0;
         padding: 0;
         box-sizing: border-box;
-        font-family: 'Roboto', sans-serif;
+        font-family: "Outfit";
         scroll-behavior: smooth;
     }
     
     body{
-        background-image: linear-gradient(75deg, ${COLORS.white2} ,${COLORS.white4});
+        background-image: linear-gradient(75deg, #fff ,#fff) !important;
         color: ${COLORS.black5};
         /* background-image: linear-gradient(120deg, #603296 0%, #c00fb1 100%); */
+        
         & h2{
             font-size: 1.8rem;
 
@@ -26,21 +28,21 @@ export const GlobalStyle = createGlobalStyle`
         & h3{
             font-size: 1.4rem;
         }
+
         & p{
             font-size: 1.4rem;
         }
         & input{
             font-size: 1.5rem;
             font-weight: 400;
-            /* font-family: "Roboto", sans-serif; */
             color: ${COLORS.black2};
             border: none;
             outline: none;
             background-color: ${COLORS.white4};
-            border: 1px solid rgba(0,0,0,.09);
+            // border: 1px solid rgba(0,0,0,.09);
             
             &:focus{
-                border: 1px solid rgba(0,0,0,.4);
+                // border: 1px solid rgba(0,0,0,.4);
             }
         }
         
@@ -95,8 +97,27 @@ export const GlobalStyle = createGlobalStyle`
                 width: auto;
             }
         }
-        & .input__row, .row{
+        & .row{
             display: flex;
+            // width: 100%;
+            flex-wrap: wrap;
+            justify-content: left;
+            /* justify-content: space-between; */
+            /* background-color: rebeccapurple; */
+            /* height: 10rem; */
+            /* margin: .5rem 0; */
+            & .label__group{
+                align-self: flex-end;
+            }
+            
+            &.full__width{
+                width: 100%;
+            }
+        }
+        & .input__row{
+            display: flex;
+            // width: 100%;
+            // flex-wrap: wrap;
             justify-content: left;
             /* justify-content: space-between; */
             /* background-color: rebeccapurple; */
@@ -117,14 +138,18 @@ export const GlobalStyle = createGlobalStyle`
             justify-content: space-between;
         }
 
-        & .align__center{
-            justify-content: center;
-            & h2{
-                font-size: 1.3rem;
-                cursor: pointer;
-                margin: auto;
-                padding: .3rem .5rem;
+        @media only screen and (max-width: 1024px) {
+            
+            & .row2{
+                display: block;
             }
+            & .input__row{
+                display: block;
+            }
+        }
+
+        & .align__center{
+            justify-content: center; 
         }
 
         & form .label__group{
@@ -217,7 +242,7 @@ export const GlobalStyle = createGlobalStyle`
                 white-space:nowrap;
                 background-color: ${COLORS.black2};
                 padding: .7rem .5rem;
-
+                
                 &:first-child{
                     position: sticky;
                     left: 0;
@@ -335,7 +360,7 @@ export const GlobalStyle = createGlobalStyle`
             margin: auto 0;
         }
         & .general__btn {
-            width: 100%;
+            // width: 100%;
             padding: .5rem .8rem;
             color: ${COLORS.white};
             border-radius: 0.3rem;
@@ -398,6 +423,10 @@ export const GlobalStyle = createGlobalStyle`
             margin-left: 1rem;
         }
 
+        & .margin__left2{
+            margin-left:1rem;
+        }
+
         & .btn__padding{
             padding: .6rem .8rem;
         }
@@ -424,6 +453,27 @@ export const GlobalStyle = createGlobalStyle`
 
         & .full__width{
             width: 100%;
+        }
+
+        @media only screen and (max-width: 1024px) {
+            & .margin__left{
+                margin-left:1rem;
+            }
+            & .margin__left2{
+                margin-left:0;
+            }
+            & .margin__left:last-child{
+                margin-left: 0;
+            }
+
+            & .general__btn {
+                width: 100%;
+            }
+
+            & .align__center{
+                justify-content: center;
+            }
+           
         }
 
 
@@ -618,6 +668,35 @@ export const GlobalStyle = createGlobalStyle`
                 text-align: center;
                 font-size: 1.5rem;
                 color: ${COLORS.red};
+            }
+        }
+        & .error__msg2{
+            // width: 100%;
+            padding: 1rem;
+            // margin: .5rem 0 2rem 0;
+            display: flex;
+            position: fixed;
+            z-index: 99;
+            // left:0;
+            right:2rem;
+            bottom: 4rem;
+            background-color: ${COLORS.red3};
+            border-radius: .3rem;
+            border: 1px solid ${COLORS.red4};
+            transition: 360ms ease-in-out;
+            justify-content: center;
+            & p{
+                margin: auto;
+                text-align: center;
+                font-size: 1.6rem;
+                color: ${COLORS.red};
+            }
+        }
+        
+        @media only screen and (max-width: 1024px) {
+            & .error__msg2{
+                right:2rem;
+                left:2rem;
             }
         }
 

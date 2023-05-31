@@ -52,9 +52,7 @@ import { COLORS } from "../../values/colors";
 import { PaginationContainer } from "../../styles/pagination";
 import ReactPaginate from "react-paginate";
 import { logoutAdmin } from "../../actions/auth";
-import {
-  currentmonthMethod,
-} from "../../hooks/months/listMonths";
+import { currentmonthMethod } from "../../hooks/months/listMonths";
 import {
   downloadPayePdfFileFunc,
   downloadPayeScheduleExcelFileFunc,
@@ -62,7 +60,8 @@ import {
   downloadPensionScheduleExcelFileFunc,
   downloadSalaryAndVoucherExcelFileFunc,
 } from "../../actions/download";
-const Payroll = () => {
+
+const Payroll = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
   // dispatch init
   const dispatch = useDispatch();
 
@@ -129,7 +128,7 @@ const Payroll = () => {
   const [isOpen5, setIsOpen5] = useState(false);
   const [isOpen6, setIsOpen6] = useState(false);
   const [isOpen8, setIsOpen8] = useState(false);
-  const [isOpen9, setIsOpen9] = useState(false);
+  const [isopen9, setisopen9] = useState(false);
   const [isOpen10, setIsOpen10] = useState(false);
   const [currentSlip, setCurrentSlip] = useState(null);
   const [salarySlip, setSalarySlip] = useState([]);
@@ -186,7 +185,7 @@ const Payroll = () => {
   // months drop down
   const onOptionClicked10 = (month) => () => {
     setSelectedOption10(month);
-    setIsOpen9(false);
+    setisopen9(false);
   };
 
   // useEffect
@@ -199,6 +198,7 @@ const Payroll = () => {
   const { monthlyPayheads } = useSelector(
     (state) => state.adminGetAllMonthlyPayheads
   );
+
   useEffect(() => {
     if (!monthlyPayheads) {
       dispatch(adminGetAllMonthlyPayheads());
@@ -215,7 +215,7 @@ const Payroll = () => {
     } else if (accountantPayslips && userRole === "Accountant") {
       setSalarySlip(accountantPayslips);
     } else {
-      <LoadingSpinner />;
+      <LoadingSpinner toggle={toggle} />;
     }
 
     if (searchTerm.length < 1) {
@@ -223,6 +223,7 @@ const Payroll = () => {
     }
   }, [
     paySlips,
+    toggle,
     userRole,
     history,
     salarySlip,
@@ -301,7 +302,7 @@ const Payroll = () => {
   ]);
 
   const onSelect = (slipId) => {
-    const findSlip = salarySlip.find((el) => String(el._id) === String(slipId));
+    const findSlip = salarySlip.find((el) => String(el.id) === String(slipId));
     if (findSlip || !currentSlip) {
       setCurrentSlip(findSlip);
     }
@@ -340,7 +341,7 @@ const Payroll = () => {
     onSelect(id);
   };
   const toggling = () => setIsOpen(!isOpen);
-  const toggling9 = () => setIsOpen9(!isOpen9);
+  const toggling9 = () => setisopen9(!isopen9);
   const toggling10 = () => setIsOpen10(!isOpen10);
   // const toggling6 = () => setIsOpen6(!isOpen6);
 
@@ -433,29 +434,29 @@ const Payroll = () => {
   };
 
   const setNotApprovedSalaryslips = () => {
-    const salaryIds = arrayIds.map((el) => el._id);
+    const salaryIds = arrayIds.map((el) => el.id);
     dispatch(hrSetToNotApprovedSalaryslips(salaryIds, selectedOption10));
   };
 
   const setPreApprovedSalaryslips = () => {
-    const salaryIds = arrayIds.map((el) => el._id);
+    const salaryIds = arrayIds.map((el) => el.id);
     dispatch(auditorSetPreApprovedPayslipsFunc(salaryIds, selectedOption10));
   };
 
   const setApprovedSalaryslips = () => {
-    const salaryIds = arrayIds.map((el) => el?._id);
+    const salaryIds = arrayIds.map((el) => el?.id);
     dispatch(ceoSetApprovedSalaryslipsFunc(salaryIds, selectedOption10));
   };
 
   const onDeletePayslips = () => {
     if (arrayIds.length && arrayIds.length === 1) {
-      const paySlipId = arrayIds[0]._id;
+      const paySlipId = arrayIds[0].id;
       dispatch(
         adminDeleteGeneratedPayslip(paySlipId, selectedOption10, selectedOption)
       );
     } else if (arrayIds.length > 1) {
       // detele all selected salary slip
-      const newArray = arrayIds.map((user) => user._id);
+      const newArray = arrayIds.map((user) => user.id);
 
       dispatch(
         adminDeleteBulkPayslips(newArray, selectedOption10, selectedOption)
@@ -575,13 +576,13 @@ const Payroll = () => {
     if (salarySlip.length) {
       const newSalaryslip = salarySlip.map((el) => {
         return {
-          _id: el?._id,
+          id: el?.id,
           employeeName: el?.employee?.user?.name,
           employeeBankName: el?.employee?.employeeBank,
           grossPay: el?.grossPay,
           pension: el?.pension,
           paye: el?.paye,
-          uWallet: el?.uWallet,
+          // uWallet: el?.uWallet,
           netPay: el?.netPay,
           allowanceTotal: el?.allowanceTotal,
           deductionTotal: el?.deductionTotal,
@@ -590,7 +591,7 @@ const Payroll = () => {
           totalEarnings: el?.totalEarnings,
           commentBy: el?.commentBy || "",
           comment: el?.comment || "",
-          id: el?._id,
+          // id: el?.id,
         };
       });
       if (userRole === "Internal Auditor") {
@@ -647,7 +648,7 @@ const Payroll = () => {
   };
 
   const onCreateVouchersByAccountant = () => {
-    const salaryIds = arrayIds.map((el) => el._id);
+    const salaryIds = arrayIds.map((el) => el.id);
     dispatch(accountantCreateNotApprovedVouchersFunc(salaryIds));
   };
 
@@ -667,7 +668,7 @@ const Payroll = () => {
   };
 
   const auditorAndCeoRejectBulkPayslip = () => {
-    const salaryIds = arrayIds.map((el) => el?._id);
+    const salaryIds = arrayIds.map((el) => el?.id);
     const salaryIdsWithComment = salaryIds.map((el) => {
       return {
         id: el,
@@ -698,12 +699,12 @@ const Payroll = () => {
       (el) => !el.Comment || el.Comment === undefined
     );
     filterDataWithoutComment = filterDataWithoutComment?.map(
-      (el) => el?._id || el?.id
+      (el) => el?.id || el?.id
     );
     let filterDataWithComment = uploadBulkData?.filter((el) => el.Comment);
     filterDataWithComment = filterDataWithComment?.map((el) => {
       return {
-        id: el?._id || el?.id,
+        id: el?.id || el?.id,
         comment: el?.Comment,
       };
     });
@@ -786,12 +787,12 @@ const Payroll = () => {
     if (
       isOpen === true ||
       isOpen6 === true ||
-      isOpen9 === true ||
+      isopen9 === true ||
       isOpen10 === true
     ) {
       setIsOpen(false);
       setIsOpen6(false);
-      setIsOpen9(false);
+      setisopen9(false);
       setIsOpen10(false);
     }
   };
@@ -920,10 +921,10 @@ const Payroll = () => {
         const notchId = currentSlip?.employee?.notch?.notchId;
         const stepId = currentSlip?.employee?.notch?.stepId;
         const findNotchId = currentSlip?.employee?.salaryStep?.notches?.find(
-          (notch) => String(notch?._id) === String(notchId)
+          (notch) => String(notch?.id) === String(notchId)
         );
         let findStepId;
-        if (String(currentSlip?.employee?.salaryStep?._id) === String(stepId)) {
+        if (String(currentSlip?.employee?.salaryStep?.id) === String(stepId)) {
           findStepId = true;
         } else {
           findStepId = false;
@@ -939,11 +940,17 @@ const Payroll = () => {
 
   return (
     <>
-      {isLoading && !delBulkPayslip && !notApprovedBulk && <LoadingSpinner />}
+      {isLoading && !delBulkPayslip && !notApprovedBulk && (
+        <LoadingSpinner toggle={toggle} />
+      )}
       {(getNotApprovedSalaryslipsLoading ||
         ceoGetPreAndApprovedSalaryslipsLoading ||
-        accountantGetApprovedSalaryslipsLoading) && <LoadingSpinner />}
-      {downloadStatusLoading && !downloadStatusError && <LoadingSpinner />}
+        accountantGetApprovedSalaryslipsLoading) && (
+        <LoadingSpinner toggle={toggle} />
+      )}
+      {downloadStatusLoading && !downloadStatusError && (
+        <LoadingSpinner toggle={toggle} />
+      )}
 
       <UploadSlips
         isOpen5={isOpen5}
@@ -984,10 +991,10 @@ const Payroll = () => {
       )}
 
       {currentSlip && !delBulkPayslip && (
-        <Comfirm
+        <Comfirm toggle={toggle}
           isOpen4={isOpen4}
           setIsOpen4={setIsOpen4}
-          slipId={currentSlip?._id}
+          slipId={currentSlip?.id}
           setCurrentSlip={setCurrentSlip}
           setDelBulkPayslip={setDelBulkPayslip}
           month={selectedOption10}
@@ -997,7 +1004,7 @@ const Payroll = () => {
 
       {uploadBulk &&
         (userRole === "Internal Auditor" || userRole === "CEO") && (
-          <Comfirm
+          <Comfirm toggle={toggle}
             isOpen4={isOpen4}
             setIsOpen4={setIsOpen4}
             setUploadBulk={setUploadBulk}
@@ -1008,7 +1015,7 @@ const Payroll = () => {
         )}
 
       {delBulkPayslip && (
-        <Comfirm
+        <Comfirm toggle={toggle}
           isOpen4={isOpen4}
           setIsOpen4={setIsOpen4}
           setDelBulkPayslip={setDelBulkPayslip}
@@ -1019,7 +1026,7 @@ const Payroll = () => {
       )}
 
       {notApprovedBulk && (
-        <Comfirm
+        <Comfirm toggle={toggle}
           isOpen4={isOpen4}
           setIsOpen4={setIsOpen4}
           setNotApprovedBulk={setNotApprovedBulk}
@@ -1030,7 +1037,7 @@ const Payroll = () => {
       )}
 
       {preApprovedBulk && (
-        <Comfirm
+        <Comfirm toggle={toggle}
           isOpen4={isOpen4}
           setIsOpen4={setIsOpen4}
           setPreApprovedBulk={setPreApprovedBulk}
@@ -1041,7 +1048,7 @@ const Payroll = () => {
       )}
 
       {approvedBulk && (
-        <Comfirm
+        <Comfirm toggle={toggle}
           isOpen4={isOpen4}
           setIsOpen4={setIsOpen4}
           setApprovedBulk={setApprovedBulk}
@@ -1052,7 +1059,7 @@ const Payroll = () => {
       )}
 
       {voucherBulk && (
-        <Comfirm
+        <Comfirm toggle={toggle}
           isOpen4={isOpen4}
           setIsOpen4={setIsOpen4}
           setVoucherBulk={setVoucherBulk}
@@ -1063,7 +1070,7 @@ const Payroll = () => {
       )}
 
       {rejectSalaryslipBulk && (
-        <Comfirm
+        <Comfirm toggle={toggle}
           isOpen4={isOpen4}
           setIsOpen4={setIsOpen4}
           setIsOpen3={setIsOpen3}
@@ -1076,13 +1083,24 @@ const Payroll = () => {
 
       <DashboardContainer onClick={closeOption}>
         <DashboardContent>
-          <SideNav slp={slp} userRole={userRole} />
-          <Mainbody>
+          <SideNav
+            slp={slp}
+            userRole={userRole}
+            toggle={toggle}
+            toggleMenu={toggleMenu}
+            mobileToggle={mobileToggle}
+            toggleMobileMenu={toggleMobileMenu}
+          />
+          <Mainbody toggle={toggle}>
             <Header
               text="Payroll"
               userRole={userRole}
               userRoleName={userRoleName}
               profileimg={profileImg}
+              toggle={toggle}
+              toggleMenu={toggleMenu}
+              mobileToggle={mobileToggle}
+              toggleMobileMenu={toggleMobileMenu}
             />
             <Container>
               {!getNotApprovedSalaryslipsLoading &&
@@ -1101,19 +1119,19 @@ const Payroll = () => {
                 <ErrorBox errorMessage={downloadStatusError} />
               )}
               <EmpContainer>
-                <div className="row">
+                <div className="row top__btn">
                   {(userRole === "Internal Auditor" ||
                     userRole === "CEO" ||
                     userRole === "Accountant") && (
                     <DropdownList
                       // list={true}
-                      isOpen={isOpen9}
+                      isOpen={isopen9}
                       toggling={toggling9}
                       selectedOption={selectedOption10}
                       // cssClass={check}
                       // cssClass2={"dropdown__header"}
                       cssClass2={"month__header"}
-                      cssClass3={"margin__right"}
+                      cssClass3={"margin__right2"}
                       text={currentmonthLong}
                       // text={"Month"}
                       dataSet={monthArr}
@@ -1164,8 +1182,8 @@ const Payroll = () => {
                             type="button"
                             className={
                               disableButton()
-                                ? "general__btn margin__left delete__btn"
-                                : "general__btn margin__left disabled__btn"
+                                ? "general__btn margin__left2 mobile__margin__top delete__btn"
+                                : "general__btn margin__left2 mobile__margin__top disabled__btn"
                             }
                             value="Delete"
                             onClick={() => {
@@ -1198,11 +1216,11 @@ const Payroll = () => {
                             className={
                               disableButton() && selectedOption !== "Approved"
                                 ? `general__btn ${
-                                    userRole === "CEO" ? "" : "margin__left"
-                                  } save__btn`
+                                    userRole === "CEO" ? "" : "margin__left2"
+                                  } mobile__margin__top save__btn`
                                 : `general__btn ${
-                                    userRole === "CEO" ? "" : "margin__left"
-                                  }  disabled__btn`
+                                    userRole === "CEO" ? "" : "margin__left2"
+                                  } mobile__margin__top  disabled__btn`
                             }
                             onClick={() => {
                               if (userRole === "Internal Auditor") {
@@ -1225,8 +1243,8 @@ const Payroll = () => {
                             type="button"
                             className={
                               disableButton() && selectedOption !== "Approved"
-                                ? "general__btn margin__left delete__btn"
-                                : "general__btn margin__left disabled__btn"
+                                ? "general__btn margin__left2 delete__btn"
+                                : "general__btn margin__left2 disabled__btn"
                             }
                             onClick={() => setIsOpen3(!isOpen3)}
                             disabled={
@@ -1246,14 +1264,14 @@ const Payroll = () => {
                         toggling={toggling}
                         selectedOption={selectedOption}
                         cssClass2={"dropdown__header"}
-                        cssClass3={"margin__left"}
+                        cssClass3={"margin__left2 mobile__margin__top"}
                         text={dropdownData[0]}
                         dataSet={dropdownData}
                         onOptionClicked={onOptionClicked}
                       />
                     </div>
                   )}
-                  {(userRole === "Internal Auditor" || userRole === "CEO") && (
+                  {/* {(userRole === "Internal Auditor" || userRole === "CEO") && (
                     <input
                       type="button"
                       className={
@@ -1265,7 +1283,7 @@ const Payroll = () => {
                       disabled={!salarySlip}
                       value="Upload File"
                     />
-                  )}
+                  )} */}
                 </div>
 
                 <div className="row">
@@ -1285,7 +1303,7 @@ const Payroll = () => {
                     />
                   )}
 
-                  <div className="search__container">
+                  <div className="search__container mobile__margin__top">
                     <SearchBar
                       term={searchTerm}
                       searchKeyWord={searchHandler}
@@ -1313,7 +1331,7 @@ const Payroll = () => {
                 <>
                   {!isApproved() && (
                     // <EmpContainer>
-                    //   <div></div>
+                    // <div></div>
                     <>
                       <div style={{ position: "relative" }}>
                         <div
@@ -1333,8 +1351,8 @@ const Payroll = () => {
                             type="button"
                             className={
                               salarySlip.length
-                                ? "general__btn green__btn margin__bottom"
-                                : "general__btn disabled__btn margin__bottom"
+                                ? "general__btn green__btn margin__bottom full__width"
+                                : "general__btn disabled__btn margin__bottom full__width"
                             }
                             onClick={downloadPensionPDF}
                             disabled={!salarySlip?.length}
@@ -1344,8 +1362,8 @@ const Payroll = () => {
                             type="button"
                             className={
                               salarySlip.length
-                                ? "general__btn green__btn margin__bottom"
-                                : "general__btn disabled__btn margin__bottom"
+                                ? "general__btn green__btn margin__bottom full__width"
+                                : "general__btn disabled__btn margin__bottom full__width"
                             }
                             onClick={downloadPayePDF}
                             disabled={!salarySlip?.length}
@@ -1355,8 +1373,8 @@ const Payroll = () => {
                             type="button"
                             className={
                               salarySlip.length
-                                ? "general__btn green__btn margin__bottom"
-                                : "general__btn disabled__btn margin__bottom"
+                                ? "general__btn green__btn margin__bottom full__width"
+                                : "general__btn disabled__btn margin__bottom full__width"
                             }
                             onClick={downloadPensionExcel}
                             disabled={!salarySlip?.length}
@@ -1366,8 +1384,8 @@ const Payroll = () => {
                             type="button"
                             className={
                               salarySlip.length
-                                ? "general__btn green__btn"
-                                : "general__btn disabled__btn"
+                                ? "general__btn green__btn full__width"
+                                : "general__btn disabled__btn full__width"
                             }
                             onClick={downloadPayeExcel}
                             disabled={!salarySlip?.length}
@@ -1410,7 +1428,7 @@ const Payroll = () => {
                         <th>Salary Month</th>
                         <th>Total Additions</th>
                         <th>Total Deductions</th>
-                        <th>U-wallet</th>
+                        {/* <th>U-wallet</th> */}
                         <th>Net Pay</th>
                         <th>Status</th>
                         {/* {userRole === "HR" ||
@@ -1426,7 +1444,7 @@ const Payroll = () => {
                       {searchResult
                         .slice(pagesVisited, pagesVisited + usersPerpage)
                         ?.map((slip) => (
-                          <tr key={slip?._id}>
+                          <tr key={slip?.id}>
                             {(userRole === "Accountant" ||
                               userRole === "HR" ||
                               userRole === "Internal Auditor" ||
@@ -1448,7 +1466,7 @@ const Payroll = () => {
                             </td>
                             <td>{commafy(slip?.totalEarnings)}</td>
                             <td>{commafy(slip?.deductionTotal)}</td>
-                            <td>{slip?.uWallet && commafy(slip?.uWallet)}</td>
+                            {/* <td>{slip?.uWallet && commafy(slip?.uWallet)}</td> */}
                             <td>{commafy(slip?.netPay)}</td>
                             <td>
                               <span
@@ -1473,7 +1491,7 @@ const Payroll = () => {
                                       <div
                                         title="View Comment"
                                         className="icons"
-                                        onClick={(e) => popup3(slip?._id)}
+                                        onClick={(e) => popup3(slip?.id)}
                                       >
                                         <FontAwesomeIcon
                                           icon={["fas", "comment"]}
@@ -1483,14 +1501,14 @@ const Payroll = () => {
                                   <div
                                     title="View SalarySlip"
                                     className="icons"
-                                    onClick={(e) => popup8(slip?._id)}
+                                    onClick={(e) => popup8(slip?.id)}
                                   >
                                     <FontAwesomeIcon icon={["fas", "eye"]} />
                                   </div>
                                   <div
                                     title="Delete SalarySlip"
                                     className="icons"
-                                    onClick={(e) => popup4(slip?._id)}
+                                    onClick={(e) => popup4(slip?.id)}
                                   >
                                     <FontAwesomeIcon
                                       icon={["fas", "trash-alt"]}
@@ -1506,7 +1524,7 @@ const Payroll = () => {
                                 <div className="action__icons">
                                   <div
                                     className="icons"
-                                    onClick={(e) => popup8(slip?._id)}
+                                    onClick={(e) => popup8(slip?.id)}
                                   >
                                     <FontAwesomeIcon icon={["fas", "eye"]} />
                                   </div>

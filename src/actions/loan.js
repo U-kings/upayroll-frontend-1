@@ -1,4 +1,5 @@
 import axios from "axios";
+import cookie from "js-cookie";
 import {
   HR_CREATE_LOAN_FAIL,
   HR_CREATE_LOAN_REQUEST,
@@ -19,13 +20,19 @@ import {
   HR_UPDATE_MANAGEMENT_CAR_LOAN_REQUEST,
   HR_UPDATE_MANAGEMENT_CAR_LOAN_SUCCESS,
 } from "../types/loan";
-import { cookieTokenValidFunc } from "../actions/auth";
+
+const proxyUrl = process.env.REACT_APP_PROXY_URL;
 
 export const hrGetAllLoansFunc = () => async (dispatch) => {
-  dispatch(cookieTokenValidFunc());
+  const token = cookie.get("token");
+  const config = {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  };
   try {
     dispatch({ type: HR_GET_ALL_LOAN_REQUEST });
-    const { data } = await axios.get(`/api/loan`);
+    const { data } = await axios.get(`${proxyUrl}/api/loan`, config);
     dispatch({ type: HR_GET_ALL_LOAN_SUCCESS, payload: data.loans });
   } catch (error) {
     dispatch({
@@ -39,18 +46,18 @@ export const hrGetAllLoansFunc = () => async (dispatch) => {
 };
 
 export const hrCreateLoanFunc = (formData) => async (dispatch) => {
+  const token = cookie.get("token");
   const config = {
     headers: {
       "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
     },
   };
-
-  dispatch(cookieTokenValidFunc());
 
   try {
     dispatch({ type: HR_CREATE_LOAN_REQUEST });
     const body = JSON.stringify(formData);
-    await axios.post(`/api/loan`, body, config);
+    await axios.post(`${proxyUrl}/api/loan`, body, config);
     dispatch({
       type: HR_CREATE_LOAN_SUCCESS,
     });
@@ -67,17 +74,19 @@ export const hrCreateLoanFunc = (formData) => async (dispatch) => {
 };
 
 export const hrUpdateLoanFunc = (loanId, formData) => async (dispatch) => {
+  const token = cookie.get("token");
   const config = {
     headers: {
       "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
     },
   };
 
-  dispatch(cookieTokenValidFunc());
+  // dispatch(cookieTokenValidFunc());
   const body = JSON.stringify(formData);
   try {
     dispatch({ type: HR_UPDATE_LOAN_REQUEST });
-    await axios.patch(`/api/loan/${loanId}`, body, config);
+    await axios.patch(`${proxyUrl}/api/loan/${loanId}`, body, config);
     dispatch({ type: HR_UPDATE_LOAN_SUCCESS });
     dispatch(hrGetAllLoansFunc());
   } catch (error) {
@@ -92,16 +101,17 @@ export const hrUpdateLoanFunc = (loanId, formData) => async (dispatch) => {
 };
 
 export const hrDeleteLoanFunc = (loanId) => async (dispatch) => {
+  const token = cookie.get("token");
   const config = {
     headers: {
       "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
     },
   };
 
-  dispatch(cookieTokenValidFunc());
   try {
     dispatch({ type: HR_DELETE_LOAN_REQUEST });
-    await axios.delete(`/api/loan/${loanId}`, config);
+    await axios.delete(`${proxyUrl}/api/loan/${loanId}`, config);
     dispatch({ type: HR_DELETE_LOAN_SUCCESS });
     dispatch(hrGetAllLoansFunc());
   } catch (error) {
@@ -116,17 +126,22 @@ export const hrDeleteLoanFunc = (loanId) => async (dispatch) => {
 };
 
 export const hrUpdateRepaymentPercentFunc = (formData) => async (dispatch) => {
+  const token = cookie.get("token");
   const config = {
     headers: {
       "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
     },
   };
-  dispatch(cookieTokenValidFunc());
   const body = JSON.stringify(formData);
 
   try {
     dispatch({ type: HR_UPDATE_ALL_LOANS_REPAYMENT_PERCENTAGE_REQUEST });
-    await axios.patch(`/api/loan/update-repayment-percentage`, body, config);
+    await axios.patch(
+      `${proxyUrl}/api/loan/update-repayment-percentage`,
+      body,
+      config
+    );
     dispatch({ type: HR_UPDATE_ALL_LOANS_REPAYMENT_PERCENTAGE_SUCCESS });
   } catch (error) {
     dispatch({
@@ -141,18 +156,19 @@ export const hrUpdateRepaymentPercentFunc = (formData) => async (dispatch) => {
 
 export const hrUpdateManagementCarAmountFunc =
   (loanId, formData) => async (dispatch) => {
+    const token = cookie.get("token");
     const config = {
       headers: {
         "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
       },
     };
 
-    dispatch(cookieTokenValidFunc());
     const body = JSON.stringify(formData);
     try {
       dispatch({ type: HR_UPDATE_MANAGEMENT_CAR_LOAN_REQUEST });
       await axios.patch(
-        `/api/loan/${loanId}/update-management-car-loan`,
+        `${proxyUrl}/api/loan/${loanId}/update-management-car-loan`,
         body,
         config
       );

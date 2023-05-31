@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from "react";
+import cookie from "js-cookie";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { NewEmp, BackLink, ImportExcelLink } from "../../styles/library";
 import {
   getAllDepartment,
   getPositionsByDepartment,
 } from "../../actions/department";
-import { adminGetAllStaffLevels } from "../../actions/stafflevel";
+// import { adminGetAllStaffLevels } from "../../actions/stafflevel";
 import { useDispatch, useSelector } from "react-redux";
 import { useHistory } from "react-router-dom";
 import { adminCreateEmployee } from "../../actions/employee";
@@ -26,7 +27,13 @@ import {
   GET_POSITION_BY_DEPARTMENT_RESET,
   GET_ALL_DEPARTMENTS_RESET,
 } from "../../types/department";
-const AddEmployee = () => {
+import { formatDate } from "../../hooks/functions";
+const AddEmployee = ({
+  toggle,
+  toggleMenu,
+  mobileToggle,
+  toggleMobileMenu,
+}) => {
   // useDispatch init
   const dispatch = useDispatch();
   //   init history
@@ -79,6 +86,7 @@ const AddEmployee = () => {
   const genders = ["Male", "Female"];
   const emptypes = ["Permanent", "Part-time", "Contract", "Intern"];
   // const bankname = ["Sterling Bank", "KeyStone Bank"];
+  const [changePassword, setChangePasword] = useState(false);
 
   const [employeeFormData, setEmployeeFormData] = useState({
     staffId: "",
@@ -102,6 +110,8 @@ const AddEmployee = () => {
     setEmployeeFormData({
       ...employeeFormData,
       [e.target.name]: e.target.value,
+      // dob: dob2,
+      // joinDate: joinDate2,
     });
   };
 
@@ -134,28 +144,33 @@ const AddEmployee = () => {
     e.preventDefault();
     if (isObjectEmpty(employeeDataValidation(employeeFormData))) {
       const position = selectedOption4;
-
       dispatch(
         adminCreateEmployee(
-          position.department._id,
-          position._id,
+          position?.department?.id,
+          position?.id,
 
           {
             ...employeeFormData,
+            noOfWorkingDays: parseInt(noOfWorkingDays),
+            dob: formatDate(dob),
+            joinDate: formatDate(joinDate),
             gender: selectedOption,
             employeeType: selectedOption2,
             employeeBank: selectedOption5?.name,
             contractSalary: contractSalary ? contractSalary : null,
-            salaryLevel: salaryStep?.salaryLevel?._id,
-            salaryStep: salaryStep?._id,
-            notch:
-              notch && notch.name !== "No Notch"
-                ? {
-                    name: notch?.name,
-                    notchId: notch?._id,
-                    stepId: salaryStep?._id,
-                  }
-                : null,
+            notchId: notch && notch.name !== "No Notch" ? notch?.id : null,
+            salaryStepId: salaryStep?.id,
+            salaryLevelId: salaryStep?.salaryLevelId,
+            // salaryLevel: salaryStep?.salaryLevel?.id,
+            // salaryStep: salaryStep?.id,
+            // notch:
+            //   notch && notch.name !== "No Notch"
+            //     ? {
+            //         name: notch?.name,
+            //         notchId: notch?.id,
+            //         stepId: salaryStep?.id,
+            //       }
+            //     : null,
           }
         )
       );
@@ -179,7 +194,7 @@ const AddEmployee = () => {
       history.push("/");
     } else {
       dispatch(getAllDepartment());
-      dispatch(adminGetAllStaffLevels());
+      // dispatch(adminGetAllStaffLevels());
       // dispatch(adminGetAllBanksFunc());
       dispatch(hrGetAllStaffGradesFunc());
       // dispatch()
@@ -192,7 +207,7 @@ const AddEmployee = () => {
       userRole === "CEO" ||
       userRole === "Accountant"
     ) {
-      history.push("dashboard");
+      history.push("/dashboard");
     }
   }, [
     dispatch,
@@ -226,7 +241,7 @@ const AddEmployee = () => {
   //   departments
   const onOptionClicked3 = (department) => () => {
     setSelectedOption3(department);
-    dispatch(getPositionsByDepartment(department?._id));
+    dispatch(getPositionsByDepartment(department?.id));
     setSelectedOption4(null);
 
     setIsOpen3(false);
@@ -240,7 +255,7 @@ const AddEmployee = () => {
   // salary grade
   const onOptionClickedSalaryGrade = (salaryGrade) => () => {
     setSalaryGrade(salaryGrade);
-    dispatch(hrGetSalaryLevelsFunc(salaryGrade?._id));
+    dispatch(hrGetSalaryLevelsFunc(salaryGrade?.id));
     setIsOpenSalaryGrade(false);
     setSalaryLevel(null);
     setSalaryStep(null);
@@ -249,7 +264,7 @@ const AddEmployee = () => {
   // salary level
   const onOptionClickedSalarylevel = (salaryLevel) => () => {
     setSalaryLevel(salaryLevel);
-    dispatch(hrGetSalaryStepsFunc(salaryLevel?._id));
+    dispatch(hrGetSalaryStepsFunc(salaryLevel?.id));
     setIsOpenSalaryLevel(false);
     setSalaryStep(null);
     setNotch(null);
@@ -319,7 +334,7 @@ const AddEmployee = () => {
 
   const popup7 = () => {
     if (createSuccess && !createLoading) {
-      history.push("/employee");
+      history.push("employee");
       dispatch({
         type: ADMIN_CREATE_EMPLOYEE_RESET,
       });
@@ -358,6 +373,18 @@ const AddEmployee = () => {
     setIsOpen7(false);
   };
 
+  useEffect(() => {
+    const requiresPasswordChange = cookie.get("requiresPasswordChange");
+    if (requiresPasswordChange) {
+      if (JSON.parse(requiresPasswordChange)) {
+        setChangePasword(true);
+        setTimeout(() => {
+          history.push("profile-settings");
+        }, 3000);
+      }
+    }
+  }, [history]);
+
   return (
     <>
       {createLoading && <Spinner />}
@@ -367,9 +394,14 @@ const AddEmployee = () => {
         }
         setIsOpen7={setIsOpen7}
         popup7={popup7}
-        message="Employpee has been Created Successfully"
+        message="Employee has been Created Successfully"
       />
       <NewEmp onClick={closeOption}>
+        {changePassword && (
+          <ErrorBox
+            errorMessage={changePassword ? "Please Change you password" : ""}
+          />
+        )}
         <h1>Onboard Employee</h1>
         <BackLink className="save__btn" onClick={createPassword} to="/employee">
           <FontAwesomeIcon
@@ -391,6 +423,7 @@ const AddEmployee = () => {
         </ImportExcelLink>
         {!createLoading && createEmployeeError && (
           <ErrorBox
+            fixed={true}
             errorMessage={
               createEmployeeError === "Request failed with status code 500"
                 ? "Please Check Your Internet Connection"
@@ -400,7 +433,7 @@ const AddEmployee = () => {
         )}
         <form onSubmit={onSubmit}>
           <div className="input__row">
-            <div style={{ width: "20rem" }} className="label__group">
+            <div className="label__group staffId ">
               <label>Staff ID</label>
               <input
                 type="text"
@@ -422,7 +455,7 @@ const AddEmployee = () => {
               />
               <span className="error">{errors.name}</span>
             </div>
-            <div style={{ width: "20rem" }} className="label__group">
+            <div className="label__group workdays">
               <label>
                 N<u style={{ fontSize: "1.5rem" }}>O</u> Of Work Days
               </label>
@@ -443,6 +476,7 @@ const AddEmployee = () => {
                 type="date"
                 name="dob"
                 value={dob}
+                // value={dob ? new Date(dob).toLocaleDateString() : new Date().toISOString()}
                 onChange={onChange}
                 placeholder="Date of Birth"
               />
@@ -548,6 +582,7 @@ const AddEmployee = () => {
                 text="-- Select a Bank Name"
                 dataSet={banks}
                 onOptionClicked={onOptionClicked5}
+                maxHeight="20rem"
               />
               <span className="error">
                 {!selectedOption5 ? "*bank name is required" : ""}
@@ -641,7 +676,7 @@ const AddEmployee = () => {
                         salaryStep?.notches
                           ? [
                               {
-                                _id: "238HS4329D",
+                                id: "238HS4329D",
                                 name: "No Notch",
                                 amount: 0,
                                 stepId: null,

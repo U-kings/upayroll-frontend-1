@@ -12,7 +12,7 @@ import { Container } from "../../styles/library";
 import { useDispatch, useSelector } from "react-redux";
 import { Comfirm, LoadingSpinner, Successful } from "../../modals";
 
-const StaffGrade = ({ staffGrade }) => {
+const StaffGrade = ({ staffGrade, toggle }) => {
   // dispatch init
   const dispatch = useDispatch();
 
@@ -39,8 +39,8 @@ const StaffGrade = ({ staffGrade }) => {
 
   const onSave = (e) => {
     e.preventDefault();
-    if (formData?._id) {
-      dispatch(hrUpdateStaffGradeFunc(formData?._id, { name: name.trim() }));
+    if (formData?.id) {
+      dispatch(hrUpdateStaffGradeFunc(formData?.id, { name: name.trim() }));
     } else {
       dispatch(hrCreateStaffGradeFunc({ name: name.trim() }));
     }
@@ -49,11 +49,11 @@ const StaffGrade = ({ staffGrade }) => {
   const onSelect = (id) => {
     let findPos;
     if (staffGrade?.length > 0) {
-      findPos = staffGrade.find((el) => String(el?._id) === String(id));
+      findPos = staffGrade.find((el) => String(el?.id) === String(id));
       if (findPos) {
         setFormData({
           name: findPos?.name,
-          _id: findPos?._id,
+          id: findPos?.id,
         });
       }
     }
@@ -89,8 +89,8 @@ const StaffGrade = ({ staffGrade }) => {
   return (
     <>
       {" "}
-      {createStaffGradeLoading && <LoadingSpinner />}
-      {updateStaffGradeLoading && <LoadingSpinner />}
+      {createStaffGradeLoading && <LoadingSpinner toggle={toggle} />}
+      {updateStaffGradeLoading && <LoadingSpinner toggle={toggle} />}
       <Successful
         isOpen7={updateStaffGradeSuccess && !updateStaffGradeError}
         popup7={popup7}
@@ -106,7 +106,7 @@ const StaffGrade = ({ staffGrade }) => {
         message="Staff Grade Created Successfully!"
       />
       {staffGradeId && (
-        <Comfirm
+        <Comfirm toggle={toggle}
           isOpen4={isOpen}
           popup4={popup}
           setIsOpen4={setIsOpen}
@@ -149,7 +149,7 @@ const StaffGrade = ({ staffGrade }) => {
                     updateStaffGradeLoading ||
                     createStaffGradeLoading
                   }
-                  value={formData?._id ? "Edit" : "Save"}
+                  value={formData?.id ? "Edit" : "Save"}
                 />
                 <input
                   className="cancel__btn margin__left"
@@ -173,22 +173,19 @@ const StaffGrade = ({ staffGrade }) => {
                 </thead>
                 <tbody>
                   {staffGrade?.map((el, indexes) => (
-                    <tr key={el?._id}>
+                    <tr key={el?.id}>
                       <td>{++indexes}</td>
                       <td>{el?.name}</td>
                       <td>
                         <div className="action__icons">
                           <div
                             className="icons"
-                            onClick={(e) => onSelect(el?._id)}
+                            onClick={(e) => onSelect(el?.id)}
                           >
                             {" "}
                             <FontAwesomeIcon icon={["fas", "edit"]} />{" "}
                           </div>
-                          <div
-                            className="icons"
-                            onClick={(e) => popup(el?._id)}
-                          >
+                          <div className="icons" onClick={(e) => popup(el?.id)}>
                             {" "}
                             <FontAwesomeIcon icon={["fas", "trash-alt"]} />{" "}
                           </div>

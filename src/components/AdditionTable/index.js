@@ -94,7 +94,7 @@ const AdditionTable = ({
                 </thead>
                 <tbody>
                   {allowances?.map((el, indexes) => (
-                    <tr key={el?._id}>
+                    <tr key={el?.id}>
                       <td>{indexes + 1}</td>
                       <td>{el?.name}</td>
                       <td>
@@ -102,7 +102,7 @@ const AdditionTable = ({
                           <div
                             title="Edit"
                             className="icons"
-                            onClick={(e) => onClick2(el?._id, "allowance")}
+                            onClick={(e) => onClick2(el?.id, "allowance")}
                           >
                             {" "}
                             <FontAwesomeIcon icon={["fas", "edit"]} />{" "}
@@ -110,7 +110,7 @@ const AdditionTable = ({
                           <div
                             title="Delete"
                             className="icons"
-                            onClick={(e) => onClick3(el?._id, "allowance")}
+                            onClick={(e) => onClick3(el?.id, "allowance")}
                           >
                             {" "}
                             <FontAwesomeIcon icon={["fas", "trash-alt"]} />{" "}

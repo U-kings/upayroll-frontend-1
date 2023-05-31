@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import cookie from "js-cookie";
 import { Container } from "../../styles/library";
 import { useDispatch, useSelector } from "react-redux";
 import {
@@ -11,8 +12,9 @@ import {
 } from "../../types/basepay";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { LoadingSpinner, Successful } from "../../modals";
+import ErrorBox from "../ErrorBox";
 
-const BasePay = ({ basePays }) => {
+const BasePay = ({ basePays, toggle }) => {
   // dispatch init
   const dispatch = useDispatch();
 
@@ -36,8 +38,13 @@ const BasePay = ({ basePays }) => {
     cola: 0,
   });
 
-  const { firstGrossPay, secondGrossPay, thirdGrossPay, fourthGrossPay, cola } =
-    formData;
+  const {
+    firstGrossPay,
+    secondGrossPay,
+    thirdGrossPay,
+    fourthGrossPay,
+    cola,
+  } = formData;
 
   useEffect(() => {
     if (createBasePaySuccess) {
@@ -50,13 +57,21 @@ const BasePay = ({ basePays }) => {
         cola: 0,
       });
     }
-  }, [dispatch, createBasePaySuccess, updateBasePaySuccess]);
+    if (createBasePayError) {
+      dispatch({ type: HR_CREATE_BASEPAY_RESET });
+    }
+  }, [
+    dispatch,
+    createBasePaySuccess,
+    updateBasePaySuccess,
+    createBasePayError,
+  ]);
 
   const onSave = (e) => {
     e.preventDefault();
-    if (formData?._id) {
+    if (formData?.id) {
       dispatch(
-        hrUpdateBasePayFunc(formData?._id, {
+        hrUpdateBasePayFunc(formData?.id, {
           firstGrossPay,
           secondGrossPay,
           thirdGrossPay,
@@ -82,7 +97,7 @@ const BasePay = ({ basePays }) => {
   const onSelect = (id) => {
     let findPos;
     if (basePays?.length > 0) {
-      findPos = basePays?.find((el) => String(el?._id) === String(id));
+      findPos = basePays?.find((el) => String(el?.id) === String(id));
       if (findPos) {
         setFormData({
           firstGrossPay: findPos?.firstGrossPay,
@@ -90,7 +105,7 @@ const BasePay = ({ basePays }) => {
           thirdGrossPay: findPos?.thirdGrossPay,
           fourthGrossPay: findPos?.fourthGrossPay,
           cola: findPos?.cola,
-          _id: findPos?._id,
+          id: findPos?.id,
         });
       }
     }
@@ -135,21 +150,22 @@ const BasePay = ({ basePays }) => {
 
   return (
     <>
-      {createBasePayLoading && <LoadingSpinner />}
-      {updateBasePayLoading && <LoadingSpinner />}
+      {createBasePayLoading && <LoadingSpinner toggle={toggle} />}
+      {updateBasePayLoading && <LoadingSpinner toggle={toggle} />}
       <Successful
         isOpen7={updateBasePaySuccess && !updateBasePayError}
         popup7={popup7}
         message="Base Pay Updated Successfully!"
       />
       <Successful
-        isOpen7={
-          createBasePaySuccess && !createBasePayError && !createBasePayError
-        }
+        isOpen7={createBasePaySuccess && !createBasePayError}
         popup7={popup7}
         message="Base Pay Created Successfully!"
       />
       <Container>
+        {(createBasePayError || updateBasePayError) && (
+          <ErrorBox errorMessage={createBasePayError || updateBasePayError} />
+        )}
         <h1>Base Pay/ COLA</h1>
         <div className="container__content">
           <div className="form__content">
@@ -256,7 +272,7 @@ const BasePay = ({ basePays }) => {
                     updateBasePayLoading ||
                     createBasePayLoading
                   }
-                  value={formData?._id ? "Edit" : "Save"}
+                  value={formData?.id ? "Edit" : "Save"}
                 />
                 <input
                   className="cancel__btn margin__left"
@@ -284,7 +300,7 @@ const BasePay = ({ basePays }) => {
                 </thead>
                 <tbody>
                   {basePays?.map((el, indexes) => (
-                    <tr key={el?._id}>
+                    <tr key={el?.id}>
                       <td>{++indexes}</td>
                       <td>
                         {Number(
@@ -314,7 +330,7 @@ const BasePay = ({ basePays }) => {
                         <div className="action__icons">
                           <div
                             className="icons"
-                            onClick={(e) => onSelect(el?._id)}
+                            onClick={(e) => onSelect(el?.id)}
                           >
                             {" "}
                             <FontAwesomeIcon icon={["fas", "edit"]} />{" "}

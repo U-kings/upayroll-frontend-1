@@ -10,7 +10,12 @@ const Signoutbutton = () => {
     dispatch(logoutAdmin("no token was passed"));
   };
   return (
-    <SignoutContainer type="button" className="delete__btn" value="Logout" onClick={onLogout} />
+    <SignoutContainer
+      type="button"
+      className="delete__btn"
+      value="Logout"
+      onClick={onLogout}
+    />
   );
 };
 

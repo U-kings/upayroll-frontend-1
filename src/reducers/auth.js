@@ -2,6 +2,11 @@ import {
   LOGIN_ADMIN_USER_FAIL,
   LOGIN_ADMIN_USER_REQUEST,
   LOGIN_ADMIN_USER_SUCCESS,
+  LOGIN_ADMIN_USER_RESET,
+  REGISTER_COMPANY_REQUEST,
+  REGISTER_COMPANY_SUCCESS,
+  REGISTER_COMPANY_FAIL,
+  REGISTER_COMPANY_RESET,
   LOGOUT_ADMIN_USER,
   ADMIN_LOGGEDIN_DETAILS_FAIL,
   ADMIN_LOGGEDIN_DETAILS_REQUEST,
@@ -22,7 +27,6 @@ import {
   CHECK_ADMIN_LOGIN_STATUS_FAIL,
   CHECK_ADMIN_LOGIN_STATUS_REQUEST,
   CHECK_ADMIN_LOGIN_STATUS_SUCCESS,
-  LOGIN_ADMIN_USER_RESET,
   CHECK_COOKIE_TOKEN_VALID_FAIL,
   CHECK_COOKIE_TOKEN_VALID_REQUEST,
   CHECK_COOKIE_TOKEN_VALID_RESET,
@@ -31,6 +35,18 @@ import {
   CEO_UPLOAD_SIGNATURE_IMAGE_REQUEST,
   CEO_UPLOAD_SIGNATURE_IMAGE_RESET,
   CEO_UPLOAD_SIGNATURE_IMAGE_SUCCESS,
+  REGISTER_COMPANY_ADMIN_FAIL,
+  REGISTER_COMPANY_ADMIN_SUCCESS,
+  REGISTER_COMPANY_ADMIN_REQUEST,
+  REGISTER_COMPANY_ADMIN_RESET,
+  CONFIRM_EMAIL_REQUEST,
+  CONFIRM_EMAIL_SUCCESS,
+  CONFIRM_EMAIL_FAIL,
+  CONFIRM_EMAIL_RESET,
+  GET_NOT_CREATED_ROLES_RESET,
+  GET_NOT_CREATED_ROLES_FAIL,
+  GET_NOT_CREATED_ROLES_SUCCESS,
+  GET_NOT_CREATED_ROLES_REQUEST,
 } from "../types/auth";
 
 export const loginAdminUserReducer = (state = {}, action) => {
@@ -58,6 +74,136 @@ export const loginAdminUserReducer = (state = {}, action) => {
       };
 
     case LOGIN_ADMIN_USER_RESET:
+      return {};
+
+    default:
+      return state;
+  }
+};
+
+export const registerCompanyReducer = (state = {}, action) => {
+  const { type, payload } = action;
+  switch (type) {
+    case REGISTER_COMPANY_REQUEST:
+      return {
+        ...state,
+        isLoading: true,
+      };
+
+    case REGISTER_COMPANY_SUCCESS:
+      return {
+        ...state,
+        isLoading: false,
+        success: true,
+        error: null,
+      };
+
+    case REGISTER_COMPANY_FAIL:
+      return {
+        ...state,
+        isLoading: false,
+        error: payload,
+        success: false,
+      };
+
+    case REGISTER_COMPANY_RESET:
+      return {};
+
+    default:
+      return state;
+  }
+};
+export const registerCompanyAdminReducer = (state = {}, action) => {
+  const { type, payload } = action;
+  switch (type) {
+    case REGISTER_COMPANY_ADMIN_REQUEST:
+      return {
+        ...state,
+        isLoading: true,
+      };
+
+    case REGISTER_COMPANY_ADMIN_SUCCESS:
+      return {
+        ...state,
+        isLoading: false,
+        success: true,
+        error: null,
+      };
+
+    case REGISTER_COMPANY_ADMIN_FAIL:
+      return {
+        ...state,
+        isLoading: false,
+        error: payload,
+        success: false,
+      };
+
+    case REGISTER_COMPANY_ADMIN_RESET:
+      return {};
+
+    default:
+      return state;
+  }
+};
+
+export const getNotCreatedRolesReducer = (state = {}, action) => {
+  const { type, payload } = action;
+  switch (type) {
+    case GET_NOT_CREATED_ROLES_REQUEST:
+      return {
+        ...state,
+        isLoading: true,
+      };
+
+    case GET_NOT_CREATED_ROLES_SUCCESS:
+      return {
+        ...state,
+        isLoading: false,
+        notCreatedRoles: payload,
+      };
+
+    case GET_NOT_CREATED_ROLES_FAIL:
+      return {
+        ...state,
+        isLoading: false,
+        error: payload,
+        success: false,
+      };
+
+    case GET_NOT_CREATED_ROLES_RESET:
+      return {};
+
+    default:
+      return state;
+  }
+};
+
+export const confirmEmailReducer = (state = {}, action) => {
+  const { type, payload } = action;
+  switch (type) {
+    case CONFIRM_EMAIL_REQUEST:
+      return {
+        ...state,
+        isLoading: true,
+      };
+
+    case CONFIRM_EMAIL_SUCCESS:
+      return {
+        ...state,
+        isLoading: false,
+        success: true,
+        error: null,
+      };
+
+    case CONFIRM_EMAIL_FAIL:
+      return {
+        ...state,
+        isLoading: false,
+        error: payload,
+        success: false,
+      };
+
+    case CONFIRM_EMAIL_RESET:
       return {};
 
     default:

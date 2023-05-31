@@ -43,7 +43,7 @@ import { PaginationContainer } from "../../styles/pagination";
 import { COLORS } from "../../values/colors";
 import { commafy } from "../../hooks/calculations/paySlip";
 
-const Voucher = () => {
+const Voucher = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
   // history init
   const dispatch = useDispatch();
   const history = useHistory();
@@ -96,7 +96,7 @@ const Voucher = () => {
   const [isOpen6, setIsOpen6] = useState(false);
   const [isOpen7, setIsOpen7] = useState(false);
   const [isOpen8, setIsOpen8] = useState(false);
-  // const [isOpen9, setIsOpen9] = useState(false);
+  // const [isopen9, setisopen9] = useState(false);
   const [arrayIds, setArrayIds] = useState([]);
   const [pageNumber, setPageNumber] = useState(0);
   const [usersPerpageCount, setUsersPerpageCount] = useState(0);
@@ -112,7 +112,8 @@ const Voucher = () => {
     currentmonthMethod("long") || ""
   );
   const [selectedOption6, setSelectedOption6] = useState(null);
-  const [selectedOption7, setSelectedOption7] = useState(null);
+  const [selectedOption7, setSelectedOption7] = useState("Netpay Only");
+  // const [selectedOption7, setSelectedOption7] = useState(null);
   // const [selectedOption8, setSelectedOption8] = useState(
   //   currentmonthMethod("long") || ""
   // );
@@ -157,14 +158,14 @@ const Voucher = () => {
     return ["Approved", "Pre-Approved"];
   }, []);
 
-  const voucherTypedropdown = useMemo(() => {
-    return ["NetPay Only", "U-Wallet Only"];
-  }, []);
+  // const voucherTypedropdown = useMemo(() => {
+  //   return ["NetPay Only", "U-Wallet Only"];
+  // }, []);
 
   useEffect(() => {
     if (userRole === "Accountant") {
       setDropdownData(dropdown1);
-      setVoucherType(voucherTypedropdown);
+      // setVoucherType(voucherTypedropdown);
     } else if (userRole === "CEO") {
       setDropdownData(dropdown2);
     }
@@ -186,13 +187,14 @@ const Voucher = () => {
         setBankVoucher(ceoPreApprovedVouchers);
       }
     } else {
-      <LoadingSpinner />;
+      <LoadingSpinner toggle={toggle} />;
     }
 
     if (searchTerm.length < 1) {
       setSearchResult(bankVoucher);
     }
   }, [
+    toggle,
     userRole,
     vouchers,
     auditorPreApprovedVouchers,
@@ -202,7 +204,7 @@ const Voucher = () => {
     dropdown1,
     dropdown2,
     history,
-    voucherTypedropdown,
+    // voucherTypedropdown,
     selectedOption,
   ]);
 
@@ -278,7 +280,7 @@ const Voucher = () => {
       let notChecked = searchResult?.filter((el) => {
         return !tempData?.find(
           (tmp) =>
-            tmp?.salarySlip?.employee?.EMPID === el?.salarySlip?.employee?.EMPID
+            tmp?.paySlip?.employee?.EMPID === el?.paySlip?.employee?.EMPID
         );
       });
       let dataJoined = [...tempData, ...notChecked].sort((a, b) => {
@@ -290,7 +292,7 @@ const Voucher = () => {
       setSearchResult(dataJoined);
     } else {
       let tempData = searchResult?.map((voucher) =>
-        voucher?.salarySlip?.employee?.EMPID === name
+        voucher?.paySlip?.employee?.EMPID === name
           ? { ...voucher, isChecked: checked }
           : voucher
       );
@@ -327,14 +329,14 @@ const Voucher = () => {
   const toggling3 = () => setIsOpen3(!isOpen3);
   const toggling6 = () => setIsOpen6(!isOpen6);
   const toggling8 = () => setIsOpen8(!isOpen8);
-  // const toggling9 = () => setIsOpen9(!isOpen9);
+  // const toggling9 = () => setisopen9(!isopen9);
 
   // Invoke when user click to request another page.
   const usersPerpage = 40;
   const pagesVisited = pageNumber * usersPerpage;
 
   const pageCount = Math.ceil(searchResult?.length / usersPerpage);
-  // const pageCount = Math.ceil(salarySlip.length / usersPerpage);
+  // const pageCount = Math.ceil(paySlip.length / usersPerpage);
   const handlePageClick = ({ selected }) => {
     setPageNumber(selected);
   };
@@ -366,13 +368,13 @@ const Voucher = () => {
     if (value !== "") {
       const filteredList = bankVoucher?.filter((data) => {
         return Object.values(
-          data?.salarySlip?.employee.user?.name +
+          data?.paySlip?.employee.user?.name +
             " " +
-            data?.salarySlip?.employee.user?.email +
+            data?.paySlip?.employee.user?.email +
             " " +
             data.month +
             " " +
-            data?.salarySlip?.employee?.employeeBank?.name +
+            data?.paySlip?.employee?.employeeBank?.name +
             " "
         )
           .join("")
@@ -386,12 +388,12 @@ const Voucher = () => {
   };
 
   const auditorPreApproveVoucherByIds = () => {
-    const voucherIds = arrayIds.map((voucher) => voucher?._id);
+    const voucherIds = arrayIds.map((voucher) => voucher?.id);
     dispatch(auditorPreApprovedVouchersFunc(voucherIds, selectedOption10));
   };
 
   const ceoApprovedVoucherByIds = () => {
-    const voucherIds = arrayIds.map((voucher) => voucher._id);
+    const voucherIds = arrayIds.map((voucher) => voucher.id);
     dispatch(ceoApprovedVouchersFunc(voucherIds, selectedOption10));
   };
 
@@ -399,7 +401,7 @@ const Voucher = () => {
     const vouchers = searchResult?.map((voucher) => {
       return {
         month: voucher?.month,
-        id: voucher?._id,
+        id: voucher?.id,
       };
     });
     const amountArray = searchResult?.map((voucher) => voucher?.amount);
@@ -420,7 +422,7 @@ const Voucher = () => {
   };
 
   const auditorOrCeoRejectVoucherBulk = () => {
-    const voucherIds = arrayIds.map((el) => el?._id);
+    const voucherIds = arrayIds.map((el) => el?.id);
     const voucherWithComments = voucherIds?.map((el) => {
       return {
         voucher: el,
@@ -449,7 +451,7 @@ const Voucher = () => {
     if (currentVoucher) {
       dispatch(
         accountantDeleteVoucherByIdFunc(
-          currentVoucher?._id,
+          currentVoucher?.id,
           selectedOption10,
           selectedOption
         )
@@ -458,7 +460,7 @@ const Voucher = () => {
   };
 
   const deleteBulkVouchers = () => {
-    const vouchersArr = arrayIds.map((el) => el?._id);
+    const vouchersArr = arrayIds.map((el) => el?.id);
     dispatch(
       accountantDeleteBulkVoucherFunc(
         vouchersArr,
@@ -501,7 +503,7 @@ const Voucher = () => {
 
   const onSelect = (slipId) => {
     const findVoucher = bankVoucher?.find(
-      (el) => String(el._id) === String(slipId)
+      (el) => String(el.id) === String(slipId)
     );
     if (findVoucher) {
       // setCurrentSlip(findSlip);
@@ -550,7 +552,7 @@ const Voucher = () => {
   };
 
   const onSelectView = (id) => {
-    const voucher = vouchers?.find((el) => String(el._id) === String(id));
+    const voucher = vouchers?.find((el) => String(el?.id) === String(id));
     if (voucher) {
       setCurrentVoucher(voucher);
       setIsOpen7(true);
@@ -654,7 +656,7 @@ const Voucher = () => {
     <>
       {(accountantGetApprovedSalaryslipsLoading ||
         auditorPreApproveVouchersLoading ||
-        ceoPreApprovedVouchersLoading) && <LoadingSpinner />}
+        ceoPreApprovedVouchersLoading) && <LoadingSpinner toggle={toggle} />}
       <BankScheduleOption
         isopen={isOpen5}
         userName={adminInfo?.user?.name}
@@ -664,7 +666,7 @@ const Voucher = () => {
       />
 
       {preAprrovedVoucherBulk && (
-        <Comfirm
+        <Comfirm toggle={toggle}
           isOpen4={isOpen4}
           setIsOpen4={setIsOpen4}
           preApprovedVoucherBulk={preAprrovedVoucherBulk}
@@ -674,7 +676,7 @@ const Voucher = () => {
       )}
 
       {approveVoucherBulk && (
-        <Comfirm
+        <Comfirm toggle={toggle}
           isOpen4={isOpen4}
           setIsOpen4={setIsOpen4}
           approveVoucherBulk={approveVoucherBulk}
@@ -684,7 +686,7 @@ const Voucher = () => {
       )}
 
       {bankScheduleBulk && (
-        <Comfirm
+        <Comfirm toggle={toggle}
           isOpen4={isOpen4}
           setIsOpen4={setIsOpen4}
           bankScheduleBulk={bankScheduleBulk}
@@ -694,7 +696,7 @@ const Voucher = () => {
       )}
 
       {rejectVoucherBulk && (
-        <Comfirm
+        <Comfirm toggle={toggle}
           isOpen4={isOpen4}
           setIsOpen4={setIsOpen4}
           rejectVoucherBulk={rejectVoucherBulk}
@@ -705,7 +707,7 @@ const Voucher = () => {
       )}
 
       {currentVoucher && (
-        <Comfirm
+        <Comfirm toggle={toggle}
           isOpen4={isOpen4}
           setIsOpen4={setIsOpen4}
           currentVoucher={currentVoucher}
@@ -735,7 +737,7 @@ const Voucher = () => {
       )}
 
       {deleteVoucherBulk && !currentVoucher && (
-        <Comfirm
+        <Comfirm toggle={toggle}
           isOpen4={isOpen4}
           setIsOpen4={setIsOpen4}
           deleteVoucherBulk={deleteVoucherBulk}
@@ -750,13 +752,24 @@ const Voucher = () => {
 
       <DashboardContainer onClick={closeOption}>
         <DashboardContent>
-          <SideNav userRole={userRole} vch={vch} />
-          <Mainbody>
+          <SideNav
+            userRole={userRole}
+            vch={vch}
+            toggle={toggle}
+            toggleMenu={toggleMenu}
+            mobileToggle={mobileToggle}
+            toggleMobileMenu={toggleMobileMenu}
+          />
+          <Mainbody toggle={toggle}>
             <Header
               text="Voucher"
               userRole={userRole}
               userRoleName={userRoleName}
               profileimg={profileImg}
+              toggle={toggle}
+              toggleMenu={toggleMenu}
+              mobileToggle={mobileToggle}
+              toggleMobileMenu={toggleMobileMenu}
             />
             <Container>
               {(ceoApproveVoucherError ||
@@ -782,7 +795,7 @@ const Voucher = () => {
                       selectedOption={selectedOption}
                       // cssClass={check}
                       cssClass2={"dropdown__header"}
-                      cssClass3={"margin__right"}
+                      cssClass3={"margin__right2"}
                       text={dropdownData[0]}
                       dataSet={dropdownData}
                       onOptionClicked={onOptionClicked2}
@@ -798,7 +811,7 @@ const Voucher = () => {
                       selectedOption={selectedOption10}
                       // cssClass={check}
                       cssClass2={"month__header"}
-                      cssClass3={"margin__right"}
+                      cssClass3={"margin__right2"}
                       text={currentmonthLong}
                       dataSet={monthArr}
                       onOptionClicked={onOptionClicked10}
@@ -817,16 +830,16 @@ const Voucher = () => {
                               !voucher?.processDoneAsSchedule
                           ) &&
                           selectedOption6 &&
-                          selectedOption7 &&
+                          // selectedOption7 &&
                           disableButton()
-                            ? "general__btn save__btn"
-                            : "general__btn disabled__btn"
+                            ? "general__btn mobile__margin__top save__btn"
+                            : "general__btn mobile__margin__top disabled__btn"
                         }
                         value="Create Bank Schedule"
                         disabled={
                           (bankVoucher.length === 0 ||
                             !selectedOption6 ||
-                            !selectedOption7 ||
+                            // !selectedOption7 ||
                             !bankVoucher?.every(
                               (voucher) =>
                                 voucher?.statusLevel === "approved" &&
@@ -843,26 +856,27 @@ const Voucher = () => {
                       />
                     </>
                   )}
-                  {userRole === "Accountant" && selectedOption === "Rejected" && (
-                    <>
-                      <input
-                        type="button"
-                        className={
-                          disableButton()
-                            ? "general__btn margin__left delete__btn"
-                            : "general__btn margin__left disabled__btn"
-                        }
-                        value="Delete"
-                        onClick={() => {
-                          // setIsOpen4(true);
-                          // setDelBulkPayslip(true);
-                          setIsOpen4(true);
-                          setDeleteVoucherBulk(true);
-                        }}
-                        disabled={!disableButton()}
-                      />
-                    </>
-                  )}
+                  {userRole === "Accountant" &&
+                    selectedOption === "Rejected" && (
+                      <>
+                        <input
+                          type="button"
+                          className={
+                            disableButton()
+                              ? "general__btn margin__left2 mobile__margin__top delete__btn"
+                              : "general__btn margin__left2 mobile__margin__top disabled__btn"
+                          }
+                          value="Delete"
+                          onClick={() => {
+                            // setIsOpen4(true);
+                            // setDelBulkPayslip(true);
+                            setIsOpen4(true);
+                            setDeleteVoucherBulk(true);
+                          }}
+                          disabled={!disableButton()}
+                        />
+                      </>
+                    )}
                   {(userRole === "Internal Auditor" || userRole === "CEO") && (
                     <>
                       <input
@@ -887,16 +901,14 @@ const Voucher = () => {
                             setApproveVoucherBulk(true);
                           }
                         }}
-                        disabled={
-                          !disableButton()
-                        }
+                        disabled={!disableButton()}
                       />
                       <input
                         type="button"
                         className={
                           disableButton()
-                            ? "general__btn margin__left delete__btn"
-                            : "general__btn margin__left disabled__btn"
+                            ? "general__btn margin__left2 mobile__margin__top delete__btn"
+                            : "general__btn margin__left2 mobile__margin__top disabled__btn"
                         }
                         onClick={() => {
                           if (viewReject) {
@@ -905,9 +917,7 @@ const Voucher = () => {
 
                           setIsOpen(true);
                         }}
-                        disabled={
-                          !disableButton()
-                        }
+                        disabled={!disableButton()}
                         value="Reject"
                       />
                     </>
@@ -921,25 +931,25 @@ const Voucher = () => {
                         selectedOption={selectedOption}
                         // cssClass={check}
                         cssClass2={"dropdown__header"}
-                        cssClass3={"margin__left"}
+                        cssClass3={"margin__left2 mobile__margin__top"}
                         text={dropdownData[0]}
                         dataSet={dropdownData}
                         onOptionClicked={onOptionClicked2}
                       />
 
-                      <DropdownList
+                      {/* <DropdownList
                         // list={true}
                         isOpen={isOpen6}
                         toggling={toggling6}
                         selectedOption={selectedOption7}
                         // cssClass={check}
                         cssClass2={"dropdown__header"}
-                        cssClass3={"margin__left"}
+                        cssClass3={"margin__left2 mobile__margin__top"}
                         text="--Select Voucher Type"
                         // text={dropdownData[0]}
                         dataSet={voucherType}
                         onOptionClicked={onOptionClicked7}
-                      />
+                      /> */}
 
                       {selectedOption !== "Rejected" && (
                         <DropdownList
@@ -949,7 +959,7 @@ const Voucher = () => {
                           selectedOption={selectedOption6}
                           // cssClass={check}
                           cssClass2={"dropdown__header"}
-                          cssClass3={"margin__left"}
+                          cssClass3={"margin__left2 mobile__margin__top"}
                           text="--Select a Bank"
                           // text={dropdownData[0]}
                           dataSet={banks}
@@ -959,7 +969,7 @@ const Voucher = () => {
                     </>
                   )}
                 </div>
-                <div className="search__container">
+                <div className="search__container mobile__margin__top">
                   <SearchBar term={searchTerm} searchKeyWord={searchHandler} />
                   <span className="icons search__icon">
                     <FontAwesomeIcon icon={["fas", "search"]} />
@@ -1011,7 +1021,7 @@ const Voucher = () => {
                       {searchResult
                         ?.slice(pagesVisited, pagesVisited + usersPerpage)
                         ?.map((voucher, indexes) => (
-                          <tr key={voucher?._id}>
+                          <tr key={voucher?.id}>
                             {(userRole === "Accountant" ||
                               userRole === "CEO" ||
                               userRole === "Internal Auditor") && (
@@ -1019,20 +1029,18 @@ const Voucher = () => {
                                 <input
                                   type="checkbox"
                                   // value={item.name}
-                                  name={voucher?.salarySlip?.employee?.EMPID}
+                                  name={voucher?.paySlip?.employee?.EMPID}
                                   checked={voucher?.isChecked || false}
                                   onChange={handleChange}
                                 />
                               </td>
                             )}
                             <td>{++indexes}</td>
-                            <td>{voucher?.salarySlip?.employee?.user?.name}</td>
-                            <td>
-                              {voucher?.salarySlip?.employee?.employeeBank}
-                            </td>
+                            <td>{voucher?.paySlip?.employee?.user?.name}</td>
+                            <td>{voucher?.paySlip?.employee?.employeeBank}</td>
                             <td>
                               {
-                                voucher?.salarySlip?.employee
+                                voucher?.paySlip?.employee
                                   ?.employeeBankAcctNumber
                               }
                             </td>
@@ -1064,21 +1072,26 @@ const Voucher = () => {
                               userRole === "Internal Auditor") && (
                               <td>
                                 {voucher?.acn}
+
                                 <div className="action__icons">
-                                  <div
-                                    title="View"
-                                    className="icons"
-                                    onClick={() => onSelectView(voucher?._id)}
-                                  >
-                                    <FontAwesomeIcon icon={["fas", "eye"]} />
-                                  </div>
+                                  {voucher?.status ? (
+                                    <div
+                                      title="View"
+                                      className="icons"
+                                      onClick={() => onSelectView(voucher?.id)}
+                                    >
+                                      <FontAwesomeIcon icon={["fas", "eye"]} />
+                                    </div>
+                                  ) : (
+                                    ""
+                                  )}
                                   {userRole === "Accountant" &&
                                     selectedOption === "Rejected" && (
                                       <>
                                         <div
                                           title="Comment"
                                           className="icons"
-                                          onClick={(e) => popup(voucher?._id)}
+                                          onClick={(e) => popup(voucher?.id)}
                                         >
                                           <FontAwesomeIcon
                                             icon={["fas", "comment"]}
@@ -1087,7 +1100,7 @@ const Voucher = () => {
                                         <div
                                           title="Delete"
                                           className="icons"
-                                          onClick={(e) => popup2(voucher?._id)}
+                                          onClick={(e) => popup2(voucher?.id)}
                                         >
                                           <FontAwesomeIcon
                                             icon={["fas", "trash-alt"]}

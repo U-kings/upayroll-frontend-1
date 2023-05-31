@@ -31,7 +31,7 @@ import { LoadingSpinner, Comfirm, Successful } from "../../modals";
 import { logoutAdmin } from "../../actions/auth";
 import AdditionTable from "../../components/AdditionTable";
 
-const Payheads = () => {
+const Payheads = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
   // history init
   const history = useHistory();
   // dispatch init
@@ -98,20 +98,20 @@ const Payheads = () => {
   const onSelect = (id, type) => {
     let findPay;
     if (type === "allowance") {
-      findPay = allowances?.find((el) => String(el?._id) === String(id));
+      findPay = allowances?.find((el) => String(el?.id) === String(id));
       if (findPay) {
         setAllowance({
-          _id: findPay?._id,
+          id: findPay?.id,
           name: findPay?.name,
           description: findPay?.description,
           edit: true,
         });
       }
     } else {
-      findPay = deductions?.find((el) => String(el?._id) === String(id));
+      findPay = deductions?.find((el) => String(el?.id) === String(id));
       if (findPay) {
         setDeduction({
-          _id: findPay?._id,
+          id: findPay?.id,
           name: findPay?.name,
           description: findPay?.description,
           edit: true,
@@ -153,9 +153,9 @@ const Payheads = () => {
   const onSave = (e, type) => {
     e.preventDefault();
     if (type === "allowance") {
-      if (allowance?._id || allowance?.edit) {
+      if (allowance?.id || allowance?.edit) {
         dispatch(
-          adminUpdateAllowanceById(allowance?._id, {
+          adminUpdateAllowanceById(allowance?.id, {
             name: allowance?.name,
             description: allowance?.description,
           })
@@ -169,9 +169,9 @@ const Payheads = () => {
         );
       }
     } else {
-      if (deduction?._id || deduction?.edit) {
+      if (deduction?.id || deduction?.edit) {
         dispatch(
-          adminUpdateDeductionById(deduction?._id, {
+          adminUpdateDeductionById(deduction?.id, {
             name: deduction.name,
             description: deduction.description,
           })
@@ -256,9 +256,9 @@ const Payheads = () => {
   const phd = "active";
   return (
     <>
-      {loadingAllowances && loadingDeductions && <LoadingSpinner />}
-      {updateAllowanceLoading && <LoadingSpinner />}
-      {updateDeductionLoading && <LoadingSpinner />}
+      {loadingAllowances && loadingDeductions && <LoadingSpinner toggle={toggle} />}
+      {updateAllowanceLoading && <LoadingSpinner toggle={toggle} />}
+      {updateDeductionLoading && <LoadingSpinner toggle={toggle} />}
       <Successful
         isOpen7={isOpen7 || (updateAllowanceSuccess && !updateAllowanceError)}
         setIsOpen7={setIsOpen7}
@@ -272,7 +272,7 @@ const Payheads = () => {
         message="Deduction updated successfully!"
       />
       {allowanceId && (
-        <Comfirm
+        <Comfirm toggle={toggle}
           isOpen4={isOpen4}
           popup4={popup4}
           setIsOpen4={setIsOpen4}
@@ -281,7 +281,7 @@ const Payheads = () => {
         />
       )}
       {deductionId && (
-        <Comfirm
+        <Comfirm toggle={toggle}
           isOpen4={isOpen4}
           popup4={popup4}
           setIsOpen4={setIsOpen4}
@@ -291,12 +291,24 @@ const Payheads = () => {
       )}
       <DashboardContainer>
         <DashboardContent>
-          <SideNav userRole={userRole} userRoleName={userRoleName} phd={phd} />
-          <Mainbody>
+          <SideNav
+            userRole={userRole}
+            userRoleName={userRoleName}
+            phd={phd}
+            toggle={toggle}
+            toggleMenu={toggleMenu}
+            mobileToggle={mobileToggle}
+            toggleMobileMenu={toggleMobileMenu}
+          />
+          <Mainbody toggle={toggle}>
             <Header
               text="PayHeads"
               userRole={userRole}
               profileimg={profileImg}
+              toggle={toggle}
+              toggleMenu={toggleMenu}
+              mobileToggle={mobileToggle}
+              toggleMobileMenu={toggleMobileMenu}
             />
             <AdditionTable
               allowance={allowance}

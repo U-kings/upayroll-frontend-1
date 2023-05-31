@@ -15,7 +15,7 @@ import {
   ADMIN_UPDATE_MONTHLYPAYHEADS_RESET,
 } from "../../types/monthlypayheads";
 
-const MonthlyPayheadTable = () => {
+const MonthlyPayheadTable = ({ toggle }) => {
   // hsitory init
   const history = useHistory();
   // dispatch init
@@ -58,12 +58,12 @@ const MonthlyPayheadTable = () => {
   const onSelect = (id) => {
     let findPos;
     if (monthlyPayheads?.length > 0) {
-      findPos = monthlyPayheads.find((el) => String(el?._id) === String(id));
+      findPos = monthlyPayheads.find((el) => String(el?.id) === String(id));
       if (findPos) {
         setFormData({
           name: findPos?.name,
           percentage: findPos?.percentage,
-          _id: findPos?._id,
+          id: findPos?.id,
         });
         setSelectedOption(strUpperFirst(findPos?.payType));
       }
@@ -75,10 +75,10 @@ const MonthlyPayheadTable = () => {
 
   // close dropdown
   const close = () => {
-    if(isOpen === true){
+    if (isOpen === true) {
       setIsOpen(false);
     }
-  }
+  };
 
   // monthly payhead type
   const onOptionClicked = (payHeadType) => () => {
@@ -106,13 +106,20 @@ const MonthlyPayheadTable = () => {
       setFormData({ name: "", percentage: 0 });
       setSelectedOption(null);
     }
+
+    if (createMonthlyPayheadSuccess && !createMonthlyPayheadError) {
+      dispatch({ type: ADMIN_CREATE_MONTHLYPAYHEADS_RESET });
+      dispatch({ type: ADMIN_CREATE_MONTHLYPAYHEADS_RESET });
+      setFormData({ name: "", percentage: 0 });
+      setSelectedOption(null);
+    }
   };
 
   const onSave = (e) => {
     e.preventDefault();
-    if (formData?._id) {
+    if (formData?.id) {
       dispatch(
-        adminUpdateMonthlyPayheadById(formData?._id, {
+        adminUpdateMonthlyPayheadById(formData?.id, {
           name,
           payType: selectedOption,
           percentage,
@@ -131,34 +138,32 @@ const MonthlyPayheadTable = () => {
 
   // useEffects
   useEffect(() => {
-    if (!monthlyPayheads) {
+    dispatch(adminGetAllMonthlyPayheads());
+  }, [dispatch]);
+
+  useEffect(() => {
+    if (createMonthlyPayheadSuccess) {
       dispatch(adminGetAllMonthlyPayheads());
     }
-
-    if (createMonthlyPayheadSuccess && !createMonthlyPayheadError) {
-      dispatch({ type: ADMIN_CREATE_MONTHLYPAYHEADS_RESET });
-      setFormData({ name: "", percentage: 0 });
-      setSelectedOption(null);
-    }
-  }, [
-    dispatch,
-    monthlyPayheads,
-    history,
-    createMonthlyPayheadSuccess,
-    createMonthlyPayheadError,
-  ]);
+  }, [dispatch, createMonthlyPayheadSuccess]);
 
   return (
     <>
-      {getMonthlyPayheadsLoading && <LoadingSpinner />}
-      {updateMonthlyPayheadLoading && <LoadingSpinner />}
+      {getMonthlyPayheadsLoading && <LoadingSpinner toggle={toggle} />}
+      {updateMonthlyPayheadLoading && <LoadingSpinner toggle={toggle} />}
+      {createMonthlyPayheadLoading && <LoadingSpinner toggle={toggle} />}
+      <Successful
+        isOpen7={createMonthlyPayheadSuccess && !createMonthlyPayheadError}
+        popup7={popup7}
+        message="Monthly Payhead Created Successfully!"
+      />
       <Successful
         isOpen7={updateMonthlyPayheadSuccess && !updateMonthlyPayheadError}
         popup7={popup7}
         message="Monthly Payhead Updated Successfully!"
       />
       {monthlyPayheadId && (
-        <Comfirm
+        <Comfirm toggle={toggle}
           isOpen4={isOpen4}
           popup4={popup4}
           setIsOpen4={setIsOpen4}
@@ -232,7 +237,7 @@ const MonthlyPayheadTable = () => {
                     updateMonthlyPayheadLoading ||
                     createMonthlyPayheadLoading
                   }
-                  value={formData?._id ? "Edit" : "Save"}
+                  value={formData?.id ? "Edit" : "Save"}
                 />
                 <input
                   className="cancel__btn margin__left"
@@ -260,7 +265,7 @@ const MonthlyPayheadTable = () => {
                 </thead>
                 <tbody>
                   {monthlyPayheads?.map((mthPayhead, indexes) => (
-                    <tr key={mthPayhead?._id}>
+                    <tr key={mthPayhead?.id}>
                       <td>{++indexes}</td>
                       <td>{mthPayhead?.name}</td>
                       <td>{strUpperFirst(mthPayhead?.payType)}</td>
@@ -272,14 +277,14 @@ const MonthlyPayheadTable = () => {
                         <div className="action__icons">
                           <div
                             className="icons"
-                            onClick={(e) => onSelect(mthPayhead?._id)}
+                            onClick={(e) => onSelect(mthPayhead?.id)}
                           >
                             {" "}
                             <FontAwesomeIcon icon={["fas", "edit"]} />{" "}
                           </div>
                           <div
                             className="icons"
-                            onClick={(e) => popup4(mthPayhead?._id)}
+                            onClick={(e) => popup4(mthPayhead?.id)}
                           >
                             {" "}
                             <FontAwesomeIcon icon={["fas", "trash-alt"]} />{" "}

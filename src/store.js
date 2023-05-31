@@ -13,6 +13,10 @@ import {
   adminLoginStatusReducer,
   checkCookieTokenValidReducer,
   ceoUploadSignatureReducer,
+  registerCompanyReducer,
+  registerCompanyAdminReducer,
+  confirmEmailReducer,
+  getNotCreatedRolesReducer,
 } from "./reducers/auth";
 
 // department reducer
@@ -191,11 +195,21 @@ import {
 
 // dashboards
 import { getDashboardReportsResultReducer } from "./reducers/dashboard";
+import {
+  hrCreateJuniorStaffGradeReducer,
+  hrCreateManagementStaffGradeReducer,
+  hrCreateMiddleStaffGradeReducer,
+  hrCreateSeniorStaffGradeReducer,
+} from "./reducers/salarystructure";
 
 // reducers
 const reducers = combineReducers({
   // Auth
   adminLoginReducer: loginAdminUserReducer,
+  adminRegisterCompanyReducer: registerCompanyReducer,
+  registerCompanyAdmin: registerCompanyAdminReducer,
+  getNotCreatedRoles: getNotCreatedRolesReducer,
+  confirmEmail: confirmEmailReducer,
   adminLoginStatus: adminLoginStatusReducer,
   adminForgotPassword: adminForgotPasswordReducer,
   adminResetPassword: adminResetPasswordReducer,
@@ -347,6 +361,12 @@ const reducers = combineReducers({
   hrUpdateSteps: hrUpdateStepsByIdReducer,
   hrDeleteSteps: hrDeleteStepsByIdReducer,
 
+  //salary structure
+  hrCreateJuniorStaffGrade: hrCreateJuniorStaffGradeReducer,
+  hrCreateMiddleStaffGrade: hrCreateMiddleStaffGradeReducer,
+  hrCreateSeniorStaffGrade: hrCreateSeniorStaffGradeReducer,
+  hrCreateManagementStaffGrade: hrCreateManagementStaffGradeReducer,
+
   // downloading
   downloadStatus: downloadingReducer,
 
@@ -377,7 +397,7 @@ const reducers = combineReducers({
 
   // ** CEO **
   // Employee Loan
-  ceoGetNotApprovedBankSchedules: ceoGetNotApprovedBankSchedulesReducer,
+  // ceoGetNotApprovedBankSchedules: ceoGetNotApprovedBankSchedulesReducer,
   ceoSetApprovedGeneratedEmployeeLoans:
     ceoSetApprovedGeneratedEmployeeLoansReducer,
   ceoGetPreApprovedAndApprovedGeneratedEmployeeLoans:

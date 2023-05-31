@@ -60,7 +60,7 @@ import { COLORS } from "../../values/colors";
 import { trancateWord } from "../../hooks/functions";
 import { downloadEmployeeSummaryExcelFileFunc } from "../../actions/download";
 
-const Employee = () => {
+const Employee = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
   // history init
   const history = useHistory();
 
@@ -129,7 +129,7 @@ const Employee = () => {
   const [isOpen2, setIsOpen2] = useState(false);
   const [isOpen3, setIsOpen3] = useState(false);
   const [isOpen4, setIsOpen4] = useState(false);
-  const [isOpen9, setIsOpen9] = useState(false);
+  const [isopen9, setisopen9] = useState(false);
   const [isOpen7, setIsOpen7] = useState(false);
   const [isOpen10, setIsOpen10] = useState(false);
   const [isGen, setIsGen] = useState(false);
@@ -256,20 +256,25 @@ const Employee = () => {
     if (!adminInfo?.isAuthenticated && !adminInfo?.user?.name) {
       history.push("/");
     }
+  }, [history, adminInfo]);
+
+  useEffect(() => {
     if (userRole === "HR") {
       dispatch(adminGetAllEmployee(selectedOption10));
     }
-
     if (
       userRole === "Internal Auditor" ||
       userRole === "CEO" ||
       userRole === "Accountant"
     ) {
-      history.push("dashboard");
-    } else if (userRole === "Employee") {
-      history.push("dashboard");
+      history.push("/dashboard");
     }
+    if (userRole === "Employee") {
+      history.push("/dashboard");
+    }
+  }, [history, userRole, selectedOption10, dispatch]);
 
+  useEffect(() => {
     if (topSuccess) {
       setCurrentEmployee(null);
     }
@@ -289,8 +294,6 @@ const Employee = () => {
       });
     }
   }, [
-    adminInfo,
-    history,
     dispatch,
     topSuccess,
     loadingTopUp,
@@ -298,7 +301,7 @@ const Employee = () => {
     deleteAllowanceSuccess,
     resetError,
     resetSucces,
-    userRole,
+    ,
     selectedOption10,
   ]);
 
@@ -319,10 +322,10 @@ const Employee = () => {
       const notchId = user?.notch?.notchId;
       const stepId = user?.notch?.stepId;
       const findNotchId = user?.salaryStep?.notches?.find(
-        (el) => String(el?._id) === String(notchId)
+        (el) => String(el?.id) === String(notchId)
       );
       let findStepId;
-      if (String(user?.salaryStep?._id) === String(stepId)) {
+      if (String(user?.salaryStep?.id) === String(stepId)) {
         findStepId = true;
       } else {
         findStepId = false;
@@ -340,26 +343,26 @@ const Employee = () => {
   const downloadExcel = () => {
     const employeeData = arrayIds?.map((el) => {
       return {
-        staffId: el.staffId,
-        staffName: el.user.name,
-        doe: el.joinDate || "",
-        dob: el.dob || "",
-        address: el.address || "",
-        mobile: el.mobile || "",
-        employeeBank: el.employeeBank || "",
-        employeeBankAcctNumber: el.employeeBankAcctNumber || "",
+        staffId: el?.staffId,
+        staffName: el?.user?.name,
+        doe: el?.joinDate || "",
+        dob: el?.dob || "",
+        address: el?.address || "",
+        mobile: el?.mobile || "",
+        employeeBank: el?.employeeBank || "",
+        employeeBankAcctNumber: el?.employeeBankAcctNumber || "",
         staffLevel:
-          el.employeeType !== "Contract" && el.employeeType !== "Intern"
-            ? el.salaryLevel.name
+          el?.employeeType !== "Contract" && el?.employeeType !== "Intern"
+            ? el?.salaryLevel?.name
             : "",
         staffGrade:
-          el.employeeType !== "Contract" && el.employeeType !== "Intern"
-            ? el.salaryLevel?.salaryGrade.name
+          el?.employeeType !== "Contract" && el?.employeeType !== "Intern"
+            ? el?.salaryLevel?.salaryGrade?.name
             : "",
         grossSalary:
-          el.employeeType !== "Contract" && el.employeeType !== "Intern"
+          el?.employeeType !== "Contract" && el?.employeeType !== "Intern"
             ? returnEmployeeGrossPay(el)
-            : el.contractSalary,
+            : el?.contractSalary,
       };
     });
 
@@ -456,10 +459,10 @@ const Employee = () => {
   const deleteIds = () => {
     if (arrayIds.length && arrayIds.length === 1) {
       // delete a particular selected employee
-      dispatch(adminDeleteEmployeeById(arrayIds[0]._id, selectedOption10));
+      dispatch(adminDeleteEmployeeById(arrayIds[0].id, selectedOption10));
     } else if (arrayIds.length > 1) {
       // delete all selected employees
-      const newArray = arrayIds.map((user) => user._id);
+      const newArray = arrayIds.map((user) => user.id);
       dispatch(adminDeleteEmployeesByIds(newArray, selectedOption10));
     }
   };
@@ -476,72 +479,101 @@ const Employee = () => {
 
     let paySlips;
 
+    // paySlips = arrayIds.map((data) => {
+    //   if (
+    //     data?.employeeType !== "Contract" &&
+    //     data?.employeeType !== "Intern"
+    //   ) {
+    //     const [
+    //       grossPay,
+    //       allowanceTotal,
+    //       deductionTotal,
+    //       totalEarnings,
+    //       pension,
+    //       paye,
+    //       uWallet,
+    //       netPay,
+    //     ] = calculatePaySlip(data, sumMonPay, sumTaxRef, taxRefLength);
+
+    //     return {
+    //       // ...calculatePaySlip(data, sumMonPay, sumTaxRef, taxRefLength),
+    //       grossPay: Number(grossPay),
+    //       allowanceTotal: Number(allowanceTotal),
+    //       deductionTotal: Number(deductionTotal),
+    //       totalEarnings: Number(totalEarnings),
+    //       allowances: data.allowances,
+    //       deductions: data.deductions,
+    //       employee: data.id,
+    //       pension: Number(pension),
+    //       paye: Number(paye),
+    //       uWallet: Number(uWallet),
+    //       month: selectedOption10 ? selectedOption10 : month,
+    //       netPay: Number(netPay),
+    //       netSalary: Number(0),
+    //     };
+    //   } else {
+    //     const [
+    //       grossPay,
+    //       allowanceTotal,
+    //       deductionTotal,
+    //       totalEarnings,
+    //       netPay,
+    //     ] = calculateContractSlip(data);
+
+    //     return {
+    //       // ...calculatePaySlip(data, sumMonPay, sumTaxRef, taxRefLength),
+    //       grossPay: Number(grossPay),
+    //       allowanceTotal: Number(allowanceTotal),
+    //       deductionTotal: Number(deductionTotal),
+    //       totalEarnings: Number(totalEarnings),
+    //       allowances: data.allowances,
+    //       deductions: data.deductions,
+    //       employee: data.id,
+    //       pension: Number(0),
+    //       paye: Number(0),
+    //       uWallet: Number(0),
+    //       month: selectedOption10 ? selectedOption10 : month,
+    //       netPay: Number(netPay),
+    //       netSalary: Number(0),
+    //     };
+    //   }
+    // });
+
     paySlips = arrayIds.map((data) => {
       if (
         data?.employeeType !== "Contract" &&
         data?.employeeType !== "Intern"
       ) {
-        const [
-          grossPay,
-          allowanceTotal,
-          deductionTotal,
-          totalEarnings,
-          pension,
-          paye,
-          uWallet,
-          netPay,
-        ] = calculatePaySlip(data, sumMonPay, sumTaxRef, taxRefLength);
-
         return {
-          // ...calculatePaySlip(data, sumMonPay, sumTaxRef, taxRefLength),
-          grossPay: Number(grossPay),
-          allowanceTotal: Number(allowanceTotal),
-          deductionTotal: Number(deductionTotal),
-          totalEarnings: Number(totalEarnings),
-          allowances: data.allowances,
-          deductions: data.deductions,
-          employee: data._id,
-          pension: Number(pension),
-          paye: Number(paye),
-          uWallet: Number(uWallet),
           month: selectedOption10 ? selectedOption10 : month,
-          netPay: Number(netPay),
+          employee: data?.id,
         };
       } else {
-        const [
-          grossPay,
-          allowanceTotal,
-          deductionTotal,
-          totalEarnings,
-          netPay,
-        ] = calculateContractSlip(data);
-
         return {
-          // ...calculatePaySlip(data, sumMonPay, sumTaxRef, taxRefLength),
-          grossPay: Number(grossPay),
-          allowanceTotal: Number(allowanceTotal),
-          deductionTotal: Number(deductionTotal),
-          totalEarnings: Number(totalEarnings),
-          allowances: data.allowances,
-          deductions: data.deductions,
-          employee: data._id,
           month: selectedOption10 ? selectedOption10 : month,
-          netPay: Number(netPay),
+          employee: data?.id,
         };
       }
     });
 
-    if (paySlips.length && paySlips.length === 1) {
+    if (paySlips?.length && paySlips?.length === 1) {
       // generate payslip for a particular selected employee
       const payslip = paySlips[0];
-      dispatch(adminGeneratePayslip(payslip, payslip.employee));
+      dispatch(
+        adminGeneratePayslip(
+          { month: payslip?.month ? payslip?.month : month },
+          payslip?.employee
+        )
+      );
+      // dispatch(adminGeneratePayslip(payslip, payslip.employee));
     } else if (paySlips.length > 1) {
       // generate payslips for many selected employees
+      // dispatch(adminGenerateBulkPayslips(paySlips));
       dispatch(adminGenerateBulkPayslips(paySlips));
     }
   };
   const onSelect = (id) => {
-    const employee = employees.find((el) => String(el?._id) === String(id));
+    const employee = employees.find((el) => String(el?.id) === String(id));
     setCurrentEmployee(employee);
   };
   const popup = (id) => {
@@ -550,7 +582,7 @@ const Employee = () => {
   };
   const popup2 = (id) => {
     setIsOpen2(!isOpen2);
-    onSelect(id); 
+    onSelect(id);
     // setIsOpen2(true);
   };
   const popup3 = (id) => {
@@ -667,8 +699,12 @@ const Employee = () => {
   const emp = "active";
   return (
     <>
-      {(getEmployeeLoading || deleteEmployeeLoading) && <LoadingSpinner />}
-      {downloadStatusLoading && !downloadStatusError && <LoadingSpinner />}
+      {(getEmployeeLoading || deleteEmployeeLoading) && (
+        <LoadingSpinner toggle={toggle} />
+      )}
+      {downloadStatusLoading && !downloadStatusError && (
+        <LoadingSpinner toggle={toggle} />
+      )}
 
       {currentEmployee && (
         <SelectMonth isOpen={isOpen} popup={popup} employee={currentEmployee} />
@@ -676,6 +712,7 @@ const Employee = () => {
 
       {currentEmployee && (
         <ViewEmployee
+          toggle={toggle}
           isOpen2={isOpen2}
           popup2={popup2}
           setIsOpen2={setIsOpen2}
@@ -684,6 +721,7 @@ const Employee = () => {
       )}
       {currentEmployee && (
         <EditEmployee
+          toggle={toggle}
           isOpen3={isOpen3}
           popup3={popup3}
           employee={currentEmployee}
@@ -693,15 +731,17 @@ const Employee = () => {
       )}
       {currentEmployee && !isGen && !delBulk && (
         <Comfirm
+          toggle={toggle}
           isOpen4={isOpen4}
           popup4={popup4}
           setIsOpen4={setIsOpen4}
-          empId={currentEmployee?._id}
+          empId={currentEmployee?.id}
           month={selectedOption10}
         />
       )}
       {delBulk && !isGen && (
         <Comfirm
+          toggle={toggle}
           isOpen4={isOpen4}
           popup4={popup4}
           setIsOpen4={setIsOpen4}
@@ -714,6 +754,7 @@ const Employee = () => {
       )}
       {isGen && (
         <Comfirm
+          toggle={toggle}
           isOpen4={isOpen4}
           popup4={popup4}
           setIsOpen4={setIsOpen4}
@@ -777,15 +818,24 @@ const Employee = () => {
       />
       <DashboardContainer onClick={closeOption}>
         <DashboardContent>
-          <SideNav isOpen9={isOpen9} emp={emp} userRole={userRole} />
-          <Mainbody isOpen9={isOpen9}>
+          <SideNav
+            toggle={toggle}
+            toggleMenu={toggleMenu}
+            mobileToggle={mobileToggle}
+            toggleMobileMenu={toggleMobileMenu}
+            emp={emp}
+            userRole={userRole}
+          />
+          <Mainbody toggle={toggle}>
             <Header
               text="Employee"
               userRole={userRole}
               userRoleName={userRoleName}
               profileimg={profileImg}
-              isOpen9={isOpen9}
-              setIsOpen9={setIsOpen9}
+              toggle={toggle}
+              toggleMenu={toggleMenu}
+              mobileToggle={mobileToggle}
+              toggleMobileMenu={toggleMobileMenu}
             />
             <Container>
               {!generatePayslipLoading && generatePayslipError && (
@@ -793,13 +843,14 @@ const Employee = () => {
               )}
               {showError && <ErrorBox errorMessage={showError} />}
               <EmpContainer>
-                <div className="row">
+                <div className="row top__btn">
                   {userRole === "HR" && (
                     <>
                       <LinkButton to="/new-employee">
                         <input
                           type="button"
                           className="green__btn"
+                          // className="green__btn margin__left2"
                           value="Add Employee"
                         />
                       </LinkButton>
@@ -809,8 +860,8 @@ const Employee = () => {
                         className={
                           disableButton() &&
                           selectedOption10 === currentmonthLong
-                            ? "general__btn margin__left save__btn"
-                            : "general__btn margin__left disabled__btn"
+                            ? "general__btn margin__left2 mobile__margin__top save__btn"
+                            : "general__btn margin__left2 mobile__margin__top disabled__btn"
                         }
                         value="Run Payroll"
                         onClick={() => {
@@ -826,8 +877,8 @@ const Employee = () => {
                         type="button"
                         className={
                           disableButton()
-                            ? "general__btn margin__left delete__btn"
-                            : "general__btn margin__left disabled__btn"
+                            ? "general__btn margin__left2 mobile__margin__top delete__btn"
+                            : "general__btn margin__left2 mobile__margin__top disabled__btn"
                         }
                         value="Delete"
                         onClick={() => {
@@ -843,7 +894,7 @@ const Employee = () => {
                         // selectedOption={selectedOption10}
                         cssClass={check}
                         cssClass2={"month__header"}
-                        cssClass3={"margin__left"}
+                        cssClass3={"margin__left2 mobile__margin__top"}
                         text={currentmonthLong}
                         // dataSet={months}
                         onOptionClicked={onOptionClicked10}
@@ -854,8 +905,8 @@ const Employee = () => {
                           // className="general__btn margin__left save__btn"
                           className={
                             disableButton()
-                              ? "general__btn margin__left save__btn"
-                              : "general__btn margin__left disabled__btn"
+                              ? "general__btn margin__left2 mobile__margin__top save__btn"
+                              : "general__btn margin__left2 mobile__margin__top disabled__btn"
                           }
                           value="Download Excel"
                           onClick={downloadExcel}
@@ -866,9 +917,9 @@ const Employee = () => {
                   )}
                 </div>
                 {/* <div className="row"> */}
-                <div className="row">
+                <div className="row top__btn">
                   <div style={{ margin: "auto 1rem" }}>
-                    <div style={{ display: "flex" }}>
+                    <div style={{ display: "flex", margin: ".5rem 0" }}>
                       <input
                         type="checkbox"
                         id="AllEmployee"
@@ -876,8 +927,11 @@ const Employee = () => {
                         style={{ margin: "auto 0" }}
                       />
                       <p
-                        className="margin__left"
-                        style={{ color: `${COLORS.grey2}` }}
+                        // className="margin__left"
+                        style={{
+                          color: `${COLORS.grey2}`,
+                          margin: "auto auto auto .8rem",
+                        }}
                       >
                         View All Employee
                       </p>
@@ -919,7 +973,7 @@ const Employee = () => {
                         <th style={{ paddingLeft: "3.5rem" }}> Staff ID</th>
                         <th>Full Name</th>
                         <th>Email Address</th>
-                        <th>Date of Birth</th>
+                        <th>Account No.</th>
                         <th>Contact</th>
                         <th>Department</th>
                         <th>Position</th>
@@ -932,7 +986,7 @@ const Employee = () => {
                         ?.sort((a, b) => b.createdAt - a.createdAt)
                         ?.map((employee) => {
                           return (
-                            <tr key={employee?._id}>
+                            <tr key={employee?.id}>
                               {userRole === "HR" && (
                                 <td>
                                   <input
@@ -964,7 +1018,8 @@ const Employee = () => {
                                 employee?.user?.name
                               )} `}</td>
                               <td>{trancateWord(employee?.user?.email)}</td>
-                              <td>{employee?.dob?.substring(0, 10)}</td>
+                              <td>{employee?.employeeBankAcctNumber}</td>
+                              {/* <td>{employee?.dob?.substring(0, 10)}</td> */}
                               <td>{`+234 ${
                                 employee?.mobile ? employee?.mobile : ""
                               }`}</td>
@@ -979,7 +1034,7 @@ const Employee = () => {
                                   <div className="action__icons">
                                     {/* <div
                                       className="icons"
-                                      onClick={(e) => popup(employee?._id)}
+                                      onClick={(e) => popup(employee?.id)}
                                     >
                                       {" "}
                                       <FontAwesomeIcon
@@ -989,7 +1044,7 @@ const Employee = () => {
                                     <div
                                       title="View/Add/Delete Payhead"
                                       className="icons"
-                                      onClick={(e) => popup2(employee?._id)}
+                                      onClick={(e) => popup2(employee?.id)}
                                     >
                                       {" "}
                                       <FontAwesomeIcon
@@ -999,7 +1054,7 @@ const Employee = () => {
                                     <div
                                       title="Edit Employee"
                                       className="icons"
-                                      onClick={(e) => popup3(employee?._id)}
+                                      onClick={(e) => popup3(employee?.id)}
                                     >
                                       {" "}
                                       <FontAwesomeIcon
@@ -1009,7 +1064,7 @@ const Employee = () => {
                                     <div
                                       title="Delete Employee"
                                       className="icons"
-                                      onClick={(e) => popup4(employee?._id)}
+                                      onClick={(e) => popup4(employee?.id)}
                                     >
                                       {" "}
                                       <FontAwesomeIcon
@@ -1028,7 +1083,7 @@ const Employee = () => {
                 </div>
               </div>
             </Container>
-            <PaginationContainer isOpen9={isOpen9}>
+            <PaginationContainer isopen9={isopen9}>
               <div className="row">
                 <ReactPaginate
                   previousLabel={

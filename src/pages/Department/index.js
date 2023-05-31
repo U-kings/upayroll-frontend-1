@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Header, SideNav } from "../../components";
+import { ErrorBox, Header, SideNav } from "../../components";
 import {
   DashboardContainer,
   DashboardContent,
@@ -22,7 +22,7 @@ import { useHistory } from "react-router-dom";
 import { logoutAdmin } from "../../actions/auth";
 import { ADMIN_GET_ALL_DEDUCTIONS_RESET } from "../../types/deduction";
 
-const Department = () => {
+const Department = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
   // dispatch init
   const dispatch = useDispatch();
 
@@ -39,6 +39,7 @@ const Department = () => {
   const {
     success: createDepartmentSuccess,
     isLoading: createDepartmentLoading,
+    error: CreateDepartmentError,
   } = useSelector((state) => state.adminCreateDepartment);
 
   const {
@@ -60,9 +61,9 @@ const Department = () => {
 
   const onSave = (e) => {
     e.preventDefault();
-    if (formData?._id) {
+    if (formData?.id) {
       dispatch(
-        adminUpdateDepartmentById(formData?._id, {
+        adminUpdateDepartmentById(formData?.id, {
           name: formData.name,
         })
       );
@@ -74,9 +75,9 @@ const Department = () => {
   const onSelect = (id) => {
     let findDp;
     if (departments.length > 0) {
-      findDp = departments.find((el) => String(el?._id) === String(id));
+      findDp = departments.find((el) => String(el?.id) === String(id));
       if (findDp) {
-        setForm({ name: findDp?.name, _id: findDp?._id });
+        setForm({ name: findDp?.name, id: findDp?.id });
       }
     }
   };
@@ -122,7 +123,17 @@ const Department = () => {
         name: "",
       });
     }
-  }, [adminInfo, dispatch, userRole, history, createDepartmentSuccess]);
+    if (CreateDepartmentError) {
+      dispatch({ type: ADMIN_CREATE_DEPARTMENT_RESET });
+    }
+  }, [
+    adminInfo,
+    dispatch,
+    userRole,
+    history,
+    createDepartmentSuccess,
+    CreateDepartmentError,
+  ]);
 
   useEffect(() => {
     if (departmentsError === "no token was passed") {
@@ -133,9 +144,9 @@ const Department = () => {
 
   return (
     <>
-      {loadingDepartments && <LoadingSpinner />}
+      {loadingDepartments && <LoadingSpinner toggle={toggle} />}
       {departmentId && (
-        <Comfirm
+        <Comfirm toggle={toggle}
           isOpen4={isOpen4}
           popup4={popup4}
           setIsOpen4={setIsOpen4}
@@ -152,15 +163,30 @@ const Department = () => {
       />
       <DashboardContainer>
         <DashboardContent>
-          <SideNav userRole={userRole} dpt={dpt} />
-          <Mainbody>
+          <SideNav
+            userRole={userRole}
+            dpt={dpt}
+            toggle={toggle}
+            toggleMenu={toggleMenu}
+            mobileToggle={mobileToggle}
+            toggleMobileMenu={toggleMobileMenu}
+          />
+          <Mainbody toggle={toggle}>
             <Header
               text="Departments"
               userRole={userRole}
               userRoleName={userRoleName}
               profileimg={profileImg}
+              toggle={toggle}
+              toggleMenu={toggleMenu}
+              mobileToggle={mobileToggle}
+              toggleMobileMenu={toggleMobileMenu}
             />
+
             <Container>
+              {CreateDepartmentError && (
+                <ErrorBox errorMessage={CreateDepartmentError} />
+              )}
               <div className="container__content">
                 <div className="form__content">
                   <form onSubmit={onSave}>
@@ -192,7 +218,7 @@ const Department = () => {
                           createDepartmentLoading ||
                           updateDepartmentLoading
                         }
-                        value={formData?._id ? "Edit" : "Save"}
+                        value={formData?.id ? "Edit" : "Save"}
                       />
                       <input
                         className="cancel__btn margin__left"
@@ -215,7 +241,7 @@ const Department = () => {
                       </thead>
                       <tbody>
                         {departments?.map((el, indexes) => (
-                          <tr key={el?._id}>
+                          <tr key={el?.id}>
                             <td>{++indexes}</td>
                             <td>{el?.name?.toUpperCase()}</td>
                             <td>
@@ -223,7 +249,7 @@ const Department = () => {
                                 <div
                                   title="Edit"
                                   className="icons"
-                                  onClick={(e) => onSelect(el?._id)}
+                                  onClick={(e) => onSelect(el?.id)}
                                 >
                                   {" "}
                                   <FontAwesomeIcon
@@ -233,7 +259,7 @@ const Department = () => {
                                 <div
                                   title="Delete"
                                   className="icons"
-                                  onClick={(e) => popup4(el?._id)}
+                                  onClick={(e) => popup4(el?.id)}
                                 >
                                   {" "}
                                   <FontAwesomeIcon

@@ -10,20 +10,21 @@ const Main = () => {
 
   useEffect(() => {
     if (adminInfo?.isAuthenticated && adminInfo?.user?.name) {
-      history.push("/dashboard");
+      history.push("dashboard");
     }
   }, [history, adminInfo, dispatch]);
 
   // useEffect(() => {
   //   if (cookieValid?.status) {
-  //     history.push("/employee");
+  //     history.push("employee");
   //     dispatch({ type: CHECK_COOKIE_TOKEN_VALID_RESET });
   //   }
   // }, [dispatch, history, cookieValid]);
 
   return (
     <>
-      <Redirect exact from="/" to="/signin" />
+      <Redirect exact from="/" to="home" />
+      {/* <Redirect exact from="/" to="signin" /> */}
     </>
   );
 };

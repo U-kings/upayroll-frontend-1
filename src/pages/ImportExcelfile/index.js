@@ -7,21 +7,31 @@ import { getAllDepartment } from "../../actions/department";
 import { adminGetAllPosition } from "../../actions/position";
 import {
   adminCreateBulkEmployeeFunc,
-  hrUploadBulkContractStaffFunc,
+  // hrUploadBulkContractStaffFunc,
 } from "../../actions/employee";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useHistory } from "react-router-dom";
 import {
-  downloadContractBulkEmployeeTemplateExcelFileFunc,
+  // downloadContractBulkEmployeeTemplateExcelFileFunc,
   downloadCreateBulkEmployeeTemplateExcelFileFunc,
 } from "../../actions/download";
-import { Spinner } from "../../modals";
+import { Spinner, Successful } from "../../modals";
 import { ErrorBox } from "../../components";
+import { ADMIN_CREATE_BULK_EMPLOYEE_RESET } from "../../types/employee";
+import { DOWNLOADING_ON_PROCESS_ERROR } from "../../types/download";
 import {
-  ADMIN_CREATE_BULK_EMPLOYEE_RESET,
-  HR_UPLOAD_CONTRACT_EMPLOYEE_RESET,
-} from "../../types/employee";
-const ImportExcelfile = () => {
+  Capitalize,
+  checkDate,
+  checkEmail,
+  formatDate,
+} from "../../hooks/functions";
+
+const ImportExcelfile = ({
+  toggle,
+  toggleMenu,
+  mobileToggle,
+  toggleMobileMenu,
+}) => {
   // useDispatch init
   const dispatch = useDispatch();
   // history init
@@ -43,12 +53,6 @@ const ImportExcelfile = () => {
     error: createBulkError,
   } = useSelector((state) => state.adminCreateBulkEmployee);
 
-  const {
-    isLoading: contractBulkLoading,
-    success: contractBulkSuccess,
-    error: contractBulkError,
-  } = useSelector((state) => state.hrUploadContractEmployee);
-
   useEffect(() => {
     if (!adminInfo?.isAuthenticated && !adminInfo?.user?.name) {
       history.push("/");
@@ -56,6 +60,9 @@ const ImportExcelfile = () => {
       dispatch(getAllDepartment());
       dispatch(adminGetAllPosition());
     }
+  }, [dispatch, adminInfo, history]);
+
+  useEffect(() => {
     if (excelFile !== null) {
       const workbook = XLSL.read(excelFile, { type: "buffer" });
       const worksheetName = workbook.SheetNames[0];
@@ -63,7 +70,6 @@ const ImportExcelfile = () => {
       const data = XLSL.utils.sheet_to_json(worksheet);
       setExcelData(data);
     }
-    // eslint-disable-next-line
   }, [excelFile]);
 
   useEffect(() => {
@@ -74,27 +80,41 @@ const ImportExcelfile = () => {
     }
   }, [showError]);
 
-  useEffect(() => {
-    if (
-      (createBulkSuccess && !createBulkError) ||
-      (contractBulkSuccess && !contractBulkError)
-    ) {
+  const popup7 = () => {
+    if (createBulkSuccess && !createBulkError) {
       setExcelData(null);
       setExcelFile(null);
+      setFileName(null);
       dispatch({ type: ADMIN_CREATE_BULK_EMPLOYEE_RESET });
-      dispatch({ type: HR_UPLOAD_CONTRACT_EMPLOYEE_RESET });
-      history.push("/dashboard");
+      history.push("employee");
     }
-  }, [
-    createBulkSuccess,
-    createBulkError,
-    dispatch,
-    history,
-    contractBulkSuccess,
-    contractBulkError,
-  ]);
+  };
+
+  // useEffect(() => {
+  //   if (
+  //     (createBulkSuccess && !createBulkError)
+  //   ) {
+  //     setExcelData(null);
+  //     setExcelFile(null);
+  //     dispatch({ type: ADMIN_CREATE_BULK_EMPLOYEE_RESET });
+  //     dispatch({ type: HR_UPLOAD_CONTRACT_EMPLOYEE_RESET });
+  //     history.push("dashboard");
+  //   }
+  // }, [
+  //   createBulkSuccess,
+  //   createBulkError,
+  //   dispatch,
+  //   history,
+  // ]);
 
   // handle File
+
+  useEffect(() => {
+    if (downloadError) {
+      dispatch({ type: DOWNLOADING_ON_PROCESS_ERROR });
+    }
+  }, [dispatch, downloadError]);
+
   const fileType = ["application/vnd.ms-excel"];
   const fileType2 = [
     "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
@@ -129,10 +149,7 @@ const ImportExcelfile = () => {
     // getDepartment();
   };
 
-  // const hiddenFileInput = React.useRef(null);
   const hiddenFileInput = useRef(null);
-
-  // const formatExcelDate =
 
   const handleClick = () => {
     hiddenFileInput.current.click();
@@ -142,65 +159,88 @@ const ImportExcelfile = () => {
     dispatch(downloadCreateBulkEmployeeTemplateExcelFileFunc());
   };
 
-  const downloadContractTemplate = () => {
-    dispatch(downloadContractBulkEmployeeTemplateExcelFileFunc());
-  };
+  // const downloadContractTemplate = () => {
+  //   dispatch(downloadContractBulkEmployeeTemplateExcelFileFunc());
+  // };
 
   function excelDateToJSDate(excelDate) {
-    let date = new Date(Math.round((excelDate - (25568 + 1)) * 86400 * 1000));
-    let converted_date = date.toLocaleString();
-
-    return new Date(converted_date);
+    if (typeof excelDate === "string") {
+      const date = excelDate.split("/").reverse().join("-");
+      return date;
+      // return new Date(converted_date).toISOString().split('T')[0].replaceAll('-', '/');
+    } else if (excelDate) {
+      let date = new Date(Math.round((excelDate - (25568 + 1)) * 86400 * 1000));
+      let converted_date = date.toLocaleString();
+      // return new Date(converted_date);
+      return new Date(converted_date).toISOString().split("T")[0];
+      // return new Date(converted_date).toISOString().split('T')[0].replaceAll('-', '/');
+      // return new Date(converted_date).toISOString();
+    }
   }
 
-  const onCreateBulk = (type = "") => {
+  const onCreateBulk = () => {
     let newData;
-    if (type && type === "Contract") {
-      newData = excelData?.map((el) => {
-        return {
-          staffId: el.StaffId.trim(),
-          staffName: el.StaffName?.trim(),
-          email: el.Email?.trim(),
-          employeeBank: el.BankName?.trim(),
-          employeeBankAcctNumber: el.BankAcctNumber?.trim(),
-          contractSalary: Number(el.ContractSalary),
-          employeeType: el.EmploymentType,
-        };
-      });
+    // if (type && type === "Contract") {
+    if (checkDate(excelData)) {
+      setShowError(
+        "Please enter correct format for both DateOfBirth and JoinDate"
+      );
+    } else {
+      if (checkEmail(excelData)) {
+        setShowError("Please make sure emails are not Dulicated");
+      } else {
+        newData = excelData?.map((el) => {
+          return {
+            name: el?.Name?.trim(),
+            staffId: el?.StaffId?.toString()?.trim(),
+            email: el?.Email?.toString()?.trim(),
+            position: el?.Position ? el?.Position?.toString()?.trim() : null,
+            // salaryGrade: el?.salaryGrade ? el?.salaryGrade?.trim() : null,
+            salaryLevel: el?.salaryLevel
+              ? el?.salaryLevel?.toString()?.trim()
+              : null,
+            salaryStep: el?.salaryStep
+              ? el?.salaryStep?.toString()?.trim()
+              : null,
+            contractSalary: el?.ContractSalary
+              ? Number(el?.ContractSalary)
+              : null,
+            notch: el?.Notch ? el?.Notch?.toString()?.trim() : null,
+            bankName: el?.BankName ? el?.BankName?.toString()?.trim() : null,
+            employeeBankAcctNumber:
+              el?.EmployeeBankAcctNumber?.toString().trim(),
+            nationality: el?.Nationality ? el?.Nationality?.trim() : null,
+            gender: el?.Gender?.toString()?.trim(),
+            address: el?.Address?.toString()?.trim(),
+            dob: excelDateToJSDate(el?.DateOfBirth?.toString()?.trim()),
+            mobile: el?.PhoneNumber?.toString().trim(),
+            city: el?.City?.toString()?.trim(),
+            state: el?.State?.toString()?.trim(),
+            employeeType: Capitalize(el?.EmployeeType?.toString()?.trim()),
+            joinDate: excelDateToJSDate(el?.JoinDate),
+          };
+        });
 
-      // console.log(newData);
-      dispatch(hrUploadBulkContractStaffFunc(newData));
+        dispatch(adminCreateBulkEmployeeFunc(newData));
+        // dispatch(hrUploadBulkContractStaffFunc(newData));
+      }
     }
-    // const newData = excelData?.map((el) => {
-    //   return {
-    //     employeeBankAcctNumber: String(el?.AccountNumber).trim(),
-    //     address: String(el?.Address).trim(),
-    //     employeeBank: String(el?.BankName).trim(),
-    //     city: String(el?.City).trim(),
-    //     dob: excelDateToJSDate(el?.DateOfBirth),
-    //     department: String(el?.Department).trim(),
-    //     email: String(el?.Email).trim(),
-    //     employeeType: String(el?.EmployeeType).trim(),
-    //     gender: String(el?.Gender).trim(),
-    //     joinDate: excelDateToJSDate(el?.JoinDate),
-    //     name: String(el?.Name).trim(),
-    //     nationality: String(el?.Nationality).trim(),
-    //     mobile: String(el?.PhoneNumber).trim(),
-    //     position: String(el?.Position).trim(),
-    //     staffLevel: String(el?.StaffLevel).trim(),
-    //     state: String(el?.State).trim(),
-    //   };
-    // });
-
-    // dispatch(adminCreateBulkEmployeeFunc(newData));
-    // dispatch(hrUploadBulkContractStaffFunc(newData));
   };
 
   return (
     <>
-      {((downloadLoading && !downloadError) ||
-        createBulkLoading ||
-        contractBulkLoading) && <Spinner />}
+      {((downloadLoading && !downloadError) || createBulkLoading) && (
+        <Spinner />
+      )}
+
+      {createBulkSuccess && !createBulkError && (
+        <Successful
+          isOpen7={createBulkSuccess && !createBulkError}
+          popup7={popup7}
+          message="Successfully Uploaded Employees"
+        />
+      )}
+
       <Container>
         <BackLink className="green__btn" to="/new-employee">
           <FontAwesomeIcon
@@ -229,7 +269,7 @@ const ImportExcelfile = () => {
             <ErrorBox errorMessage={downloadError || createBulkError} />
           )}
           <form onSubmit={handleSubmit}>
-            <p
+            {/* <p
               style={{
                 color: `${COLORS.red}`,
                 marginBottom: "1rem",
@@ -245,7 +285,7 @@ const ImportExcelfile = () => {
               >
                 Only Contract Staff Bulk Upload Available
               </u>
-            </p>
+            </p> */}
             <label>
               Select a file to import: ...*
               <span style={{ color: `${COLORS.red}`, fontSize: "1.3rem" }}>
@@ -274,7 +314,7 @@ const ImportExcelfile = () => {
                     ? "disabled__btn full__width"
                     : "full__width green__btn"
                 }
-                onClick={() => onCreateBulk("Contract")}
+                onClick={() => onCreateBulk()}
                 disabled={!excelFile}
                 value="Import Excel File"
               />
@@ -289,21 +329,44 @@ const ImportExcelfile = () => {
               Download Excel Template
             </p>
             <div className="button__row margin__top">
-              <input
+              {/* <input
                 type="submit"
                 className="disabled__btn"
                 // className="save__btn"
                 onClick={downloadTemplate}
                 value="Non-Contract Staff"
-              />
+              /> */}
               <input
                 type="submit"
-                className="save__btn margin__left"
-                onClick={downloadContractTemplate}
-                value="Contract Staff"
+                className="save__btn"
+                // className="save__btn margin__left"
+                onClick={downloadTemplate}
+                value="Download"
+                // value="Contract Staff"
               />
             </div>
           </form>
+          <div
+            style={{
+              display: "flex",
+              marginTop: "4rem",
+              gap: "0 1rem",
+              backgroundColor: "rgba(33,138,255, 0.5)",
+              // backgroundColor: `${COLORS?.blue2}`,
+              padding: "1rem",
+              borderRadius: ".5rem",
+              border: `1px solid rgb(33,138,255)`,
+              color: `${COLORS?.white}`,
+            }}
+          >
+            <h1 style={{ fontWeight: "600" }}> &#9432;</h1>
+            <div>
+              <h2>
+                Excel DateOfBirth and JoinDate must be in either of this format:
+                <span>dd/mm/yyyy </span>
+              </h2>
+            </div>
+          </div>
         </div>
       </Container>
     </>

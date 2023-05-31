@@ -20,6 +20,7 @@ const DropdownList = ({
   cssClass2,
   cssClass3,
   payheadDropdown,
+  maxHeight,
 }) => {
   return list ? (
     <DropDownContainer className={cssClass3}>
@@ -35,7 +36,7 @@ const DropdownList = ({
       </DropDownHeader>
       {isOpen && (
         <DropDownListContainer>
-          <DropDownList>
+          <DropDownList style={{ height: maxHeight ? maxHeight : "auto" }}>
             {dataSet?.map((data) => (
               <ListItem
                 onClick={
@@ -43,7 +44,7 @@ const DropdownList = ({
                     ? (e) => onOptionClicked(data)
                     : onOptionClicked(data)
                 }
-                key={data?._id}
+                key={data?.id}
               >
                 {data?.name}
               </ListItem>

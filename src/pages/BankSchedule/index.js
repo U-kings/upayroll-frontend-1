@@ -43,7 +43,7 @@ import { PaginationContainer } from "../../styles/pagination";
 import ReactPaginate from "react-paginate";
 import { currentmonthMethod } from "../../hooks/months/listMonths";
 
-function BankSchedule() {
+function BankSchedule({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) {
   // history init
   const dispatch = useDispatch();
   const history = useHistory();
@@ -104,11 +104,6 @@ function BankSchedule() {
     if (userRole === "Employee") {
       history.push("dashboard");
     }
-    // if (userRole === "HR" || userRole === "Internal Auditor") {
-    //   history.push("employee");
-    // } else if (userRole === "Employee") {
-    //   history.push("pay-slip");
-    // }
 
     if (bankSchedules || notApprovedBankSchedules) {
       if (
@@ -172,10 +167,10 @@ function BankSchedule() {
 
   const onDelete = (id) => {
     const bankSchedule = bankScheduleData?.find(
-      (el) => String(el._id) === String(id)
+      (el) => String(el.id) === String(id)
     );
     if (bankSchedule) {
-      setCurrentBankScheduleId(bankSchedule?._id);
+      setCurrentBankScheduleId(bankSchedule?.id);
       setIsOpen4(true);
     }
   };
@@ -189,7 +184,7 @@ function BankSchedule() {
     setIsOpen5(!isOpen5);
     let newData;
     newData = approvedScheduleVouchers?.filter(
-      (el) => String(el?.bankScheduleId) === String(bankSchedule?._id)
+      (el) => String(el?.bankScheduleId) === String(bankSchedule?.id)
     );
     viewBankSchedule(newData);
   };
@@ -201,17 +196,17 @@ function BankSchedule() {
   const onDownloadFileFunc = (fileType) => {
     let newData;
     newData = approvedScheduleVouchers?.filter(
-      (el) => String(el.bankScheduleId) === String(bankSchedule?._id)
+      (el) => String(el.bankScheduleId) === String(bankSchedule?.id)
     );
     if (fileType === "excel") {
       newData = newData?.map((el, indexes) => {
         return {
           sn: ++indexes,
-          staffName: el?.salarySlip?.employee?.user?.name,
+          staffName: el?.paySlip?.employee?.user?.name,
           remark: el?.remark,
-          employeeBank: el?.salarySlip?.employee?.employeeBank,
+          employeeBank: el?.paySlip?.employee?.employeeBank,
           amount: el?.amount,
-          employeeBankNumber: el?.salarySlip?.employee?.employeeBankAcctNumber,
+          employeeBankNumber: el?.paySlip?.employee?.employeeBankAcctNumber,
         };
       });
 
@@ -226,13 +221,13 @@ function BankSchedule() {
     } else {
       newData = newData?.map((el) => {
         return {
-          staffName: el?.salarySlip?.employee?.user?.name,
+          staffName: el?.paySlip?.employee?.user?.name,
           remark: el?.remark,
-          employeeBank: el?.salarySlip?.employee?.employeeBank,
+          employeeBank: el?.paySlip?.employee?.employeeBank,
           amount: commafy(el?.amount),
           employeeBankNumber: String(
-            el?.salarySlip?.employee?.employeeBankAcctNumber
-              ? el?.salarySlip?.employee?.employeeBankAcctNumber
+            el?.paySlip?.employee?.employeeBankAcctNumber
+              ? el?.paySlip?.employee?.employeeBankAcctNumber
               : ""
           ),
         };
@@ -300,7 +295,7 @@ function BankSchedule() {
   const pagesVisited = pageNumber * usersPerpage;
 
   const pageCount = Math.ceil(searchResult?.length / usersPerpage);
-  // const pageCount = Math.ceil(salarySlip.length / usersPerpage);
+  // const pageCount = Math.ceil(paySlip.length / usersPerpage);
   const handlePageClick = ({ selected }) => {
     setPageNumber(selected);
   };
@@ -343,7 +338,7 @@ function BankSchedule() {
         return Object.values(
           data.month + " " + data.paymentType
           // " " +
-          // data?.salarySlip?.employee?.employeeBank?.name +
+          // data?.paySlip?.employee?.employeeBank?.name +
           // " "
         )
           .join("")
@@ -387,7 +382,7 @@ function BankSchedule() {
           return { ...bankSchedule, isChecked: checked };
         });
       let notChecked = searchResult?.filter((el) => {
-        return !tempBankSchedule?.find((tmp) => tmp?._id === el?._id);
+        return !tempBankSchedule?.find((tmp) => tmp?.id === el?.id);
       });
       let dataJoined = [...tempBankSchedule, ...notChecked].sort((a, b) => {
         var dateA = new Date(a.createdAt),
@@ -397,11 +392,18 @@ function BankSchedule() {
 
       setSearchResult(dataJoined);
     } else {
-      let tempBankSchedule = searchResult.map((bankSchedule) =>
-        bankSchedule?._id === name
+      let tempBankSchedule = searchResult?.map((bankSchedule) =>
+        bankSchedule?.id === name
           ? { ...bankSchedule, isChecked: checked }
           : bankSchedule
       );
+
+      // const test = tempBankSchedule?.map((el) => el?.id);
+      // console.log(
+      //   test?.map((el) => {
+      //     return el;
+      //   })
+      // );
       setSearchResult(tempBankSchedule);
     }
   };
@@ -417,7 +419,7 @@ function BankSchedule() {
   };
 
   const setApprovedBankSchedule = () => {
-    const bankScheduleIds = arrayIds.map((el) => el._id);
+    const bankScheduleIds = arrayIds.map((el) => el.id);
     dispatch(ceoApproveBankSchedulesFunc(bankScheduleIds, selectedOption10));
   };
 
@@ -425,7 +427,7 @@ function BankSchedule() {
   return (
     <>
       {currentBankScheduleId && (
-        <Comfirm
+        <Comfirm toggle={toggle}
           isOpen4={isOpen4}
           setIsOpen4={setIsOpen4}
           currentBankScheduleId={currentBankScheduleId}
@@ -435,7 +437,7 @@ function BankSchedule() {
       )}
 
       {approvedBankScheduleBulk && (
-        <Comfirm
+        <Comfirm toggle={toggle}
           isOpen4={isOpen4}
           setIsOpen4={setIsOpen4}
           setApprovedBankScheduleBulk={setApprovedBankScheduleBulk}
@@ -461,13 +463,24 @@ function BankSchedule() {
       />
       <DashboardContainer onClick={close}>
         <DashboardContent>
-          <SideNav userRole={userRole} bnkschd={bnkschd} />
-          <Mainbody>
+          <SideNav
+            userRole={userRole}
+            bnkschd={bnkschd}
+            toggle={toggle}
+            toggleMenu={toggleMenu}
+            mobileToggle={mobileToggle}
+            toggleMobileMenu={toggleMobileMenu}
+          />
+          <Mainbody toggle={toggle}>
             <Header
               text="Bank Schedule"
               userRole={userRole}
               userRoleName={userRoleName}
               profileimg={profileImg}
+              toggle={toggle}
+              toggleMenu={toggleMenu}
+              mobileToggle={mobileToggle}
+              toggleMobileMenu={toggleMobileMenu}
             />
             <Container>
               {(getApprovedBankVouchersLoading ||
@@ -475,12 +488,12 @@ function BankSchedule() {
                 (downloadStatusLoading && !downloadStatusError) ||
                 getApprovedBankVouchersLoading ||
                 bankScheduleLoading ||
-                ceoGetApprovedBankVouchersLoading) && <LoadingSpinner />}
+                ceoGetApprovedBankVouchersLoading) && <LoadingSpinner toggle={toggle} />}
               {downloadStatusError && !downloadStatusLoading && (
                 <ErrorBox errorMessage={downloadStatusError} />
               )}
               <EmpContainer>
-                <div className="row">
+                <div className="row  top__btn">
                   {userRole === "CEO" && (
                     <>
                       <input
@@ -501,28 +514,26 @@ function BankSchedule() {
                       />
                     </>
                   )}
-                  <div className="row">
+                  <div className="row top__btn">
                     {(userRole === "Accountant" ||
                       userRole === "CEO" ||
                       userRole === "HR" ||
                       userRole === "Internal Auditor") && (
-                      <>
-                        <DropdownList
-                          list={true}
-                          isOpen={isOpen2}
-                          toggling={toggling}
-                          selectedOption={selectedOption6}
-                          cssClass2={"dropdown__header"}
-                          // cssClass3={"margin__left"}
-                          text="--Select Bank"
-                          dataSet={banks}
-                          onOptionClicked={onOptionClicked}
-                        />
-                      </>
+                      <DropdownList
+                        list={true}
+                        isOpen={isOpen2}
+                        toggling={toggling}
+                        selectedOption={selectedOption6}
+                        cssClass2={"dropdown__header"}
+                        // cssClass3={"margin__left"}
+                        text="--Select Bank"
+                        dataSet={banks}
+                        onOptionClicked={onOptionClicked}
+                      />
                     )}
                   </div>
                 </div>
-                <div className="search__container">
+                <div className="search__container mobile__margin__top">
                   <SearchBar term={searchTerm} searchKeyWord={searchHandler} />
                   <span className="icons search__icon">
                     <FontAwesomeIcon icon={["fas", "search"]} />
@@ -566,12 +577,12 @@ function BankSchedule() {
                       {searchResult
                         ?.slice(pagesVisited, pagesVisited + usersPerpage)
                         ?.map((el, indexes) => (
-                          <tr key={el?._id}>
+                          <tr key={el?.id}>
                             {userRole === "CEO" && (
                               <td>
                                 <input
                                   type="checkbox"
-                                  name={el?._id}
+                                  name={el?.id}
                                   checked={el?.isChecked || false}
                                   onChange={handleChange}
                                 />
@@ -610,7 +621,7 @@ function BankSchedule() {
                                   title="View"
                                   className="icons"
                                   onClick={() => onClickViewBankSchedule(el)}
-                                  // onClick={() => onSelectView(el?._id)}
+                                  // onClick={() => onSelectView(el?.id)}
                                 >
                                   <FontAwesomeIcon icon={["fas", "eye"]} />
                                 </div>
@@ -620,7 +631,7 @@ function BankSchedule() {
                                     title="Delete"
                                     className="icons"
                                     onClick={() => {
-                                      onDelete(el?._id);
+                                      onDelete(el?.id);
                                     }}
                                   >
                                     <FontAwesomeIcon

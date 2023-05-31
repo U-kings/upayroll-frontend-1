@@ -30,7 +30,7 @@ const ForgotPassword = () => {
 
   useEffect(() => {
     if (adminInfo?.isAuthenticated && adminInfo?.user?.name) {
-      history.push("/dashboard");
+      history.push("dashboard");
     }
 
     if (success && !error) {
@@ -81,7 +81,7 @@ const ForgotPassword = () => {
                 your password
               </p>
               {!isLoading && error && <ErrorBox errorMessage={error} />}
-              <SigninForm autoCompelet="off" onSubmit={onSubmit}>
+              <SigninForm autoComplete="off" onSubmit={onSubmit}>
                 <div className="label__group form__input">
                   <label>
                     Email<span className="red__text">*</span>
@@ -92,7 +92,7 @@ const ForgotPassword = () => {
                     value={emailForm}
                     placeholder="Enter your Email"
                     onChange={onChange}
-                    autoCompelet="new-password"
+                    autoComplete="new-password"
                     required
                   />
                 </div>
@@ -102,7 +102,7 @@ const ForgotPassword = () => {
                   value="Send"
                 />
               </SigninForm>
-              <SignUpLink to="signin">
+              <SignUpLink to="/signin">
                 <h3>
                   Go Back to <span>SignIn</span>
                 </h3>

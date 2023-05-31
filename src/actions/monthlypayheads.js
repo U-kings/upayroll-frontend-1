@@ -1,3 +1,5 @@
+import axios from "axios";
+import cookie from "js-cookie";
 import {
   ADMIN_CREATE_MONTHLYPAYHEADS_FAIL,
   ADMIN_CREATE_MONTHLYPAYHEADS_SUCCESS,
@@ -12,65 +14,75 @@ import {
   ADMIN_GET_MONTHLYPAYHEADS_REQUEST,
   ADMIN_GET_MONTHLYPAYHEADS_SUCCESS,
 } from "../types/monthlypayheads";
-import axios from "axios";
-import { cookieTokenValidFunc } from "./auth";
+// import { cookieTokenValidFunc } from "./auth";
+
+const proxyUrl = process.env.REACT_APP_PROXY_URL;
 
 export const adminGetAllMonthlyPayheads = () => async (dispatch) => {
-  dispatch(cookieTokenValidFunc());
-
+  const token = cookie.get("token");
+  const config = {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  };
   try {
     dispatch({ type: ADMIN_GET_MONTHLYPAYHEADS_REQUEST });
-    const { data } = await axios.get(`/api/monthlypayhead`);
+    const { data } = await axios.get(`${proxyUrl}/api/monthlypayhead`, config);
     dispatch({ type: ADMIN_GET_MONTHLYPAYHEADS_SUCCESS, payload: data });
   } catch (error) {
     dispatch({
       type: ADMIN_GET_MONTHLYPAYHEADS_FAIL,
       payload:
-        error.response && error.response.data.detail
-          ? error.response.data.detail
-          : error.message,
+        error?.response &&
+        (error?.response?.data?.detail || error?.response?.data?.errors)
+          ? error?.response?.data?.detail ||
+            error?.response?.data?.errors?.map((el) => el?.msg)?.join(" ")
+          : error?.message,
     });
   }
 };
 
 export const adminCreateMonthlyPayhead = (formData) => async (dispatch) => {
-  dispatch(cookieTokenValidFunc());
-
+  const token = cookie.get("token");
   const config = {
     headers: {
       "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
     },
   };
 
   try {
     dispatch({ type: ADMIN_CREATE_MONTHLYPAYHEADS_REQUEST });
     const body = JSON.stringify(formData);
-    await axios.post(`/api/monthlypayhead`, body, config);
+    await axios.post(`${proxyUrl}/api/monthlypayhead`, body, config);
     dispatch({ type: ADMIN_CREATE_MONTHLYPAYHEADS_SUCCESS });
   } catch (error) {
     dispatch({
       type: ADMIN_CREATE_MONTHLYPAYHEADS_FAIL,
       payload:
-        error.response && error.response.data.detail
-          ? error.response.data.detail
-          : error.message,
+        error?.response &&
+        (error?.response?.data?.detail || error?.response?.data?.errors)
+          ? error?.response?.data?.detail ||
+            error?.response?.data?.errors?.map((el) => el?.msg)?.join(" ")
+          : error?.message,
     });
   }
 };
 
 export const adminUpdateMonthlyPayheadById =
   (id, formData) => async (dispatch) => {
-    dispatch(cookieTokenValidFunc());
+    const token = cookie.get("token");
     const config = {
       headers: {
         "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
       },
     };
 
     try {
       dispatch({ type: ADMIN_UPDATE_MONTHLYPAYHEADS_REQUEST });
       const body = JSON.stringify(formData);
-      await axios.patch(`/api/monthlypayhead/${id}`, body, config);
+      await axios.patch(`${proxyUrl}/api/monthlypayhead/${id}`, body, config);
       dispatch({ type: ADMIN_UPDATE_MONTHLYPAYHEADS_SUCCESS });
       dispatch(adminGetAllMonthlyPayheads());
     } catch (error) {
@@ -85,20 +97,26 @@ export const adminUpdateMonthlyPayheadById =
   };
 
 export const adminDeleteMonthlyPayheadById = (id) => async (dispatch) => {
-  dispatch(cookieTokenValidFunc());
+  const token = cookie.get("token");
+  const config = {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  };
   try {
     dispatch({ type: ADMIN_DELETE_MONTHLYPAYHEADS_REQUEST });
-
-    await axios.delete(`/api/monthlypayhead/${id}`);
+    await axios.delete(`${proxyUrl}/api/monthlypayhead/${id}`, config);
     dispatch({ type: ADMIN_DELETE_MONTHLYPAYHEADS_SUCCESS });
     dispatch(adminGetAllMonthlyPayheads());
   } catch (error) {
     dispatch({
       type: ADMIN_DELETE_MONTHLYPAYHEADS_FAIL,
       payload:
-        error.response && error.response.data.detail
-          ? error.response.data.detail
-          : error.message,
+        error?.response &&
+        (error?.response?.data?.detail || error?.response?.data?.errors)
+          ? error?.response?.data?.detail ||
+            error?.response?.data?.errors?.map((el) => el?.msg)?.join(" ")
+          : error?.message,
     });
   }
 };

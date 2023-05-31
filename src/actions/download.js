@@ -1,5 +1,5 @@
 import axios from "axios";
-import { cookieTokenValidFunc } from "./auth";
+import cookie from "js-cookie";
 import { saveAs } from "file-saver";
 import {
   DOWNLOADING_ON_PROCESS_DONE,
@@ -7,12 +7,15 @@ import {
   DOWNLOADING_ON_PROCESS_REQUEST,
 } from "../types/download";
 
+const proxyUrl = process.env.REACT_APP_PROXY_URL;
+
 export const downloadSalaryAndVoucherExcelFileFunc =
   (type, modelType, month, dataArr) => async (dispatch) => {
-    dispatch(cookieTokenValidFunc());
+    const token = cookie.get("token");
     const config = {
       headers: {
         "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
       },
     };
 
@@ -20,12 +23,12 @@ export const downloadSalaryAndVoucherExcelFileFunc =
       dispatch({ type: DOWNLOADING_ON_PROCESS_REQUEST });
       const body = JSON.stringify(dataArr);
       const { data } = await axios.post(
-        `/api/storage/create-excel-file/salaryslip?type=${type}&modelType=${modelType}&month=${month}`,
+        `${proxyUrl}/api/storage/create-excel-file/salaryslip?type=${type}&modelType=${modelType}&month=${month}`,
         body,
         config
       );
       const res = await axios.get(
-        `/api/storage/client-download-file?fileName=${data?.fileName}`,
+        `${proxyUrl}/api/storage/client-download-file?fileName=${data?.fileName}`,
         {
           responseType: "blob",
         }
@@ -54,10 +57,11 @@ export const downloadSalaryAndVoucherExcelFileFunc =
 
 export const downloadEmployeeSummaryExcelFileFunc =
   (dataArr) => async (dispatch) => {
-    dispatch(cookieTokenValidFunc());
+    const token = cookie.get("token");
     const config = {
       headers: {
         "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
       },
     };
 
@@ -65,12 +69,12 @@ export const downloadEmployeeSummaryExcelFileFunc =
       dispatch({ type: DOWNLOADING_ON_PROCESS_REQUEST });
       const body = JSON.stringify(dataArr);
       const { data } = await axios.post(
-        `/api/storage/create-excel-file/employee`,
+        `${proxyUrl}/api/storage/create-excel-file/employee`,
         body,
         config
       );
       const res = await axios.get(
-        `/api/storage/client-download-file?fileName=${data?.fileName}`,
+        `${proxyUrl}/api/storage/client-download-file?fileName=${data?.fileName}`,
         {
           responseType: "blob",
         }
@@ -99,10 +103,12 @@ export const downloadEmployeeSummaryExcelFileFunc =
 
 export const downloadCreateBulkEmployeeTemplateExcelFileFunc =
   () => async (dispatch) => {
-    dispatch(cookieTokenValidFunc());
+    const token = cookie.get("token");
+    // dispatch(cookieTokenValidFunc());
     const config = {
       headers: {
         "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
       },
     };
 
@@ -110,12 +116,12 @@ export const downloadCreateBulkEmployeeTemplateExcelFileFunc =
       dispatch({ type: DOWNLOADING_ON_PROCESS_REQUEST });
       const body = JSON.stringify({});
       const { data } = await axios.post(
-        `/api/storage/create-bulk-template`,
+        `${proxyUrl}/api/storage/create-bulk-template`,
         body,
         config
       );
       const res = await axios.get(
-        `/api/storage/client-download-file?fileName=${data?.fileName}`,
+        `${proxyUrl}/api/storage/client-download-file?fileName=${data?.fileName}`,
         {
           responseType: "blob",
         }
@@ -144,9 +150,57 @@ export const downloadCreateBulkEmployeeTemplateExcelFileFunc =
 
 export const downloadContractBulkEmployeeTemplateExcelFileFunc =
   () => async (dispatch) => {
-    dispatch(cookieTokenValidFunc());
+    const token = cookie.get("token");
     const config = {
       headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    };
+
+    try {
+      dispatch({ type: DOWNLOADING_ON_PROCESS_REQUEST });
+      const body = JSON.stringify({});
+      const { data } = await axios.post(
+        `${proxyUrl}/api/storage/create-bulk-template/contract`,
+        body,
+        config
+      );
+      const res = await axios.get(
+        `${proxyUrl}/api/storage/client-download-file?fileName=${data?.fileName}`,
+        {
+          responseType: "blob",
+        }
+      );
+
+      const exelBlob = new Blob([res.data], {
+        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64,",
+      });
+
+      dispatch({ type: DOWNLOADING_ON_PROCESS_DONE });
+
+      saveAs(
+        exelBlob,
+        `${data?.fileName.split("/")[2].replace("csv", "xlsx")}`
+      );
+    } catch (error) {
+      dispatch({
+        type: DOWNLOADING_ON_PROCESS_ERROR,
+        payload:
+          error.response && error.response.data.detail
+            ? error.response.data.detail
+            : error.message,
+      });
+    }
+  };
+
+export const downloadPayStructureTemplateExcelFileFunc =
+  (type) => async (dispatch) => {
+    const token = cookie.get("token");
+    // dispatch(cookieTokenValidFunc());
+    const config = {
+      headers: {
+        Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
       },
     };
@@ -155,12 +209,12 @@ export const downloadContractBulkEmployeeTemplateExcelFileFunc =
       dispatch({ type: DOWNLOADING_ON_PROCESS_REQUEST });
       const body = JSON.stringify({});
       const { data } = await axios.post(
-        `/api/storage/create-bulk-template/contract`,
+        `${proxyUrl}/api/storage/create-paystructure-template?type=${type}`,
         body,
         config
       );
       const res = await axios.get(
-        `/api/storage/client-download-file?fileName=${data?.fileName}`,
+        `${proxyUrl}/api/storage/client-download-file?fileName=${data?.fileName}`,
         {
           responseType: "blob",
         }
@@ -189,10 +243,11 @@ export const downloadContractBulkEmployeeTemplateExcelFileFunc =
 
 export const downloadBankScheduleExcelFileFunc =
   (bankName, modelType, month, dataArr) => async (dispatch) => {
-    dispatch(cookieTokenValidFunc());
+    const token = cookie.get("token");
     const config = {
       headers: {
         "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
       },
     };
 
@@ -200,12 +255,12 @@ export const downloadBankScheduleExcelFileFunc =
       dispatch({ type: DOWNLOADING_ON_PROCESS_REQUEST });
       const body = JSON.stringify(dataArr);
       const { data } = await axios.post(
-        `/api/storage/create-excel-file/bankschedule?bankName=${bankName}&modelType=${modelType}&month=${month}`,
+        `${proxyUrl}/api/storage/create-excel-file/bankschedule?bankName=${bankName}&modelType=${modelType}&month=${month}`,
         body,
         config
       );
       const res = await axios.get(
-        `/api/storage/client-download-file?fileName=${data?.fileName}`,
+        `${proxyUrl}/api/storage/client-download-file?fileName=${data?.fileName}`,
         {
           responseType: "blob",
         }
@@ -230,10 +285,11 @@ export const downloadBankScheduleExcelFileFunc =
 
 export const downloadPayeScheduleExcelFileFunc =
   (month, year, dataArr) => async (dispatch) => {
-    dispatch(cookieTokenValidFunc());
+    const token = cookie.get("token");
     const config = {
       headers: {
         "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
       },
     };
 
@@ -241,12 +297,12 @@ export const downloadPayeScheduleExcelFileFunc =
       dispatch({ type: DOWNLOADING_ON_PROCESS_REQUEST });
       const body = JSON.stringify(dataArr);
       const { data } = await axios.post(
-        `/api/storage/create-excel-file/paye?year=${year}&month=${month}`,
+        `${proxyUrl}/api/storage/create-excel-file/paye?year=${year}&month=${month}`,
         body,
         config
       );
       const res = await axios.get(
-        `/api/storage/client-download-file?fileName=${data?.fileName}`,
+        `${proxyUrl}/api/storage/client-download-file?fileName=${data?.fileName}`,
         {
           responseType: "blob",
         }
@@ -271,10 +327,11 @@ export const downloadPayeScheduleExcelFileFunc =
 
 export const downloadPensionScheduleExcelFileFunc =
   (month, year, dataArr) => async (dispatch) => {
-    dispatch(cookieTokenValidFunc());
+    const token = cookie.get("token");
     const config = {
       headers: {
         "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
       },
     };
 
@@ -282,12 +339,12 @@ export const downloadPensionScheduleExcelFileFunc =
       dispatch({ type: DOWNLOADING_ON_PROCESS_REQUEST });
       const body = JSON.stringify(dataArr);
       const { data } = await axios.post(
-        `/api/storage/create-excel-file/pension?year=${year}&month=${month}`,
+        `${proxyUrl}/api/storage/create-excel-file/pension?year=${year}&month=${month}`,
         body,
         config
       );
       const res = await axios.get(
-        `/api/storage/client-download-file?fileName=${data?.fileName}`,
+        `${proxyUrl}/api/storage/client-download-file?fileName=${data?.fileName}`,
         {
           responseType: "blob",
         }
@@ -322,10 +379,11 @@ export const downloadBankSchedulePdfFileFunc =
     subTotal
   ) =>
   async (dispatch) => {
-    dispatch(cookieTokenValidFunc());
+    const token = cookie.get("token");
     const config = {
       headers: {
         "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
       },
     };
 
@@ -342,12 +400,12 @@ export const downloadBankSchedulePdfFileFunc =
         results: dataArr,
       });
       const { data } = await axios.post(
-        `/api/storage/create-pdf-file/bankschedule?bankName=${bank.name}&modelType=${modelType}&month=${month}`,
+        `${proxyUrl}/api/storage/create-pdf-file/bankschedule?bankName=${bank.name}&modelType=${modelType}&month=${month}`,
         body,
         config
       );
       const res = await axios.get(
-        `/api/storage/client-download-file?fileName=${data?.fileName}`,
+        `${proxyUrl}/api/storage/client-download-file?fileName=${data?.fileName}`,
         {
           responseType: "blob",
         }
@@ -372,10 +430,11 @@ export const downloadBankSchedulePdfFileFunc =
 
 export const downloadPayePdfFileFunc =
   (month, dataArr, year) => async (dispatch) => {
-    dispatch(cookieTokenValidFunc());
+    const token = cookie.get("token");
     const config = {
       headers: {
         "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
       },
     };
 
@@ -383,12 +442,12 @@ export const downloadPayePdfFileFunc =
       dispatch({ type: DOWNLOADING_ON_PROCESS_REQUEST });
       const body = JSON.stringify(dataArr);
       const { data } = await axios.post(
-        `/api/storage/create-pdf-file/paye?month=${month}&year=${year}`,
+        `${proxyUrl}/api/storage/create-pdf-file/paye?month=${month}&year=${year}`,
         body,
         config
       );
       const res = await axios.get(
-        `/api/storage/client-download-file?fileName=${data?.fileName}`,
+        `${proxyUrl}/api/storage/client-download-file?fileName=${data?.fileName}`,
         {
           responseType: "blob",
         }
@@ -413,10 +472,11 @@ export const downloadPayePdfFileFunc =
 
 export const downloadPensionPdfFileFunc =
   (month, dataArr, year) => async (dispatch) => {
-    dispatch(cookieTokenValidFunc());
+    const token = cookie.get("token");
     const config = {
       headers: {
         "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
       },
     };
 
@@ -424,12 +484,12 @@ export const downloadPensionPdfFileFunc =
       dispatch({ type: DOWNLOADING_ON_PROCESS_REQUEST });
       const body = JSON.stringify(dataArr);
       const { data } = await axios.post(
-        `/api/storage/create-pdf-file/pension?month=${month}&year=${year}`,
+        `${proxyUrl}/api/storage/create-pdf-file/pension?month=${month}&year=${year}`,
         body,
         config
       );
       const res = await axios.get(
-        `/api/storage/client-download-file?fileName=${data?.fileName}`,
+        `${proxyUrl}/api/storage/client-download-file?fileName=${data?.fileName}`,
         {
           responseType: "blob",
         }

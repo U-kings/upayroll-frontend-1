@@ -13,7 +13,7 @@ import DropdownList from "../DropdownList";
 import { useDispatch, useSelector } from "react-redux";
 import { Comfirm, LoadingSpinner, Successful } from "../../modals";
 
-const SalaryLevel = ({ salaryLevels, staffGrade }) => {
+const SalaryLevel = ({ salaryLevels, staffGrade , toggle}) => {
   // dispatch init
   const dispatch = useDispatch();
 
@@ -48,15 +48,15 @@ const SalaryLevel = ({ salaryLevels, staffGrade }) => {
   };
   const onSave = (e) => {
     e.preventDefault();
-    if (formData?._id) {
+    if (formData?.id) {
       dispatch(
-        hrUpdateSalaryLevelFunc(formData?._id, selectedOption?.id, {
-          name,
+        hrUpdateSalaryLevelFunc(formData?.id, selectedOption?.id, {
+          name: name.trim(),
         })
       );
     } else {
       dispatch(
-        hrCreateSalaryLevelFunc(selectedOption?._id, { name: name.trim() })
+        hrCreateSalaryLevelFunc(selectedOption?.id, { name: name.trim() })
       );
     }
   };
@@ -64,11 +64,11 @@ const SalaryLevel = ({ salaryLevels, staffGrade }) => {
   const onSelect = (id) => {
     let findPos;
     if (salaryLevels?.length > 0) {
-      findPos = salaryLevels.find((el) => String(el?._id) === String(id));
+      findPos = salaryLevels.find((el) => String(el?.id) === String(id));
       if (findPos) {
         setFormData({
           name: findPos?.name,
-          _id: findPos?._id,
+          id: findPos?.id,
         });
         setSelectedOption(findPos?.salaryGrade);
       }
@@ -107,8 +107,8 @@ const SalaryLevel = ({ salaryLevels, staffGrade }) => {
   return (
     <>
       {" "}
-      {createSalaryLevelLoading && <LoadingSpinner />}
-      {updateSalaryLevelLoading && <LoadingSpinner />}
+      {createSalaryLevelLoading && <LoadingSpinner toggle={toggle} />}
+      {updateSalaryLevelLoading && <LoadingSpinner toggle={toggle} />}
       <Successful
         isOpen7={updateSalaryLevelSuccess && !updateSalaryLevelError}
         popup7={popup7}
@@ -124,7 +124,7 @@ const SalaryLevel = ({ salaryLevels, staffGrade }) => {
         message="Salary Level Created Successfully!"
       />
       {salaryLevelId && (
-        <Comfirm
+        <Comfirm toggle={toggle}
           isOpen4={isOpen2}
           popup4={popup}
           setIsOpen4={setIsOpen2}
@@ -181,7 +181,7 @@ const SalaryLevel = ({ salaryLevels, staffGrade }) => {
                     updateSalaryLevelLoading ||
                     createSalaryLevelLoading
                   }
-                  value={formData?._id ? "Edit" : "Save"}
+                  value={formData?.id ? "Edit" : "Save"}
                 />
                 <input
                   className="cancel__btn margin__left"
@@ -208,7 +208,7 @@ const SalaryLevel = ({ salaryLevels, staffGrade }) => {
                 </thead>
                 <tbody>
                   {salaryLevels?.map((el, indexes) => (
-                    <tr key={el?._id}>
+                    <tr key={el?.id}>
                       <td>{++indexes}</td>
                       <td>{el?.salaryGrade?.name}</td>
                       <td>{el?.name}</td>
@@ -216,15 +216,12 @@ const SalaryLevel = ({ salaryLevels, staffGrade }) => {
                         <div className="action__icons">
                           <div
                             className="icons"
-                            onClick={(e) => onSelect(el?._id)}
+                            onClick={(e) => onSelect(el?.id)}
                           >
                             {" "}
                             <FontAwesomeIcon icon={["fas", "edit"]} />{" "}
                           </div>
-                          <div
-                            className="icons"
-                            onClick={(e) => popup(el?._id)}
-                          >
+                          <div className="icons" onClick={(e) => popup(el?.id)}>
                             {" "}
                             <FontAwesomeIcon icon={["fas", "trash-alt"]} />{" "}
                           </div>

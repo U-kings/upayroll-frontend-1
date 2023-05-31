@@ -1,9 +1,6 @@
 import React, { useState, useEffect } from "react";
-import {
-  //   ErrorBox,
-  Header,
-  SideNav,
-} from "../../components";
+import cookie from "js-cookie";
+import { ErrorBox, Header, SideNav } from "../../components";
 import {
   DashboardContainer,
   DashboardContent,
@@ -21,7 +18,13 @@ import { LoadingSpinner } from "../../modals";
 // // import { element } from "prop-types";
 // import { useMonthlyPayhead } from "../../hooks/calculations/useMonthlyPayhead";
 
-const Dashboard = () => {
+const Dashboard = ({
+  state,
+  toggle,
+  toggleMenu,
+  mobileToggle,
+  toggleMobileMenu,
+}) => {
   // history init
   const history = useHistory();
 
@@ -50,29 +53,59 @@ const Dashboard = () => {
   const [userRole] = useState(adminInfo?.user?.role || "");
   const [userRoleName] = useState(adminInfo?.user?.name || "");
   const [profileImg] = useState(adminInfo?.user?.photo || "");
+  const [changePassword, setChangePassword] = useState(false);
 
   useEffect(() => {
     if (!adminInfo?.isAuthenticated && !adminInfo?.user?.name) {
       history.push("/");
+    } else {
+      dispatch(getDashboardReportSummaryFunc());
     }
-    dispatch(getDashboardReportSummaryFunc());
+
+    const requiresPasswordChange = cookie.get("requiresPasswordChange");
+    if (requiresPasswordChange) {
+      if (JSON.parse(requiresPasswordChange)) {
+        setChangePassword(true);
+        setTimeout(() => {
+          history.push("profile-settings");
+        }, 3000);
+      }
+    }
   }, [history, dispatch, adminInfo, userRole]);
 
   const dash = "active";
   return (
     <>
-      {isLoading && <LoadingSpinner />}
+      {isLoading && <LoadingSpinner toggle={toggle} />}
       <DashboardContainer>
         <DashboardContent>
-          <SideNav dash={dash} userRole={userRole} />
-          <Mainbody>
+          <SideNav
+            dash={dash}
+            userRole={userRole}
+            toggle={toggle}
+            mobileToggle={mobileToggle}
+            toggleMobileMenu={toggleMobileMenu}
+          />
+          <Mainbody toggle={toggle}>
             <Header
               text="Dashboard"
+              state={state}
+              toggle={toggle}
+              toggleMenu={toggleMenu}
+              mobileToggle={mobileToggle}
+              toggleMobileMenu={toggleMobileMenu}
               userRole={userRole}
               userRoleName={userRoleName}
               profileimg={profileImg}
             />
             <Container className="inner__container">
+              {changePassword && (
+                <ErrorBox
+                  errorMessage={
+                    changePassword ? "Please Change you password" : ""
+                  }
+                />
+              )}
               {userRole !== "Employee" ? (
                 <>
                   <div className="row2 margin__top">
@@ -96,7 +129,7 @@ const Dashboard = () => {
                         <p>{reports?.payrolls}</p>
                       </div>
                     </Box>
-                    <Box className="b3">
+                    {/* <Box className="b3">
                       <p>Loan Request</p>
                       <div className="row2 margin__top">
                         <FontAwesomeIcon
@@ -105,7 +138,7 @@ const Dashboard = () => {
                         />
                         <p>{reports?.loanRequests}</p>
                       </div>
-                    </Box>
+                    </Box> */}
                   </div>
                   <div className="row2 margin__top">
                     <Box className="b4">
@@ -153,7 +186,7 @@ const Dashboard = () => {
                         <p>75</p>
                       </div>
                     </Box>
-                    <Box style={{ flex: "1" }} className="b3">
+                    {/* <Box style={{ flex: "1" }} className="b3">
                       <p>Loan Request</p>
                       <div className="row2 margin__top">
                         <FontAwesomeIcon
@@ -162,7 +195,7 @@ const Dashboard = () => {
                         />
                         <p>75</p>
                       </div>
-                    </Box>
+                    </Box> */}
                     {/* <Box style={{ flex: "1" }} className="b6">
                       <p>Bank Schedule</p>
                       <div className="row2 margin__top">

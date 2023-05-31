@@ -1,3 +1,5 @@
+import axios from "axios";
+import cookie from "js-cookie";
 import {
   HR_CREATE_STEPS_FAIL,
   HR_CREATE_STEPS_REQUEST,
@@ -12,20 +14,25 @@ import {
   HR_GET_STEPS_BY_SALARYLEVEL_REQUEST,
   HR_GET_STEPS_BY_SALARYLEVEL_SUCCESS,
 } from "../types/salarysteps";
-import axios from "axios";
-import { cookieTokenValidFunc } from "./auth";
+
+const proxyUrl = process.env.REACT_APP_PROXY_URL;
 
 export const hrGetSalaryStepsFunc =
   (salaryLevelId = "") =>
   async (dispatch) => {
-    dispatch(cookieTokenValidFunc());
+    const token = cookie.get("token");
+    const config = {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    };
 
     if (salaryLevelId) {
       dispatch(hrGetSalaryStepBySalaryLevelFunc(salaryLevelId));
     } else {
       try {
         dispatch({ type: HR_GET_STEPS_REQUEST });
-        const { data } = await axios.get(`/api/salarystep`);
+        const { data } = await axios.get(`${proxyUrl}/api/salarystep`, config);
         dispatch({ type: HR_GET_STEPS_SUCCESS, payload: data });
       } catch (error) {
         dispatch({
@@ -41,9 +48,18 @@ export const hrGetSalaryStepsFunc =
 
 export const hrGetSalaryStepBySalaryLevelFunc =
   (salaryLevelId) => async (dispatch) => {
+    const token = cookie.get("token");
+    const config = {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    };
     try {
       dispatch({ type: HR_GET_STEPS_BY_SALARYLEVEL_REQUEST });
-      const { data } = await axios.get(`/api/salarystep/${salaryLevelId}`);
+      const { data } = await axios.get(
+        `${proxyUrl}/api/salarystep/${salaryLevelId}`,
+        config
+      );
       dispatch({ type: HR_GET_STEPS_BY_SALARYLEVEL_SUCCESS, payload: data });
     } catch (error) {
       dispatch({
@@ -58,10 +74,11 @@ export const hrGetSalaryStepBySalaryLevelFunc =
 
 export const hrCreateSalaryStepFunc =
   (salaryLevelId, salaryGradeId, formData) => async (dispatch) => {
-    dispatch(cookieTokenValidFunc());
+    const token = cookie.get("token");
     const config = {
       headers: {
         "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
       },
     };
 
@@ -69,7 +86,7 @@ export const hrCreateSalaryStepFunc =
       dispatch({ type: HR_CREATE_STEPS_REQUEST });
       const body = JSON.stringify(formData);
       await axios.post(
-        `/api/salarystep/${salaryLevelId}/${salaryGradeId}`,
+        `${proxyUrl}/api/salarystep/${salaryLevelId}/${salaryGradeId}`,
         body,
         config
       );
@@ -87,19 +104,26 @@ export const hrCreateSalaryStepFunc =
   };
 
 export const hrDeleteSalaryStepFunc = (salaryStepId) => async (dispatch) => {
-  dispatch(cookieTokenValidFunc());
+  const token = cookie.get("token");
+  const config = {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  };
   try {
     dispatch({ type: HR_DELETE_STEPS_BY_ID_REQUEST });
-    await axios.delete(`/api/salarystep/${salaryStepId}`);
+    await axios.delete(`${proxyUrl}/api/salarystep/${salaryStepId}`, config);
     dispatch({ type: HR_DELETE_STEPS_BY_ID_SUCCESS });
     dispatch(hrGetSalaryStepsFunc());
   } catch (error) {
     dispatch({
       type: HR_DELETE_STEPS_BY_ID_FAIL,
       payload:
-        error.response && error.response.data.detail
-          ? error.response.data.detail
-          : error.message,
+        error?.response &&
+        (error?.response?.data?.detail || error?.response?.data?.errors)
+          ? error?.response?.data?.detail ||
+            error?.response?.data?.errors?.map((el) => el?.msg)?.join(" ")
+          : error?.message,
     });
   }
 };

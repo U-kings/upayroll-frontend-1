@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { Container } from "../../styles/library";
+import { Container, DashboardContent, Mainbody } from "../../styles/library";
 import { useDispatch, useSelector } from "react-redux";
 import { useHistory } from "react-router-dom";
 import { Spinner, Successful } from "../../modals";
@@ -13,14 +13,21 @@ import {
   ADMIN_LOGGEDIN_DETAILS_RESET,
   CEO_UPLOAD_SIGNATURE_IMAGE_RESET,
 } from "../../types/auth";
-import { ErrorBox } from "../../components";
+import { ErrorBox, Header, SideNav } from "../../components";
 import usePasswordToggle from "../../hooks/PasswordToggle/usePasswordToggle";
 import { COLORS } from "../../values/colors";
 import axios from "axios";
+import { Box } from "@mui/material";
 
-const ProfileSettings = () => {
+const ProfileSettings = ({
+  toggle,
+  toggleMenu,
+  mobileToggle,
+  toggleMobileMenu,
+}) => {
   const dispatch = useDispatch();
   const history = useHistory();
+  const proxyUrl = process.env.REACT_APP_PROXY_URL;
   // redux state
   const { adminInfo } = useSelector((state) => state.adminLoginStatus);
   const { isLoading: loadingAdminDetails, error: adminDetailsError } =
@@ -38,41 +45,30 @@ const ProfileSettings = () => {
   } = useSelector((state) => state.ceoUploadSignature);
 
   //   func state
+  const [isopen9, setisopen9] = useState("");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [oldPassword, setOldPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [signatureImage, setSignatureImage] = useState(null);
+  const [profileImage, setProfileImage] = useState(null);
   const [fileName, setFileName] = useState(null);
   const [showError, setShowError] = useState(null);
   const [userRole] = useState(adminInfo?.user?.role || "");
   const [eSignature] = useState(adminInfo?.user?.signaturePhoto || "");
   const [userProfile] = useState(adminInfo?.user?.photo || "");
+  const [userRoleName] = useState(adminInfo?.user?.name || "");
+  const [profileImg] = useState(adminInfo?.user?.photo || "");
+  const [loading, setLoading] = useState(false);
 
   const [PasswordInputType, ToggleIcon] = usePasswordToggle();
-
-  // useEffect(() => {
-  //   const getCloudinaryKeys = async () => {
-  //     const { data } = await axios.get(`/api/cloudinary/keys`);
-  //     console.log(data);
-  //   };
-  //   if (userRole === "CEO") {
-  //     getCloudinaryKeys();
-  //   }
-  // }, [userRole]);
 
   useEffect(() => {
     if (!adminInfo?.isAuthenticated || !adminInfo?.user?.name) {
       history.push("/");
     }
-    // if (
-    //   userRole === "Internal Auditor" ||
-    //   userRole === "CEO" ||
-    //   userRole === "Accountant"
-    // ) {
-    //   history.push("payroll");
-    // }
+
     if (updateAdminDetailsSuccess) {
       // dispatch({ type: ADMIN_LOGGEDIN_DETAILS_RESET });
       setName("");
@@ -84,8 +80,8 @@ const ProfileSettings = () => {
 
     setName(adminInfo?.user?.name ? adminInfo?.user?.name : "");
     setEmail(adminInfo?.user?.email ? adminInfo?.user?.email : "");
+    // setProfileImage(adminInfo?.user?.photo ? adminInfo?.user?.photo : "");
   }, [adminInfo, userRole, history, dispatch, updateAdminDetailsSuccess]);
-
   useEffect(() => {
     if (
       adminDetailsError === "no token was passed" ||
@@ -118,13 +114,14 @@ const ProfileSettings = () => {
           email,
           oldPassword,
           newPassword,
+          photo: profileImage,
         })
       );
     }
   };
 
   const getCloudinaryKeys = async () => {
-    const { data } = await axios.get(`/api/cloudinary/keys`);
+    const { data } = await axios.get(`${proxyUrl}/api/cloudinary/keys`);
     return data;
   };
 
@@ -145,7 +142,6 @@ const ProfileSettings = () => {
         }
       );
       const data = await res.json();
-      // console.log(data);
       dispatch(ceoUploadSignatureFunc(data.secure_url));
     } catch (error) {
       setShowError(error.message);
@@ -169,7 +165,7 @@ const ProfileSettings = () => {
       dispatch({ type: CEO_UPLOAD_SIGNATURE_IMAGE_RESET });
       setSignatureImage(null);
       setFileName(null);
-      history.push("/profile-settings");
+      history.push("profile-settings");
     }
     if (updateAdminDetailsSuccess) {
       dispatch({ type: ADMIN_UPDATE_LOGGEDIN_DETAILS_RESET });
@@ -179,17 +175,19 @@ const ProfileSettings = () => {
 
   // const hiddenFileInput = React.useRef(null);
   const hiddenFileInput = useRef(null);
+  const hiddenFileInput2 = useRef(null);
 
   const handleClick = () => {
     hiddenFileInput.current.click();
   };
 
-  // handle File
-  const handleFile = async (e) => {
-    let selectedFile = e.target.files[0];
-    setSignatureImage(selectedFile);
+  const handleClick2 = () => {
+    hiddenFileInput2.current.click();
+  };
 
-    setFileName(selectedFile?.name);
+  // handle File
+  const handleFile = (name) => (e) => {
+    let selectedFile = e.target.files[0];
     const idxDot = selectedFile.name.lastIndexOf(".") + 1;
     const extFile = selectedFile.name
       .substr(idxDot, selectedFile.name.length)
@@ -202,6 +200,20 @@ const ProfileSettings = () => {
         // extFile === "svg" ||
         // extFile === "gif"
       ) {
+        switch (name) {
+          case "profile":
+            getImageUrl(selectedFile);
+            // setProfileImage(selectedFile);
+
+            break;
+          case "signature":
+            setSignatureImage(selectedFile);
+            setFileName(selectedFile?.name);
+
+            break;
+          default:
+            break;
+        }
       } else {
         setShowError("Only jpg, jpeg and png files are allowed!");
         // setShowError("Only jpg/jpeg, png, gif and svg files are allowed!");
@@ -212,11 +224,39 @@ const ProfileSettings = () => {
     }
   };
 
+  const getImageUrl = async (profileImage) => {
+    //do whatever you want to do
+    setLoading(true);
+    try {
+      const cloudinaryRes = await getCloudinaryKeys();
+      const formData = new FormData();
+      formData.append("file", profileImage);
+      formData.append("upload_preset", "upayroll");
+      formData.append("cloud_name", cloudinaryRes.cloudinaryKeyName);
+
+      const res = await fetch(
+        `https://api.cloudinary.com/v1_1/${cloudinaryRes.cloudinaryKeyName}/image/upload`,
+        {
+          method: "post",
+          body: formData,
+        }
+      );
+      const data = await res.json();
+      setProfileImage(data.secure_url);
+      setLoading(false);
+      // dispatch(ceoUploadSignatureFunc(data.secure_url));
+    } catch (error) {
+      setShowError(error.message);
+      setLoading(false);
+    }
+  };
+
   return (
     <>
       {loadingAdminDetails && <Spinner />}
       {updateLoading && <Spinner />}
       {ceoUploadSignatureLoading && <Spinner />}
+      {loading && <Spinner />}
       <Successful
         popup7={popup7}
         isOpen7={
@@ -231,153 +271,204 @@ const ProfileSettings = () => {
         popup7={popup7}
         message="Profile settings updated successfully!"
       />
-      <Container>
-        <div className="profile__settings">
-          {!updateLoading && updateError && (
-            <ErrorBox errorMessage={updateError} />
-          )}
-          {passwordError && (
-            <ErrorBox
-              errorMessage={
-                passwordError === true ? "Password do not match" : ""
-              }
-            />
-          )}
-          <form>
-            <h1>Edit Profile</h1>
-            <p>User Info</p>
-            <img className="settings__pic" src={userProfile} alt="profile" />
-            <div className="input__row">
-              <div className="label__group">
-                <label>Name</label>
-                <input
-                  type="text"
-                  name="name"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder="Enter a Name"
-                  disabled={userRole === "Employee"}
+      <DashboardContent>
+        <SideNav
+          isopen9={isopen9}
+          // emp={emp}
+          userRole={userRole}
+          toggle={toggle}
+          toggleMenu={toggleMenu}
+          mobileToggle={mobileToggle}
+          toggleMobileMenu={toggleMobileMenu}
+        />
+        <Mainbody isopen9={isopen9} toggle={toggle}>
+          <Header
+            text="Profile Settings"
+            userRole={userRole}
+            userRoleName={userRoleName}
+            profileimg={profileImg}
+            toggle={toggle}
+            toggleMenu={toggleMenu}
+            mobileToggle={mobileToggle}
+            toggleMobileMenu={toggleMobileMenu}
+          />
+          <Container>
+            <div className="profile__settings">
+              {!updateLoading && updateError && (
+                <ErrorBox errorMessage={updateError} />
+              )}
+              {passwordError && (
+                <ErrorBox
+                  errorMessage={
+                    passwordError === true ? "Password do not match" : ""
+                  }
                 />
-              </div>
-              <div className="label__group">
-                <label>Email</label>
-                <input
-                  type="email"
-                  name="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="Enter a valid Email Address"
-                  disabled={userRole === "Employee"}
-                />
-              </div>
-            </div>
-            <p style={{ margin: "1.5rem 0" }}>Create New Password</p>
-            <div className="label__group">
-              <label>Old Password</label>
-              <input
-                type="password"
-                name="oldPassword"
-                value={oldPassword}
-                onChange={(e) => setOldPassword(e.target.value)}
-                placeholder="Enter your old password"
-              />
-            </div>
-            <div className="label__group form__input">
-              <label>New Password</label>
-              <input
-                type={PasswordInputType}
-                name="newPassword"
-                value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
-                placeholder="Enter your new password"
-              />
-              {/* <span className="password__toggle">{ToggleIcon}</span> */}
-            </div>
-            <div className="label__group form__input">
-              <label>Comfirm New Password</label>
-              <input
-                type={PasswordInputType}
-                name="confirmPassword"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                placeholder="Comfirm new password"
-              />
-              <span className="password__toggle">{ToggleIcon}</span>
-            </div>
-            <input
-              type="button"
-              value="Save Changes"
-              className={
-                // !newPassword ||
-                // !confirmPassword ||
-                newPassword !== confirmPassword || !name || !email
-                  ? "disabled__btn margin__top"
-                  : "save__btn profile__save margin__top"
-              }
-              onClick={onSubmit}
-              disabled={
-                // !newPassword ||
-                // !confirmPassword ||
-                newPassword !== confirmPassword || !name || !email
-              }
-            />
-          </form>
-
-          {userRole === "CEO" && (
-            <>
-              <form>
-                <label className="margin__top">
-                  Add Digital Signature: ...*
-                  <span style={{ color: `${COLORS.red}`, fontSize: "1.3rem" }}>
-                    (must be a .jpg, .jpeg or .png file extension)
-                  </span>
-                </label>
-                {showError && <ErrorBox errorMessage={showError} />}
-                <div className="row">
-                  <div style={{ width: "100%" }} className="upload_empfile">
-                    <p className="choose__btn" onClick={handleClick}>
-                      Choose a file
-                    </p>
-                    <p>{fileName}</p>
+              )}
+              <form autoComplete="off">
+                <div className="row2">
+                  <div>
+                    <h1>Edit Profile</h1>
+                    <p>User Info</p>
                   </div>
-                  <div className="margin__left">
-                    <input
-                      type="button"
-                      value="Upload e-Signature"
-                      className={
-                        // !newPassword ||
-                        // !confirmPassword ||
-                        !signatureImage
-                          ? "disabled__btn margin__top"
-                          : "save__btn profile__save margin__top"
-                      }
-                      onClick={onUploadSignature}
-                      disabled={
-                        // !newPassword ||
-                        // !confirmPassword ||
-                        // newPassword !== confirmPassword || !name || !email
-                        !signatureImage
-                      }
-                    />
-                  </div>
-                  {eSignature && (
-                    <div style={{ margin: "auto 1rem" }}>
-                      <img alt="eSignature" height="35" src={eSignature} />
-                    </div>
-                  )}
                 </div>
+
+                <Box
+                  sx={{
+                    backgroundImage: `url(${
+                      profileImage ? profileImage : userProfile
+                    })`,
+                    width: "14rem",
+                    height: "14rem",
+                    margin: "2rem 0",
+                    backgroundSize: "cover",
+                    borderRadius: "50%",
+                    cursor: "pointer",
+                  }}
+                  onClick={handleClick2}
+                ></Box>
                 <input
                   type="file"
-                  ref={hiddenFileInput}
-                  onChange={handleFile}
+                  ref={hiddenFileInput2}
+                  onChange={handleFile("profile")}
                   accept="image/png, image/jpg, image/jpeg"
                   style={{ display: "none" }}
                 />
+                <div className="input__row">
+                  <div className="label__group">
+                    <label>Name</label>
+                    <input
+                      type="text"
+                      name="name"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      placeholder="Enter a Name"
+                      disabled={userRole === "Employee"}
+                    />
+                  </div>
+                  <div className="label__group">
+                    <label>Email</label>
+                    <input
+                      type="email"
+                      name="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder="Enter a valid Email Address"
+                      disabled={userRole === "Employee"}
+                    />
+                  </div>
+                </div>
+                <p style={{ margin: "1.5rem 0" }}>Create New Password</p>
+                <div className="label__group">
+                  <label>Old Password</label>
+                  <input
+                    type="password"
+                    name="oldPassword"
+                    value={oldPassword}
+                    autoComplete="new-password"
+                    onChange={(e) => setOldPassword(e.target.value)}
+                    placeholder="Enter your old password"
+                  />
+                </div>
+                <div className="label__group form__input">
+                  <label>New Password</label>
+                  <input
+                    type={PasswordInputType}
+                    name="newPassword"
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    placeholder="Enter your new password"
+                  />
+                  {/* <span className="password__toggle">{ToggleIcon}</span> */}
+                </div>
+                <div className="label__group form__input">
+                  <label>Comfirm New Password</label>
+                  <input
+                    type={PasswordInputType}
+                    name="confirmPassword"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    placeholder="Comfirm new password"
+                  />
+                  <span className="password__toggle">{ToggleIcon}</span>
+                </div>
+                <input
+                  type="button"
+                  value="Save Changes"
+                  className={
+                    // !newPassword ||
+                    // !confirmPassword ||
+                    newPassword !== confirmPassword || !name || !email
+                      ? "disabled__btn margin__top"
+                      : "profile__save margin__top"
+                  }
+                  onClick={onSubmit}
+                  disabled={
+                    // !newPassword ||
+                    // !confirmPassword ||
+                    newPassword !== confirmPassword || !name || !email
+                  }
+                />
               </form>
-            </>
-          )}
-        </div>
-      </Container>
+
+              {userRole === "CEO" && (
+                <>
+                  <form>
+                    <label className="margin__top">
+                      Add Digital Signature: ...*
+                      <span
+                        style={{ color: `${COLORS.red}`, fontSize: "1.3rem" }}
+                      >
+                        (must be a .jpg, .jpeg or .png file extension)
+                      </span>
+                    </label>
+                    {showError && <ErrorBox errorMessage={showError} />}
+                    <div className="row">
+                      <div style={{ width: "100%" }} className="upload_empfile">
+                        <p className="choose__btn" onClick={handleClick}>
+                          Choose a file
+                        </p>
+                        <p>{fileName}</p>
+                      </div>
+                      <div className="margin__left">
+                        <input
+                          type="button"
+                          value="Upload e-Signature"
+                          className={
+                            // !newPassword ||
+                            // !confirmPassword ||
+                            !signatureImage
+                              ? "disabled__btn margin__top"
+                              : "save__btn profile__save margin__top"
+                          }
+                          onClick={onUploadSignature}
+                          disabled={
+                            // !newPassword ||
+                            // !confirmPassword ||
+                            // newPassword !== confirmPassword || !name || !email
+                            !signatureImage
+                          }
+                        />
+                      </div>
+                      {eSignature && (
+                        <div style={{ margin: "auto 1rem" }}>
+                          <img alt="eSignature" height="35" src={eSignature} />
+                        </div>
+                      )}
+                    </div>
+                    <input
+                      type="file"
+                      ref={hiddenFileInput}
+                      onChange={handleFile("signature")}
+                      accept="image/png, image/jpg, image/jpeg"
+                      style={{ display: "none" }}
+                    />
+                  </form>
+                </>
+              )}
+            </div>
+          </Container>
+        </Mainbody>
+      </DashboardContent>
     </>
   );
 };

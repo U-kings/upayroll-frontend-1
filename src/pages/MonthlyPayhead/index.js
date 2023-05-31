@@ -15,7 +15,12 @@ import { useDispatch, useSelector } from "react-redux";
 import { logoutAdmin } from "../../actions/auth";
 import { ADMIN_GET_MONTHLYPAYHEADS_RESET } from "../../types/monthlypayheads";
 
-const MonthlyPayhead = () => {
+const MonthlyPayhead = ({
+  toggle,
+  toggleMenu,
+  mobileToggle,
+  toggleMobileMenu,
+}) => {
   // history init
   const history = useHistory();
 
@@ -51,18 +56,32 @@ const MonthlyPayhead = () => {
   }, [dispatch, monthlyPayheadsError]);
 
   const mph = "active";
+
   return (
     <>
       <DashboardContainer>
         <DashboardContent>
-          <SideNav userRole={userRole} userRoleName={userRoleName} mph={mph} />
-          <Mainbody>
+          <SideNav
+            userRole={userRole}
+            userRoleName={userRoleName}
+            mph={mph}
+            toggle={toggle}
+            toggleMenu={toggleMenu}
+            mobileToggle={mobileToggle}
+            toggleMobileMenu={toggleMobileMenu}
+          />
+          <Mainbody toggle={toggle}>
             <Header
               text="Monthly PayHeads"
               userRole={userRole}
               profileimg={profileImg}
+              userRoleName={userRoleName}
+              toggle={toggle}
+              toggleMenu={toggleMenu}
+              mobileToggle={mobileToggle}
+              toggleMobileMenu={toggleMobileMenu}
             />
-            <MonthlyPayheadTable />
+            <MonthlyPayheadTable toggle={toggle} />
             <TaxTable />
           </Mainbody>
         </DashboardContent>

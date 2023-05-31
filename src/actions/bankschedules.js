@@ -1,4 +1,5 @@
 import axios from "axios";
+import cookie from "js-cookie";
 import {
   ACCOUNTANT_CREATE_BANKSCHEDULE_FAIL,
   ACCOUNTANT_CREATE_BANKSCHEDULE_REQUEST,
@@ -19,16 +20,24 @@ import {
   CEO_GET_NOT_APPROVED_BANKSCHEDULES_REQUEST,
   CEO_GET_NOT_APPROVED_BANKSCHEDULES_SUCCESS,
 } from "../types/bankschedules";
-import { cookieTokenValidFunc } from "./auth";
+// import { cookieTokenValidFunc } from "./auth";
 import { accountGetApprovedVouchersFunc } from "./voucher";
+
+const proxyUrl = process.env.REACT_APP_PROXY_URL;
 
 export const ceoGetNotApprovedBankSchedulesFunc =
   (month) => async (dispatch) => {
-    dispatch(cookieTokenValidFunc());
+    const token = cookie.get("token");
+    const config = {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    };
     try {
       dispatch({ type: CEO_GET_NOT_APPROVED_BANKSCHEDULES_REQUEST });
       const { data } = await axios.get(
-        `/api/bankschedule/notapproved?month=${month}`
+        `${proxyUrl}/api/bankschedule/notapproved?month=${month}`,
+        config
       );
       dispatch({
         type: CEO_GET_NOT_APPROVED_BANKSCHEDULES_SUCCESS,
@@ -47,9 +56,11 @@ export const ceoGetNotApprovedBankSchedulesFunc =
 
 export const ceoApproveBankSchedulesFunc =
   (notApprovedBankSchedules, month) => async (dispatch) => {
-    dispatch(cookieTokenValidFunc());
+    const token = cookie.get("token");
+    // dispatch(cookieTokenValidFunc());
     const config = {
       headers: {
+        Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
       },
     };
@@ -58,7 +69,7 @@ export const ceoApproveBankSchedulesFunc =
       const body = JSON.stringify({
         notApprovedBankSchedulesArr: notApprovedBankSchedules,
       });
-      await axios.patch(`/api/bankschedule/approve`, body, config);
+      await axios.patch(`${proxyUrl}/api/bankschedule/approve`, body, config);
       dispatch({
         type: CEO_APPROVE_BANKSCHEDULES_SUCCESS,
       });
@@ -76,11 +87,18 @@ export const ceoApproveBankSchedulesFunc =
 
 export const accountantGetApprovedScheduleVouchersFunc =
   () => async (dispatch) => {
-    dispatch(cookieTokenValidFunc());
-
+    const token = cookie.get("token");
+    const config = {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    };
     try {
       dispatch({ type: ACCOUNTANT_GET_APPROVED_BANKSCHEDULE_VOUCHERS_REQUEST });
-      const { data } = await axios.get(`/api/vouchers/approved-asschedule`);
+      const { data } = await axios.get(
+        `${proxyUrl}/api/vouchers/approved-asschedule`,
+        config
+      );
       dispatch({
         type: ACCOUNTANT_GET_APPROVED_BANKSCHEDULE_VOUCHERS_SUCCESS,
         payload: data.approvedVouchersAsSchedule,
@@ -99,9 +117,10 @@ export const accountantGetApprovedScheduleVouchersFunc =
 export const accountantCreateBankscheduleFunc =
   (approvedVoucherArrs, bankName, paymentType, month, scheduleData) =>
   async (dispatch) => {
-    dispatch(cookieTokenValidFunc());
+    const token = cookie.get("token");
     const config = {
       headers: {
+        Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
       },
     };
@@ -112,7 +131,7 @@ export const accountantCreateBankscheduleFunc =
         scheduleData: scheduleData,
       });
       await axios.post(
-        `/api/bankschedule?bankName=${bankName}&paymentType=${paymentType}`,
+        `${proxyUrl}/api/bankschedule?bankName=${bankName}&paymentType=${paymentType}`,
         body,
         config
       );
@@ -132,11 +151,17 @@ export const accountantCreateBankscheduleFunc =
 export const accountantGetMonthlyBankschedulesFunc =
   (bankName = "") =>
   async (dispatch) => {
-    dispatch(cookieTokenValidFunc());
+    const token = cookie.get("token");
+    const config = {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    };
     try {
       dispatch({ type: ACCOUNTANT_GET_MONTHLY_BANKSCHEDULE_REQUEST });
       const { data } = await axios.get(
-        `/api/bankschedule${bankName && `?bankName=${bankName}`}`
+        `${proxyUrl}/api/bankschedule${bankName && `?bankName=${bankName}`}`,
+        config
       );
       dispatch({
         type: ACCOUNTANT_GET_MONTHLY_BANKSCHEDULE_SUCCESS,
@@ -155,11 +180,15 @@ export const accountantGetMonthlyBankschedulesFunc =
 
 export const accountantDeleteBankscheduleByIdFunc =
   (id, bankName) => async (dispatch) => {
-    dispatch(cookieTokenValidFunc());
-
+    const token = cookie.get("token");
+    const config = {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    };
     try {
       dispatch({ type: ACCOUNTANT_DELETE_BANKSCHEDULE_BY_ID_REQUEST });
-      await axios.delete(`/api/bankschedule/${id}`);
+      await axios.delete(`${proxyUrl}/api/bankschedule/${id}`, config);
       dispatch({ type: ACCOUNTANT_DELETE_BANKSCHEDULE_BY_ID_SUCCESS });
       dispatch(accountantGetMonthlyBankschedulesFunc(bankName));
     } catch (error) {

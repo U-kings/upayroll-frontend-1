@@ -5,10 +5,11 @@ import {
   TextLink,
   NavList,
   NavLink,
+  MenuModal,
 } from "../../styles/SidenavElements";
 
 const SideNav = ({
-  isOpen9: isopen9,
+  isopen9,
   dash,
   emp,
   slp,
@@ -24,35 +25,59 @@ const SideNav = ({
   bnkschd,
   bnklst,
   userRole,
+  toggle,
+  mobileToggle,
+  toggleMobileMenu,
 }) => {
   return (
     <>
-      <LeftSide isOpen9={isopen9}>
-        <div className="leftside__header">
-          <TextLink isOpen9={isopen9} to="/">
+      <MenuModal mobileToggle={mobileToggle} onClick={toggleMobileMenu} />
+      <LeftSide toggle={toggle} mobileToggle={mobileToggle}>
+        <div
+          className="leftside__header"
+          style={{ display: "flex", overflow: "hidden" }}
+        >
+          <TextLink toggle={toggle} to="/">
             <h1 className="small">
               P<span>S</span>
             </h1>
 
-            <h1>
-              <div className="profile__img"></div>
-              Payroll <span>System</span>
-            </h1>
+            <div style={{ display: "flex" }}>
+              <div
+                className="profile__img"
+                // style={{ marginTop: toggle ? "1.3rem" : "" }}
+              ></div>
+              <h1>
+                Payroll <span>System</span>
+              </h1>
+            </div>
           </TextLink>
+          {mobileToggle && (
+            <div className="menu2">
+              <FontAwesomeIcon
+                className="icons"
+                onClick={toggleMobileMenu}
+                icon={["fas", "bars"]}
+              />
+            </div>
+          )}
         </div>
-        <NavList isOpen9={isopen9}>
+        <NavList
+          toggle={toggle}
+          onClick={mobileToggle ? toggleMobileMenu : () => {}}
+        >
           {/* <ul>Attendance</ul> */}
           {userRole === "HR" && (
             <>
               <NavLink to="/dashboard">
                 <li className={dash}>
-                  <FontAwesomeIcon className="icons" icon={["fas", "home"]} />{" "}
+                  <FontAwesomeIcon className="icons" icon={["fas", "home"]} />
                   <p>Dashboard</p>
                 </li>
               </NavLink>
               <NavLink to="/employee">
                 <li className={emp}>
-                  <FontAwesomeIcon className="icons" icon={["fas", "users"]} />{" "}
+                  <FontAwesomeIcon className="icons" icon={["fas", "users"]} />
                   <p>Empolyee</p>
                 </li>
               </NavLink>
@@ -101,7 +126,7 @@ const SideNav = ({
                   <p>Position</p>{" "}
                 </li>
               </NavLink>
-              <NavLink to="/loan">
+              {/* <NavLink to="/loan">
                 <li className={loan}>
                   <FontAwesomeIcon
                     className="icons"
@@ -109,7 +134,7 @@ const SideNav = ({
                   />
                   <p>Loan</p>{" "}
                 </li>
-              </NavLink>
+              </NavLink> */}
               <NavLink to="/pay-structure">
                 <li className={sfl}>
                   <FontAwesomeIcon
@@ -224,7 +249,10 @@ const SideNav = ({
               </NavLink>
               <NavLink to="/pay-slip">
                 <li className={psl}>
-                  <FontAwesomeIcon className="icons" icon={["fas", "file-invoice-dollar"]} />
+                  <FontAwesomeIcon
+                    className="icons"
+                    icon={["fas", "file-invoice-dollar"]}
+                  />
                   <p>Pay Slip</p>{" "}
                 </li>
               </NavLink>
