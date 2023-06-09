@@ -37,7 +37,7 @@ const MonthlyPayhead = ({
 
   useEffect(() => {
     if (!adminInfo?.isAuthenticated && !adminInfo?.user?.name) {
-      history.push("/");
+      history.push("/signin");
     }
     if (
       userRole === "Internal Auditor" ||

@@ -15,7 +15,7 @@ import {
   ADMIN_EMPLOYEE_TOPUP_RESET,
 } from "../../types/employee";
 import { ErrorBox } from "../../components";
-import { Comfirm } from "..";
+import { Comfirm, LoadingSpinner, Successful } from "..";
 const ViewEmployee = ({ isOpen2, popup2, setIsOpen2, employee, toggle }) => {
   // dispatch
   const dispatch = useDispatch();
@@ -48,9 +48,6 @@ const ViewEmployee = ({ isOpen2, popup2, setIsOpen2, employee, toggle }) => {
     ) {
       setEmployeeAllowance([]);
       setEmployeeDeduction([]);
-      dispatch({
-        type: ADMIN_EMPLOYEE_TOPUP_RESET,
-      });
       dispatch({ type: ADMIN_DELETE_EMPLOYEE_DEDUCTION_BY_ID_RESET });
       dispatch({ type: ADMIN_DELETE_EMPLOYEE_ALLOWANCE_BY_ID_RESET });
       popup2();
@@ -181,6 +178,7 @@ const ViewEmployee = ({ isOpen2, popup2, setIsOpen2, employee, toggle }) => {
 
   return (
     <>
+      {loadingTopUp && <LoadingSpinner toggle={toggle} />}
       <Comfirm toggle={toggle} />
       <AddAllowance
         isOpen5={isOpen5}

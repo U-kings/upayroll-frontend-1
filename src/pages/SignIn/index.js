@@ -7,7 +7,7 @@ import {
   SignUpLink,
 } from "../../styles/SigninElements";
 import { useDispatch, useSelector } from "react-redux";
-import { useHistory } from "react-router-dom";
+import { Link, useHistory } from "react-router-dom";
 import { Spinner } from "../../modals";
 import { adminLoginFunc } from "../../actions/auth";
 import { ErrorBox } from "../../components";
@@ -17,6 +17,7 @@ import {
   LOGIN_ADMIN_USER_RESET,
 } from "../../types/auth";
 import { COLORS } from "../../values/colors";
+import { TextLink } from "../../styles/SidenavElements";
 
 const SignIn = () => {
   const dispatch = useDispatch();
@@ -87,22 +88,34 @@ const SignIn = () => {
           <SigninContent>
             <div className="form__container">
               <div className="signin__row__text">
-                <div className="logo"></div>
-                <h1>
-                  Payroll <span>System</span>
-                  <span
-                    style={{
-                      fontSize: ".8rem",
-                      color: `${COLORS.black5}`,
-                      marginLeft: "0",
-                      fontWeight: "600",
-                      paddingBottom: "2rem",
-                      position: "absolute",
-                    }}
-                  >
-                    TM
-                  </span>
-                </h1>
+                <div style={{ margin: "auto" }}>
+                  <Link to="/">
+                    <div
+                      style={{
+                        display: "flex",
+                      }}
+                    >
+                      <div style={{ margin: "auto", display: "flex" }}>
+                        <div className="logo"></div>
+                        <h1>
+                          Payroll <span>System</span>
+                          <span
+                            style={{
+                              fontSize: ".8rem",
+                              color: `${COLORS.black5}`,
+                              marginLeft: "0",
+                              fontWeight: "600",
+                              paddingBottom: "2rem",
+                              position: "absolute",
+                            }}
+                          >
+                            TM
+                          </span>
+                        </h1>
+                      </div>
+                    </div>
+                  </Link>
+                </div>
               </div>
               {!adminLogin?.isLoading && adminLogin?.error && (
                 <ErrorBox

@@ -207,6 +207,11 @@ function BankSchedule({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) {
           employeeBank: el?.paySlip?.employee?.employeeBank,
           amount: el?.amount,
           employeeBankNumber: el?.paySlip?.employee?.employeeBankAcctNumber,
+          accountName: String(
+            el?.paySlip?.employee?.accountName
+              ? el?.paySlip?.employee?.accountName
+              : ""
+          ),
         };
       });
 
@@ -228,6 +233,11 @@ function BankSchedule({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) {
           employeeBankNumber: String(
             el?.paySlip?.employee?.employeeBankAcctNumber
               ? el?.paySlip?.employee?.employeeBankAcctNumber
+              : ""
+          ),
+          accountName: String(
+            el?.paySlip?.employee?.accountName
+              ? el?.paySlip?.employee?.accountName
               : ""
           ),
         };
@@ -262,7 +272,7 @@ function BankSchedule({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) {
 
   useEffect(() => {
     if (!adminInfo?.isAuthenticated && !adminInfo?.user?.name) {
-      history.push("/");
+      history.push("/signin");
     } else {
       if (
         userRole === "Accountant" ||
@@ -326,7 +336,7 @@ function BankSchedule({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) {
   useEffect(() => {
     setArrayIds([]);
     searchResult?.forEach((data) => {
-      if (data.isChecked) {
+      if (data?.isChecked) {
         setArrayIds((arrayIds) => [...arrayIds, data]);
       }
     });
@@ -336,7 +346,7 @@ function BankSchedule({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) {
     if (value !== "") {
       const filteredList = bankScheduleData?.filter((data) => {
         return Object.values(
-          data.month + " " + data.paymentType
+          data?.month + " " + data?.paymentType
           // " " +
           // data?.paySlip?.employee?.employeeBank?.name +
           // " "
@@ -393,7 +403,7 @@ function BankSchedule({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) {
       setSearchResult(dataJoined);
     } else {
       let tempBankSchedule = searchResult?.map((bankSchedule) =>
-        bankSchedule?.id === name
+        bankSchedule?.id?.toString() === name
           ? { ...bankSchedule, isChecked: checked }
           : bankSchedule
       );
@@ -411,15 +421,15 @@ function BankSchedule({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) {
   const disableButton = () => {
     let isTrue = false;
     pageData?.forEach((data) => {
-      if (data.isChecked === true) {
-        isTrue = data.isChecked;
+      if (data?.isChecked === true) {
+        isTrue = data?.isChecked;
       }
     });
     return isTrue;
   };
 
   const setApprovedBankSchedule = () => {
-    const bankScheduleIds = arrayIds.map((el) => el.id);
+    const bankScheduleIds = arrayIds?.map((el) => el.id);
     dispatch(ceoApproveBankSchedulesFunc(bankScheduleIds, selectedOption10));
   };
 
@@ -427,7 +437,8 @@ function BankSchedule({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) {
   return (
     <>
       {currentBankScheduleId && (
-        <Comfirm toggle={toggle}
+        <Comfirm
+          toggle={toggle}
           isOpen4={isOpen4}
           setIsOpen4={setIsOpen4}
           currentBankScheduleId={currentBankScheduleId}
@@ -437,7 +448,8 @@ function BankSchedule({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) {
       )}
 
       {approvedBankScheduleBulk && (
-        <Comfirm toggle={toggle}
+        <Comfirm
+          toggle={toggle}
           isOpen4={isOpen4}
           setIsOpen4={setIsOpen4}
           setApprovedBankScheduleBulk={setApprovedBankScheduleBulk}
@@ -488,7 +500,9 @@ function BankSchedule({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) {
                 (downloadStatusLoading && !downloadStatusError) ||
                 getApprovedBankVouchersLoading ||
                 bankScheduleLoading ||
-                ceoGetApprovedBankVouchersLoading) && <LoadingSpinner toggle={toggle} />}
+                ceoGetApprovedBankVouchersLoading) && (
+                <LoadingSpinner toggle={toggle} />
+              )}
               {downloadStatusError && !downloadStatusLoading && (
                 <ErrorBox errorMessage={downloadStatusError} />
               )}
@@ -500,8 +514,8 @@ function BankSchedule({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) {
                         type="button"
                         className={
                           !disableButton()
-                            ? "general__btn disabled__btn margin__right"
-                            : `general__btn save__btn margin__right`
+                            ? "general__btn disabled__btn"
+                            : "general__btn save__btn"
                         }
                         value="Approve"
                         onClick={() => {
@@ -524,7 +538,7 @@ function BankSchedule({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) {
                         isOpen={isOpen2}
                         toggling={toggling}
                         selectedOption={selectedOption6}
-                        cssClass2={"dropdown__header"}
+                        cssClass2={"dropdown__header margin__left2"}
                         // cssClass3={"margin__left"}
                         text="--Select Bank"
                         dataSet={banks}

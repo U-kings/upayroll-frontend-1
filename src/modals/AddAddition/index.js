@@ -114,7 +114,7 @@ const AddAllowance = ({
                 name="fee"
                 value={fee}
                 onChange={(e) => setFee(e.target.valueAsNumber)}
-                placeholder="Enter Percentage"
+                placeholder="Enter Amount/Percentage"
               />
             </div>
             <div className="label__group margin__bottom">

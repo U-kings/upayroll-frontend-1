@@ -119,7 +119,7 @@ const Position = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
   // useEffects
   useEffect(() => {
     if (!adminInfo?.isAuthenticated && !adminInfo?.user?.name) {
-      history.push("/");
+      history.push("/signin");
     } else {
       dispatch(getAllDepartment());
       dispatch(adminGetAllPosition());

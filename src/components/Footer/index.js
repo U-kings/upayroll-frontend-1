@@ -24,8 +24,17 @@ const Footer = () => {
                 color: theme.palette.secondary[100],
                 textAlign: "center",
               },
+              "& .MuiTypography-h1": {
+                fontSize: "calc(2rem + 0.5vw)",
+                // fontSize: "3.5rem",
+                fontWeight: "500",
+                textAlign: { xs: "left", lg: "center" },
+              },
               "& .MuiTypography-h4": {
                 mt: "1rem",
+                textAlign: "left",
+                fontSize: "1.3rem",
+                fontWeight: "100",
               },
             }}
           >
@@ -35,7 +44,7 @@ const Footer = () => {
                 flex: "1",
                 "& .MuiBox-root": {
                   m: "auto",
-                  p: "1.5rem",
+                  p: { xs: "1.5rem 0", lg: "1.5rem" },
                 },
               }}
             >
@@ -53,13 +62,16 @@ const Footer = () => {
               sx={{
                 display: "flex",
                 flex: "1",
+                width: "100%",
                 "& > .MuiBox-root": {
                   m: "auto",
                   borderRadius: ".7rem",
+                  width: { xs: "100%", lg: "55%" },
                 },
-                "& .MuiInput-input": {
+                "& .MuiInput-root": {
                   m: "auto",
-                  p: "1rem 2rem",
+                  width: "100%",
+                  p: ".7rem 2rem",
                   "&::after": {
                     borderBottom: "none",
                   },
@@ -72,7 +84,7 @@ const Footer = () => {
               }}
             >
               <Box sx={{ bgcolor: theme.palette.secondary[500] }}>
-                <Box display="flex">
+                <Box display="flex" justifyContent="space-between">
                   <Input disableUnderline={true} placeholder="Email Address" />
                   <ButtonComp
                     variant="contained"

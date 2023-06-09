@@ -7,7 +7,7 @@ export const employeeDataValidation = (value) => {
   );
 
   if (!value?.staffId) {
-    errors.staffId = "*staff ID required";
+    errors.staffId = "*staff ID required!";
   }
   if (!value?.noOfWorkingDays) {
     // errors.noOfWorkingDays = "*field is required";
@@ -18,7 +18,7 @@ export const employeeDataValidation = (value) => {
     errors.name = "*must be more than 10 characters long!";
   }
   if (value?.dob?.length === 0) {
-    errors.dob = "*date of birth is required";
+    errors.dob = "*date of birth is required!";
   }
   if (!validEmailRegex.test(value?.email)) {
     errors.email = "*email is not valid!";
@@ -36,7 +36,7 @@ export const employeeDataValidation = (value) => {
     errors.city = "*must be more than 2 characters long!";
   }
   if (value?.joinDate?.length === 0) {
-    errors.joinDate = "*join date is required";
+    errors.joinDate = "*join date is required!";
   }
   if (value?.address?.length < 11) {
     errors.address = "*must be more than 10 characters!";
@@ -46,6 +46,9 @@ export const employeeDataValidation = (value) => {
     value?.employeeBankAcctNumber?.length !== 10
   ) {
     errors.employeeBankAcctNumber = "*must be 10 characters long!";
+  }
+  if (value?.accountName?.length === 0) {
+    errors.address = "*account name is required!";
   }
 
   return errors;

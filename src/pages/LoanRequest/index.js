@@ -111,7 +111,7 @@ const LoanRequest = ({
 
   useEffect(() => {
     if (!adminInfo?.isAuthenticated && !adminInfo?.user?.name) {
-      history.push("/");
+      history.push("/signin");
     } else {
       dispatch(getAllDepartment());
     }
@@ -274,7 +274,7 @@ const LoanRequest = ({
                   </form>
                 </div>
                 <div className="table__body">
-                  <div className="table__overflow">
+                  <div className="table__overflow full__height2">
                     <table>
                       <thead>
                         <tr>

@@ -17,7 +17,7 @@ const ViewVoucher = ({ isOpen, popup, voucher }) => {
           <h1>Bank Voucher</h1>
           <div className="row margin__top">
             <p>PV NO: {voucher?.BSID}</p>
-            <p>Employee Name: {voucher?.salarySlip?.employee?.user?.name}</p>
+            <p>Employee Name: {voucher?.paySlip?.employee?.user?.name}</p>
           </div>
           <div className="">
             <div className="table__overflow">
@@ -39,13 +39,25 @@ const ViewVoucher = ({ isOpen, popup, voucher }) => {
                 </tbody>
                 <tbody>
                   <tr>
+                    <td>
+                      Transfer :{" "}
+                      <span
+                        style={{
+                          widows: "4px",
+                          height: "4px",
+                          backgroundColor: "green",
+                        }}
+                      ></span>
+                    </td>
                     <td>Cash :</td>
                     <td colSpan="2">Check # :</td>
                   </tr>
                 </tbody>
                 <tbody>
                   <tr>
-                    <td colSpan="3">To :</td>
+                    <td colSpan="3">
+                      To : {voucher?.paySlip?.employee?.user?.name}
+                    </td>
                   </tr>
                 </tbody>
                 <tbody>
@@ -56,7 +68,7 @@ const ViewVoucher = ({ isOpen, popup, voucher }) => {
                 <tbody>
                   <tr>
                     <td colSpan="2">Being :</td>
-                    <td>Paye : NGN {commafy(voucher?.salarySlip?.paye)}</td>
+                    <td>Paye : NGN {commafy(voucher?.paySlip?.paye)}</td>
                   </tr>
                 </tbody>
                 <tbody>

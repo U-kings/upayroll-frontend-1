@@ -163,6 +163,13 @@ const Voucher = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
   // }, []);
 
   useEffect(() => {
+    if (!adminInfo?.isAuthenticated && !adminInfo?.user?.name) {
+      history.push("/signin");
+    }
+    // }, [dispatch, history, adminLogin]);
+  }, [history, adminInfo]);
+
+  useEffect(() => {
     if (userRole === "Accountant") {
       setDropdownData(dropdown1);
       // setVoucherType(voucherTypedropdown);
@@ -506,7 +513,6 @@ const Voucher = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
       (el) => String(el.id) === String(slipId)
     );
     if (findVoucher) {
-      // setCurrentSlip(findSlip);
       setCurrentVoucher(findVoucher);
     }
   };
@@ -643,13 +649,6 @@ const Voucher = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
     return isTrue;
   };
 
-  useEffect(() => {
-    if (!adminInfo?.isAuthenticated && !adminInfo?.user?.name) {
-      history.push("/");
-    }
-    // }, [dispatch, history, adminLogin]);
-  }, [history, adminInfo]);
-
   const vch = "active";
 
   return (
@@ -666,7 +665,8 @@ const Voucher = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
       />
 
       {preAprrovedVoucherBulk && (
-        <Comfirm toggle={toggle}
+        <Comfirm
+          toggle={toggle}
           isOpen4={isOpen4}
           setIsOpen4={setIsOpen4}
           preApprovedVoucherBulk={preAprrovedVoucherBulk}
@@ -676,7 +676,8 @@ const Voucher = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
       )}
 
       {approveVoucherBulk && (
-        <Comfirm toggle={toggle}
+        <Comfirm
+          toggle={toggle}
           isOpen4={isOpen4}
           setIsOpen4={setIsOpen4}
           approveVoucherBulk={approveVoucherBulk}
@@ -686,7 +687,8 @@ const Voucher = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
       )}
 
       {bankScheduleBulk && (
-        <Comfirm toggle={toggle}
+        <Comfirm
+          toggle={toggle}
           isOpen4={isOpen4}
           setIsOpen4={setIsOpen4}
           bankScheduleBulk={bankScheduleBulk}
@@ -696,7 +698,8 @@ const Voucher = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
       )}
 
       {rejectVoucherBulk && (
-        <Comfirm toggle={toggle}
+        <Comfirm
+          toggle={toggle}
           isOpen4={isOpen4}
           setIsOpen4={setIsOpen4}
           rejectVoucherBulk={rejectVoucherBulk}
@@ -707,7 +710,8 @@ const Voucher = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
       )}
 
       {currentVoucher && (
-        <Comfirm toggle={toggle}
+        <Comfirm
+          toggle={toggle}
           isOpen4={isOpen4}
           setIsOpen4={setIsOpen4}
           currentVoucher={currentVoucher}
@@ -737,7 +741,8 @@ const Voucher = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
       )}
 
       {deleteVoucherBulk && !currentVoucher && (
-        <Comfirm toggle={toggle}
+        <Comfirm
+          toggle={toggle}
           isOpen4={isOpen4}
           setIsOpen4={setIsOpen4}
           deleteVoucherBulk={deleteVoucherBulk}
@@ -811,7 +816,7 @@ const Voucher = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
                       selectedOption={selectedOption10}
                       // cssClass={check}
                       cssClass2={"month__header"}
-                      cssClass3={"margin__right2"}
+                      cssClass3={"margin__left2"}
                       text={currentmonthLong}
                       dataSet={monthArr}
                       onOptionClicked={onOptionClicked10}
@@ -832,8 +837,8 @@ const Voucher = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
                           selectedOption6 &&
                           // selectedOption7 &&
                           disableButton()
-                            ? "general__btn mobile__margin__top save__btn"
-                            : "general__btn mobile__margin__top disabled__btn"
+                            ? "general__btn margin__left2 mobile__margin__top save__btn"
+                            : "general__btn margin__left2 mobile__margin__top disabled__btn"
                         }
                         value="Create Bank Schedule"
                         disabled={
@@ -888,8 +893,8 @@ const Voucher = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
                         type="button"
                         className={
                           disableButton()
-                            ? "general__btn green__btn"
-                            : "general__btn disabled__btn"
+                            ? "general__btn green__btn margin__left2"
+                            : "general__btn disabled__btn margin__left2"
                         }
                         value={userRole === "CEO" ? "Approve" : "Pre-Approve"}
                         onClick={() => {
@@ -1074,7 +1079,7 @@ const Voucher = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
                                 {voucher?.acn}
 
                                 <div className="action__icons">
-                                  {voucher?.status ? (
+                                  {/* {voucher?.status ? (
                                     <div
                                       title="View"
                                       className="icons"
@@ -1084,7 +1089,7 @@ const Voucher = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
                                     </div>
                                   ) : (
                                     ""
-                                  )}
+                                  )} */}
                                   {userRole === "Accountant" &&
                                     selectedOption === "Rejected" && (
                                       <>

@@ -64,7 +64,7 @@ const PayStructure = () => {
   // useEffects
   useEffect(() => {
     if (!adminInfo?.isAuthenticated && !adminInfo?.user?.name) {
-      history.push("/");
+      history.push("/signin");
     } else {
       if (userRole === "HR") {
         dispatch(hrGetBasePayFunc());

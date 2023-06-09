@@ -16,6 +16,9 @@ import { hrGetAllStaffGradesFunc } from "../../actions/staffgrade";
 import { banks } from "../../values/banks";
 import { employeeDataValidation } from "../../hooks/validations/employeeDataValidation";
 import { formatDate } from "../../hooks/functions";
+import { getAllBankNamesFunc } from "../../actions/banklist";
+import { VERIFY_ACCOUNT_NUMBER_RESET } from "../../types/auth";
+import { verifyAccountNumberFunc } from "../../actions/auth";
 const EditEmployee = ({
   isOpen3,
   popup3,
@@ -28,6 +31,7 @@ const EditEmployee = ({
   const dispatch = useDispatch();
 
   // redux state
+  const { bankNames } = useSelector((state) => state.adminGetAllBankNames);
   const { departments } = useSelector((state) => state.departmentsReducer);
   const { positions } = useSelector(
     (state) => state.departmentPositionsReducer
@@ -40,6 +44,12 @@ const EditEmployee = ({
     isLoading: updateLoading,
     error: updateError,
   } = useSelector((state) => state.adminUpdateEmployee);
+
+  const {
+    accountName: employeeAccountName,
+    error: verifyAccountError,
+    isLoading: verifyAccountLoading,
+  } = useSelector((state) => state.verifyAccountNumber);
 
   // const { banks } = useSelector((state) => state.adminGetAllBanks);
   // func state
@@ -100,10 +110,28 @@ const EditEmployee = ({
       employee && employee?.employeeBankAcctNumber
         ? employee?.employeeBankAcctNumber
         : "",
+    accountName: employee && employee?.accountName ? employee?.accountName : "",
   });
+  const [bankCode, setBankCode] = useState(null);
 
   const genders = ["Male", "Female"];
   const emptypes = ["Permanent", "Part-time", "Contract", "Intern"];
+
+  const {
+    staffId,
+    noOfWorkingDays,
+    name,
+    dob,
+    email,
+    mobile,
+    state,
+    nationality,
+    city,
+    joinDate,
+    address,
+    employeeBankAcctNumber,
+    accountName,
+  } = employeeFormData;
 
   // useEffect
   useEffect(() => {
@@ -122,6 +150,7 @@ const EditEmployee = ({
         state: "",
         joinDate: "",
         employeeBankAcctNumber: "",
+        accountName: "",
       });
       setSelectedOption(null);
       setSelectedOption2(null);
@@ -138,6 +167,7 @@ const EditEmployee = ({
 
   useEffect(() => {
     dispatch(getAllDepartment());
+    dispatch(getAllBankNamesFunc());
     dispatch(getPositionsByDepartment(employee?.department?.id));
     // dispatch(adminGetAllBanksFunc());
     dispatch(hrGetAllStaffGradesFunc());
@@ -150,6 +180,46 @@ const EditEmployee = ({
     setErrors(employeeDataValidation(employeeFormData));
   }, [employeeFormData]);
 
+  //set accounName filed to empty if length is not == 10
+  useEffect(() => {
+    if (employeeBankAcctNumber?.length !== 10 || !bankCode) {
+      setEmployeeFormData({
+        ...employeeFormData,
+        accountName: "",
+      });
+    }
+    // eslint-disable-next-line
+  }, [employeeBankAcctNumber, bankCode]);
+
+  // verify account name
+  useEffect(() => {
+    if (employeeBankAcctNumber?.length === 10 && bankCode) {
+      dispatch(
+        verifyAccountNumberFunc({
+          accountNumber: employeeBankAcctNumber,
+          bankCode: bankCode,
+        })
+      );
+    }
+
+    if (employeeAccountName) {
+      setEmployeeFormData({
+        ...employeeFormData,
+        accountName: employeeAccountName,
+      });
+    }
+    // eslint-disable-next-line
+  }, [dispatch, employeeBankAcctNumber, bankCode, employeeAccountName]);
+
+  // verify account error
+  useEffect(() => {
+    if (verifyAccountError) {
+      setTimeout(() => {
+        dispatch({ type: VERIFY_ACCOUNT_NUMBER_RESET });
+      }, 5000);
+    }
+  }, [verifyAccountError, dispatch]);
+
   //   onChange Handler
   const onChange = (e) => {
     setEmployeeFormData({
@@ -157,21 +227,6 @@ const EditEmployee = ({
       [e.target.name]: e.target.value,
     });
   };
-
-  const {
-    staffId,
-    noOfWorkingDays,
-    name,
-    dob,
-    email,
-    mobile,
-    state,
-    nationality,
-    city,
-    joinDate,
-    address,
-    employeeBankAcctNumber,
-  } = employeeFormData;
 
   const toggling = () => setIsOpen(!isOpen);
   const toggling2 = () => setIsOpen2(!isOpen2);
@@ -244,6 +299,7 @@ const EditEmployee = ({
   // bank
   const onOptionClicked6 = (bank) => () => {
     setSelectedOption6({ name: bank?.name });
+    setBankCode(bank?.code);
     setIsOpen6(false);
   };
 
@@ -346,7 +402,9 @@ const EditEmployee = ({
 
   return (
     <>
-      {updateLoading && <LoadingSpinner toggle={toggle} />}
+      {(updateLoading || verifyAccountLoading) && (
+        <LoadingSpinner toggle={toggle} />
+      )}
 
       <ModalBackground isOpen3={isOpen3} onClick={popup3} />
       <ModalContainer className="edit__emp" isOpen3={isOpen3}>
@@ -355,7 +413,7 @@ const EditEmployee = ({
           <h1>Edit Employee</h1>
           <form onSubmit={onSubmit}>
             <div className="input__row">
-              <div style={{ width: "20rem" }} className="label__group">
+              <div className="label__group staffId">
                 <label>Staff ID</label>
                 <input
                   type="text"
@@ -377,7 +435,7 @@ const EditEmployee = ({
                 />
                 <span className="error">{errors.name}</span>
               </div>
-              <div style={{ width: "20rem" }} className="label__group">
+              <div className="label__group workdays">
                 <label>
                   N<u style={{ fontSize: "1.5rem" }}>O</u> Of Work Days
                 </label>
@@ -498,7 +556,7 @@ const EditEmployee = ({
                   toggling={toggling6}
                   selectedOption={selectedOption6}
                   text="-- Select a Bank Name"
-                  dataSet={banks}
+                  dataSet={bankNames}
                   onOptionClicked={onOptionClicked6}
                 />
                 <span className="error">

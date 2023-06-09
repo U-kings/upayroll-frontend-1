@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { ErrorBox, Header, SideNav } from "../../components";
+import { DropdownList, ErrorBox, Header, SideNav } from "../../components";
 import {
   DashboardContainer,
   DashboardContent,
@@ -16,12 +16,15 @@ import {
   accountantCreateBankFunc,
   accountantUpdateBankByIdFunc,
   adminGetAllBanksFunc,
+  getAllBankNamesFunc,
 } from "../../actions/banklist";
 import {
   ACCOUNTANT_CREATE_BANK_RESET,
   ACCOUNTANT_UPDATE_BANK_BY_ID_RESET,
 } from "../../types/banklist";
 import { trancateWord } from "../../hooks/functions";
+import { verifyAccountNumberFunc } from "../../actions/auth";
+import { VERIFY_ACCOUNT_NUMBER_RESET } from "../../types/auth";
 
 const Bank = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
   // dispatch init
@@ -32,6 +35,12 @@ const Bank = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
 
   // redux state
   const { adminInfo } = useSelector((state) => state.adminLoginStatus);
+  const { bankNames } = useSelector((state) => state.adminGetAllBankNames);
+  const {
+    accountName: employeeAccountName,
+    error: verifyAccountError,
+    isLoading: verifyAccountLoading,
+  } = useSelector((state) => state.verifyAccountNumber);
   const { isLoading: loadingAllBanks, banks } = useSelector(
     (state) => state.adminGetAllBanks
   );
@@ -49,21 +58,41 @@ const Bank = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
   // func state
   // const [isOpen4, setIsOpen4] = useState(false);
   const [formData, setFormData] = useState({
-    name: "",
+    // name: "",
     accountNumber: "",
+    accountName: "",
     bankAddress: "",
     bankEmailAddress: "",
     bankPhoneNo: "",
   });
 
-  const { name, accountNumber, bankAddress, bankEmailAddress, bankPhoneNo } =
-    formData;
+  const {
+    // name,
+    accountNumber,
+    accountName,
+    bankAddress,
+    bankEmailAddress,
+    bankPhoneNo,
+  } = formData;
 
   //func state
+  const [isOpen5, setIsOpen5] = useState(false);
   const [isOpen7, setIsOpen7] = useState(false);
+  const [selectedOption5, setSelectedOption5] = useState(null);
+  const [bankCode, setBankCode] = useState(null);
   const [userRole] = useState(adminInfo?.user?.role || "");
   const [userRoleName] = useState(adminInfo?.user?.name || "");
   const [profileImg] = useState(adminInfo?.user?.photo || "");
+
+  //   toggle func for modals
+  const toggling5 = () => setIsOpen5(!isOpen5);
+
+  //   bank name
+  const onOptionClicked5 = (bankname) => () => {
+    setSelectedOption5(bankname);
+    setBankCode(bankname?.code);
+    setIsOpen5(false);
+  };
 
   const removeExtraSpace = (str) => {
     if (str) {
@@ -74,8 +103,10 @@ const Bank = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
   const onSave = (e) => {
     e.preventDefault();
     setFormData({
-      name: removeExtraSpace(name),
+      // name: removeExtraSpace(name),
+      name: selectedOption5?.name,
       accountNumber: removeExtraSpace(accountNumber),
+      accountName: removeExtraSpace(accountName),
       bankAddress: removeExtraSpace(bankAddress),
       bankEmailAddress: removeExtraSpace(bankEmailAddress),
       bankPhoneNo: removeExtraSpace(bankPhoneNo),
@@ -111,6 +142,7 @@ const Bank = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
       bankEmailAddress: "",
       contact: "",
       accountNumber: "",
+      accountName: "",
       bankPhoneNo: "",
     });
   };
@@ -121,6 +153,7 @@ const Bank = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
       setFormData({
         name: "",
         accountNumber: "",
+        accountName: "",
         bankAddress: "",
         bankEmailAddress: "",
         bankPhoneNo: "",
@@ -131,11 +164,11 @@ const Bank = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
 
   useEffect(() => {
     if (!adminInfo?.isAuthenticated && !adminInfo?.user?.name) {
-      history.push("/");
-    } else {
-      if (userRole === "Accountant") {
-        dispatch(adminGetAllBanksFunc());
-      }
+      history.push("/signin");
+    }
+    if (userRole === "Accountant") {
+      dispatch(adminGetAllBanksFunc());
+      dispatch(getAllBankNamesFunc());
     }
     if (
       userRole === "Internal Auditor" ||
@@ -151,6 +184,7 @@ const Bank = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
       setFormData({
         name: "",
         accountNumber: "",
+        accountName: "",
         bankAddress: "",
         bankEmailAddress: "",
         bankPhoneNo: "",
@@ -166,13 +200,41 @@ const Bank = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
     createBankSuccess,
   ]);
 
+  useEffect(() => {
+    if (verifyAccountError) {
+      setTimeout(() => {
+        dispatch({ type: VERIFY_ACCOUNT_NUMBER_RESET });
+      }, 5000);
+    }
+  }, [verifyAccountError, dispatch]);
+
+  useEffect(() => {
+    if (accountNumber?.length === 10 && bankCode) {
+      dispatch(
+        verifyAccountNumberFunc({
+          accountNumber: accountNumber,
+          bankCode: bankCode,
+        })
+      );
+    }
+
+    if (employeeAccountName) {
+      setFormData({
+        ...formData,
+        accountName: employeeAccountName,
+      });
+    }
+    // eslint-disable-next-line
+  }, [dispatch, accountNumber, bankCode, employeeAccountName]);
+
   const bnklst = "active";
 
   return (
     <>
-      {(loadingAllBanks || createBankLoading || updateBankLoading) && (
-        <LoadingSpinner toggle={toggle} />
-        )}
+      {(loadingAllBanks ||
+        createBankLoading ||
+        updateBankLoading ||
+        verifyAccountLoading) && <LoadingSpinner toggle={toggle} />}
       <Successful
         isOpen7={
           isOpen7 ||
@@ -206,11 +268,30 @@ const Bank = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
             <Container>
               {/* <h1>Departments </h1> */}
               {createBankError && <ErrorBox errorMessage={createBankError} />}
+              {verifyAccountError && (
+                <ErrorBox errorMessage={verifyAccountError?.message} />
+              )}
               <div className="container__content">
                 <div className="form__content">
                   <form onSubmit={onSave}>
                     <div className="label__group">
+                      {/* bankNames */}
                       <label>Bank Name</label>
+                      <DropdownList
+                        list={true}
+                        isOpen={isOpen5}
+                        toggling={toggling5}
+                        selectedOption={selectedOption5}
+                        text="-- Select a Bank Name"
+                        dataSet={bankNames}
+                        // dataSet={banks}
+                        onOptionClicked={onOptionClicked5}
+                        maxHeight="20rem"
+                      />
+                      <span className="error">
+                        {!selectedOption5 ? "*bank name is required" : ""}
+                      </span>
+                      {/* <label>Bank Name</label>
                       <input
                         type="text"
                         name="name"
@@ -222,7 +303,7 @@ const Bank = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
                           })
                         }
                         placeholder="Enter Bank Name"
-                      ></input>
+                      ></input> */}
                     </div>
                     <div className="label__group">
                       <label>Account No</label>
@@ -240,6 +321,22 @@ const Bank = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
                         }
                         placeholder="Enter Acountant Number"
                       />
+                    </div>
+                    <div className="label__group">
+                      <label>Account Name</label>
+                      <input
+                        type="text"
+                        name="accountName"
+                        value={accountName}
+                        placeholder="Account Name"
+                        disabled
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            [e.target.name]: e.target.value,
+                          })
+                        }
+                      ></input>
                     </div>
                     <div className="label__group">
                       <label>Branch Address</label>
@@ -290,9 +387,11 @@ const Bank = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
                     <div className="form__button">
                       <input
                         className={
-                          !name ||
+                          // !name ||
+                          !selectedOption5 ||
                           !accountNumber ||
                           !bankPhoneNo ||
+                          !accountName ||
                           !bankEmailAddress ||
                           !bankAddress
                             ? "disabled__btn"
@@ -300,8 +399,10 @@ const Bank = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
                         }
                         type="submit"
                         disabled={
-                          !name ||
+                          // !name ||
+                          !selectedOption5 ||
                           !accountNumber ||
+                          !accountName ||
                           !bankPhoneNo ||
                           !bankEmailAddress ||
                           !bankAddress
@@ -337,8 +438,10 @@ const Bank = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
                             <td>{++indexes}</td>
                             <td>{el?.name?.toUpperCase()}</td>
                             <td>{el?.accountNumber}</td>
-                            <td>{trancateWord(el?.bankAddress)}</td>
-                            <td>{trancateWord(el?.bankEmailAddress)}</td>
+                            <td>{trancateWord(el?.bankAddress?.toString())}</td>
+                            <td>
+                              {trancateWord(el?.bankEmailAddress?.toString())}
+                            </td>
                             <td>{el?.bankPhoneNo}</td>
                             <td>
                               <div className="action__icons">

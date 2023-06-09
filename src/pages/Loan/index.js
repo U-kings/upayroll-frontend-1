@@ -108,7 +108,7 @@ const Loan = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
 
   useEffect(() => {
     if (!adminInfo?.isAuthenticated && !adminInfo?.user?.name) {
-      history.push("/");
+      history.push("/signin");
     } else {
       dispatch(getAllDepartment());
     }

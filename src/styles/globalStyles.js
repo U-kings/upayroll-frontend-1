@@ -285,6 +285,10 @@ export const GlobalStyle = createGlobalStyle`
                 & .action__icons{
                     display: flex;
                 }
+
+                & .red{
+                    color: red;
+                }
             }
 
         }
@@ -464,6 +468,10 @@ export const GlobalStyle = createGlobalStyle`
             }
             & .margin__left:last-child{
                 margin-left: 0;
+            }
+
+            & .margin__right{
+                margin-right: 0;
             }
 
             & .general__btn {

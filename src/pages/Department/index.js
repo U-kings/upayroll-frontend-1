@@ -104,7 +104,7 @@ const Department = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
 
   useEffect(() => {
     if (!adminInfo?.isAuthenticated && !adminInfo?.user?.name) {
-      history.push("/");
+      history.push("/signin");
     } else {
       dispatch(getAllDepartment());
     }
@@ -124,6 +124,9 @@ const Department = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
       });
     }
     if (CreateDepartmentError) {
+      dispatch({ type: ADMIN_UPDATE_DEPARTMENT_BY_ID_RESET });
+    }
+    if (updateDepartmentError) {
       dispatch({ type: ADMIN_CREATE_DEPARTMENT_RESET });
     }
   }, [
@@ -133,6 +136,7 @@ const Department = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
     history,
     createDepartmentSuccess,
     CreateDepartmentError,
+    updateDepartmentError,
   ]);
 
   useEffect(() => {
@@ -146,7 +150,8 @@ const Department = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
     <>
       {loadingDepartments && <LoadingSpinner toggle={toggle} />}
       {departmentId && (
-        <Comfirm toggle={toggle}
+        <Comfirm
+          toggle={toggle}
           isOpen4={isOpen4}
           popup4={popup4}
           setIsOpen4={setIsOpen4}
@@ -161,6 +166,10 @@ const Department = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
         setIsOpen7={setIsOpen7}
         message="Department updated successfully!"
       />
+
+      {updateDepartmentError && (
+        <ErrorBox errorMessage={updateDepartmentError} />
+      )}
       <DashboardContainer>
         <DashboardContent>
           <SideNav

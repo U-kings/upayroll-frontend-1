@@ -50,7 +50,7 @@ const ViewSalaryslip = ({ isOpen8, popup8, paySlip, monthlypayheads }) => {
             </div>
             <div className="flex__1">
               <h1 className="payslip__text aligntext__right full__width">
-                e-PAYSLIP
+                E-PAYSLIP
               </h1>
               <p
                 style={{ paddingRight: "1rem" }}

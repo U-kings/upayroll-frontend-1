@@ -17,6 +17,8 @@ import {
   registerCompanyAdminReducer,
   confirmEmailReducer,
   getNotCreatedRolesReducer,
+  verifyAccountNumberReducer,
+  verifyBulkAccountNumberReducer,
 } from "./reducers/auth";
 
 // department reducer
@@ -161,6 +163,7 @@ import {
 import {
   accountantCreateBankReducer,
   accountantUpdateBankByIdReducer,
+  adminGetAllBankNamesReducer,
   adminGetAllBanksReducer,
 } from "./reducers/banklist";
 
@@ -216,6 +219,9 @@ const reducers = combineReducers({
   adminGetLoggedinDetails: adminGetLoggedinDetailsReducer,
   adminUpdateLoggedinDetails: adminUpdateLoggedinDetailsReducer,
   checkCookieTokenValid: checkCookieTokenValidReducer,
+
+  verifyAccountNumber: verifyAccountNumberReducer,
+  verifyBulkAccountNumber: verifyBulkAccountNumberReducer,
 
   // ** HR **
   // Employee
@@ -326,6 +332,9 @@ const reducers = combineReducers({
 
   // banklist
   adminGetAllBanks: adminGetAllBanksReducer,
+
+  //bankName
+  adminGetAllBankNames: adminGetAllBankNamesReducer,
 
   // ** Accountant **
   accountantCreateBank: accountantCreateBankReducer,

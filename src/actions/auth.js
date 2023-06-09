@@ -38,6 +38,12 @@ import {
   GET_NOT_CREATED_ROLES_REQUEST,
   GET_NOT_CREATED_ROLES_SUCCESS,
   GET_NOT_CREATED_ROLES_FAIL,
+  VERIFY_BULK_ACCOUNT_NUMBER_REQUEST,
+  VERIFY_BULK_ACCOUNT_NUMBER_SUCCESS,
+  VERIFY_BULK_ACCOUNT_NUMBER_FAIL,
+  VERIFY_ACCOUNT_NUMBER_SUCCESS,
+  VERIFY_ACCOUNT_NUMBER_FAIL,
+  VERIFY_ACCOUNT_NUMBER_REQUEST,
 } from "../types/auth";
 
 const proxyUrl = process.env.REACT_APP_PROXY_URL;
@@ -170,9 +176,11 @@ export const registerFunc = (formData) => async (dispatch) => {
     dispatch({
       type: REGISTER_COMPANY_FAIL,
       payload:
-        error?.response && error?.response?.data?.detail
-          ? error.response.data.detail
-          : error.message,
+      error?.response &&
+      (error?.response?.data?.detail || error?.response?.data?.errors)
+        ? error?.response?.data?.detail ||
+          error?.response?.data?.errors?.map((el) => el?.msg)?.join(" ")
+        : error?.message,
     });
   }
 };
@@ -205,9 +213,11 @@ export const registerCompanyAdminFunc = (formData) => async (dispatch) => {
     dispatch({
       type: REGISTER_COMPANY_ADMIN_FAIL,
       payload:
-        error?.response && error?.response?.data?.detail
-          ? error.response.data.detail
-          : error.message,
+        error?.response &&
+        (error?.response?.data?.detail || error?.response?.data?.errors)
+          ? error?.response?.data?.detail ||
+            error?.response?.data?.errors?.map((el) => el?.msg)?.join(" ")
+          : error?.message,
     });
   }
 };
@@ -243,9 +253,11 @@ export const getNotCreatedRolesFunc = () => async (dispatch) => {
     dispatch({
       type: GET_NOT_CREATED_ROLES_FAIL,
       payload:
-        error?.response && error?.response?.data?.detail
-          ? error.response.data.detail
-          : error.message,
+        error?.response &&
+        (error?.response?.data?.detail || error?.response?.data?.errors)
+          ? error?.response?.data?.detail ||
+            error?.response?.data?.errors?.map((el) => el?.msg)?.join(" ")
+          : error?.message,
     });
   }
 };
@@ -391,6 +403,79 @@ export const adminResetPasswordFunc = (token, formData) => async (dispatch) => {
           ? error?.response?.data?.detail ||
             error?.response?.data?.errors?.map((el) => el?.msg)?.join(" ")
           : error?.message,
+    });
+  }
+};
+
+export const verifyAccountNumberFunc = (formData) => async (dispatch) => {
+  const token = cookie.get("token");
+  const config = {
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
+  };
+
+  try {
+    dispatch({ type: VERIFY_ACCOUNT_NUMBER_REQUEST });
+    const body = JSON.stringify(formData);
+    const { data } = await axios.post(
+      `${proxyUrl}/api/paystack/verify-account`,
+      body,
+      config
+    );
+    dispatch({
+      type: VERIFY_ACCOUNT_NUMBER_SUCCESS,
+      payload: data?.data?.account_name,
+    });
+    dispatch(adminLoginStatus());
+  } catch (error) {
+    dispatch({
+      type: VERIFY_ACCOUNT_NUMBER_FAIL,
+      payload:
+        error?.response &&
+        (error?.response?.data?.detail || error?.response?.data?.errors)
+          ? error?.response?.data?.detail ||
+            error?.response?.data?.errors?.map((el) => el?.msg)?.join(" ")
+          : error?.message,
+    });
+  }
+};
+
+export const verifyBulkAcctountNumberFunc = (formData) => async (dispatch) => {
+  const token = cookie.get("token");
+  const config = {
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
+  };
+
+  try {
+    dispatch({ type: VERIFY_BULK_ACCOUNT_NUMBER_REQUEST });
+    const body = JSON.stringify({ accounts: formData });
+    const { data } = await axios.post(
+      `${proxyUrl}/api/paystack/verify-account/bulk`,
+      body,
+      config
+    );
+    dispatch({
+      type: VERIFY_BULK_ACCOUNT_NUMBER_SUCCESS,
+      payload: data?.verifiedAccounts,
+    });
+    dispatch(adminLoginStatus());
+  } catch (error) {
+    dispatch({
+      type: VERIFY_BULK_ACCOUNT_NUMBER_FAIL,
+      payload:
+        error?.response &&
+        (error?.response?.data?.detail || error?.response?.data?.failedAccounts)
+          ? error?.response?.data?.detail ||
+            error?.response?.data?.failedAccounts
+              ?.map((el) => el?.accountNumber)
+              ?.join(",")
+          : // error?.response?.data?.failedAccounts?.map((el) => el?.msg)?.join(" ")
+            error?.message,
     });
   }
 };

@@ -19,12 +19,21 @@ import { Spinner, Successful } from "../../modals";
 import { ErrorBox } from "../../components";
 import { ADMIN_CREATE_BULK_EMPLOYEE_RESET } from "../../types/employee";
 import { DOWNLOADING_ON_PROCESS_ERROR } from "../../types/download";
+import { VERIFY_BULK_ACCOUNT_NUMBER_RESET } from "../../types/auth";
 import {
   Capitalize,
+  checkAccNumber,
   checkDate,
+  checkDuplicateAccountNumber,
   checkEmail,
+  checkNumber,
   formatDate,
+  trancateWord,
+  validateEmail,
 } from "../../hooks/functions";
+import { getAllBankNamesFunc } from "../../actions/banklist";
+import { verifyBulkAcctountNumberFunc } from "../../actions/auth";
+import { useCallback } from "react";
 
 const ImportExcelfile = ({
   toggle,
@@ -37,13 +46,19 @@ const ImportExcelfile = ({
   // history init
   const history = useHistory();
 
-  const [excelFile, setExcelFile] = useState(null);
+  // useStates
   const [excelData, setExcelData] = useState([]);
+  const [bulkData, setBulkData] = useState([]);
   const [fileName, setFileName] = useState(null);
   const [showError, setShowError] = useState(null);
-
   // redux state
   const { adminInfo } = useSelector((state) => state.adminLoginStatus);
+  const { bankNames } = useSelector((state) => state.adminGetAllBankNames);
+  const {
+    verifiedAccounts,
+    error: verifyBulkAccountError,
+    isLoading: verifyBulkAccountLoading,
+  } = useSelector((state) => state.verifyBulkAccountNumber);
   const { isLoading: downloadLoading, error: downloadError } = useSelector(
     (state) => state.downloadStatus
   );
@@ -55,22 +70,14 @@ const ImportExcelfile = ({
 
   useEffect(() => {
     if (!adminInfo?.isAuthenticated && !adminInfo?.user?.name) {
-      history.push("/");
+      history.push("/signin");
     } else {
       dispatch(getAllDepartment());
       dispatch(adminGetAllPosition());
+      dispatch(getAllBankNamesFunc());
     }
+    // clearData();
   }, [dispatch, adminInfo, history]);
-
-  useEffect(() => {
-    if (excelFile !== null) {
-      const workbook = XLSL.read(excelFile, { type: "buffer" });
-      const worksheetName = workbook.SheetNames[0];
-      const worksheet = workbook.Sheets[worksheetName];
-      const data = XLSL.utils.sheet_to_json(worksheet);
-      setExcelData(data);
-    }
-  }, [excelFile]);
 
   useEffect(() => {
     if (showError) {
@@ -80,40 +87,38 @@ const ImportExcelfile = ({
     }
   }, [showError]);
 
+  const clearData = () => {
+    setExcelData([]);
+    setBulkData([]);
+    setFileName(null);
+  };
+  // console.log(excelData);
+
   const popup7 = () => {
     if (createBulkSuccess && !createBulkError) {
       setExcelData(null);
-      setExcelFile(null);
       setFileName(null);
       dispatch({ type: ADMIN_CREATE_BULK_EMPLOYEE_RESET });
       history.push("employee");
     }
   };
 
-  // useEffect(() => {
-  //   if (
-  //     (createBulkSuccess && !createBulkError)
-  //   ) {
-  //     setExcelData(null);
-  //     setExcelFile(null);
-  //     dispatch({ type: ADMIN_CREATE_BULK_EMPLOYEE_RESET });
-  //     dispatch({ type: HR_UPLOAD_CONTRACT_EMPLOYEE_RESET });
-  //     history.push("dashboard");
-  //   }
-  // }, [
-  //   createBulkSuccess,
-  //   createBulkError,
-  //   dispatch,
-  //   history,
-  // ]);
+  useEffect(() => {
+    if (createBulkError) {
+      dispatch({ type: ADMIN_CREATE_BULK_EMPLOYEE_RESET });
+    }
+  }, [createBulkError, dispatch]);
 
   // handle File
 
   useEffect(() => {
-    if (downloadError) {
-      dispatch({ type: DOWNLOADING_ON_PROCESS_ERROR });
+    if (verifyBulkAccountError) {
+      setTimeout(() => {
+        dispatch({ type: VERIFY_BULK_ACCOUNT_NUMBER_RESET });
+      }, 5000);
+      setShowError(`InValid Acount Number ${verifyBulkAccountError}`);
     }
-  }, [dispatch, downloadError]);
+  }, [verifyBulkAccountError, dispatch]);
 
   const fileType = ["application/vnd.ms-excel"];
   const fileType2 = [
@@ -133,15 +138,44 @@ const ImportExcelfile = ({
         let reader = new FileReader();
         reader.readAsArrayBuffer(selectedFile);
         reader.onload = (e) => {
-          setExcelFile(e.target.result);
+          const workbook = XLSL.read(e?.target?.result, { type: "buffer" });
+          const worksheetName = workbook.SheetNames[0];
+          const worksheet = workbook.Sheets[worksheetName];
+          const data = XLSL.utils.sheet_to_json(worksheet);
+          setExcelData(data);
         };
       } else {
         setShowError("Please select only specified file type");
+        clearData();
       }
     } else {
       setShowError("Please select a file");
+      clearData();
     }
   };
+
+  useEffect(() => {
+    if (verifiedAccounts && excelData?.length > 0) {
+      // const employees = [];
+      excelData?.map((data) => {
+        let foundItem = verifiedAccounts?.find((account) => {
+          return (
+            data?.EmployeeBankAcctNumber?.toString() ===
+            account?.accountNumber?.toString()
+          );
+        });
+
+        setBulkData((oldArray) => [
+          ...oldArray,
+          { ...data, accountName: foundItem?.accountName },
+        ]);
+        // employees.push({ ...data, accountName: foundItem?.accountName });
+      });
+    }
+    // eslint-disable-next-line
+  }, [verifiedAccounts]);
+
+  // console.log(bulkData);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -163,6 +197,46 @@ const ImportExcelfile = ({
   //   dispatch(downloadContractBulkEmployeeTemplateExcelFileFunc());
   // };
 
+  const getBankCode = useCallback(
+    (bankName) => {
+      const bankCode = bankNames
+        ?.filter((data) => data?.name === bankName)
+        .map((data) => {
+          // console.log(data?.code);
+          return data?.code;
+        })
+        ?.join("");
+
+      return bankCode ? bankCode : "";
+    },
+    [bankNames]
+  );
+
+  // const verifyAccount = useCallback(
+  //   (verifyAccountData) => {
+  //     if (verifyAccountData) {
+  //       dispatch(verifyBulkAcctountNumberFunc(verifyAccountData));
+  //     }
+  //   },
+  //   [dispatch]
+  // );
+
+  useEffect(() => {
+    if (excelData?.length > 0) {
+      const accountData = excelData?.map((employee) => {
+        return {
+          accountNumber: employee?.EmployeeBankAcctNumber,
+          bankCode: getBankCode(employee?.BankName),
+        };
+      });
+
+      dispatch(verifyBulkAcctountNumberFunc(accountData));
+      // setVerifyAccountData(accountData);
+      // console.log(accountData);
+    }
+    // eslint-disable-next-line
+  }, [excelData]);
+
   function excelDateToJSDate(excelDate) {
     if (typeof excelDate === "string") {
       const date = excelDate.split("/").reverse().join("-");
@@ -179,6 +253,7 @@ const ImportExcelfile = ({
   }
 
   const onCreateBulk = () => {
+    const { test, test2 } = checkEmail(excelData ? excelData : []);
     let newData;
     // if (type && type === "Contract") {
     if (checkDate(excelData)) {
@@ -186,52 +261,65 @@ const ImportExcelfile = ({
         "Please enter correct format for both DateOfBirth and JoinDate"
       );
     } else {
-      if (checkEmail(excelData)) {
+      if (test) {
         setShowError("Please make sure emails are not Dulicated");
       } else {
-        newData = excelData?.map((el) => {
-          return {
-            name: el?.Name?.trim(),
-            staffId: el?.StaffId?.toString()?.trim(),
-            email: el?.Email?.toString()?.trim(),
-            position: el?.Position ? el?.Position?.toString()?.trim() : null,
-            // salaryGrade: el?.salaryGrade ? el?.salaryGrade?.trim() : null,
-            salaryLevel: el?.salaryLevel
-              ? el?.salaryLevel?.toString()?.trim()
-              : null,
-            salaryStep: el?.salaryStep
-              ? el?.salaryStep?.toString()?.trim()
-              : null,
-            contractSalary: el?.ContractSalary
-              ? Number(el?.ContractSalary)
-              : null,
-            notch: el?.Notch ? el?.Notch?.toString()?.trim() : null,
-            bankName: el?.BankName ? el?.BankName?.toString()?.trim() : null,
-            employeeBankAcctNumber:
-              el?.EmployeeBankAcctNumber?.toString().trim(),
-            nationality: el?.Nationality ? el?.Nationality?.trim() : null,
-            gender: el?.Gender?.toString()?.trim(),
-            address: el?.Address?.toString()?.trim(),
-            dob: excelDateToJSDate(el?.DateOfBirth?.toString()?.trim()),
-            mobile: el?.PhoneNumber?.toString().trim(),
-            city: el?.City?.toString()?.trim(),
-            state: el?.State?.toString()?.trim(),
-            employeeType: Capitalize(el?.EmployeeType?.toString()?.trim()),
-            joinDate: excelDateToJSDate(el?.JoinDate),
-          };
-        });
+        if (test2) {
+          setShowError("Please make sure emails are Valid");
+        } else {
+          if (checkDuplicateAccountNumber(excelData)) {
+            setShowError("Please make sure Account Number are not Dulicated");
+          } else {
+            newData = bulkData?.map((el) => {
+              return {
+                name: el?.Name?.trim(),
+                staffId: el?.StaffId?.toString()?.trim(),
+                email: el?.Email?.toString()?.trim(),
+                position: el?.Position
+                  ? el?.Position?.toString()?.trim()
+                  : null,
+                // salaryGrade: el?.salaryGrade ? el?.salaryGrade?.trim() : null,
+                salaryLevel: el?.salaryLevel
+                  ? el?.salaryLevel?.toString()?.trim()
+                  : null,
+                salaryStep: el?.salaryStep
+                  ? el?.salaryStep?.toString()?.trim()
+                  : null,
+                contractSalary: el?.ContractSalary
+                  ? Number(el?.ContractSalary)
+                  : null,
+                notch: el?.Notch ? el?.Notch?.toString()?.trim() : null,
+                bankName: el?.BankName
+                  ? el?.BankName?.toString()?.trim()
+                  : null,
+                employeeBankAcctNumber:
+                  el?.EmployeeBankAcctNumber?.toString().trim(),
+                accountName: el?.accountName?.toString().trim(),
+                nationality: el?.Nationality ? el?.Nationality?.trim() : null,
+                gender: el?.Gender?.toString()?.trim(),
+                address: el?.Address?.toString()?.trim(),
+                dob: excelDateToJSDate(el?.DateOfBirth?.toString()?.trim()),
+                mobile: el?.PhoneNumber?.toString().trim(),
+                city: el?.City?.toString()?.trim(),
+                state: el?.State?.toString()?.trim(),
+                employeeType: Capitalize(el?.EmployeeType?.toString()?.trim()),
+                joinDate: excelDateToJSDate(el?.JoinDate),
+              };
+            });
 
-        dispatch(adminCreateBulkEmployeeFunc(newData));
-        // dispatch(hrUploadBulkContractStaffFunc(newData));
+            dispatch(adminCreateBulkEmployeeFunc(newData));
+            // dispatch(hrUploadBulkContractStaffFunc(newData));
+          }
+        }
       }
     }
   };
 
   return (
     <>
-      {((downloadLoading && !downloadError) || createBulkLoading) && (
-        <Spinner />
-      )}
+      {((downloadLoading && !downloadError) ||
+        createBulkLoading ||
+        verifyBulkAccountLoading) && <Spinner />}
 
       {createBulkSuccess && !createBulkError && (
         <Successful
@@ -268,7 +356,8 @@ const ImportExcelfile = ({
             (!createBulkLoading && createBulkError)) && (
             <ErrorBox errorMessage={downloadError || createBulkError} />
           )}
-          <form onSubmit={handleSubmit}>
+          <form>
+            {/* <form onSubmit={handleSubmit}> */}
             {/* <p
               style={{
                 color: `${COLORS.red}`,
@@ -310,13 +399,20 @@ const ImportExcelfile = ({
               <input
                 type="submit"
                 className={
-                  !excelFile
+                  !excelData?.length
                     ? "disabled__btn full__width"
                     : "full__width green__btn"
                 }
                 onClick={() => onCreateBulk()}
-                disabled={!excelFile}
+                disabled={!excelData.length}
                 value="Import Excel File"
+              />
+              <input
+                type="submit"
+                style={{ width: "15rem" }}
+                className={"save__btn full__width margin__left"}
+                onClick={() => clearData()}
+                value="Clear"
               />
             </div>
             <p
@@ -362,10 +458,86 @@ const ImportExcelfile = ({
             <h1 style={{ fontWeight: "600" }}> &#9432;</h1>
             <div>
               <h2>
-                Excel DateOfBirth and JoinDate must be in either of this format:
+                Excel DateOfBirth and JoinDate must be in this format:
                 <span>dd/mm/yyyy </span>
               </h2>
             </div>
+          </div>
+        </div>
+        <div className="table__body">
+          <div className="table__overflow full__height">
+            <table>
+              <thead>
+                <tr>
+                  {/* <th style={{ paddingLeft: "3.5rem" }}> Staff ID</th> */}
+                  <th> Staff ID</th>
+                  <th>Full Name</th>
+                  <th>Email Address</th>
+                  <th>Account No.</th>
+                  <th>Account Name</th>
+                  <th>Phone Number</th>
+                  <th>Position</th>
+                  <th>Employee Type</th>
+                  <th>Date of Birth</th>
+                </tr>
+              </thead>
+              <tbody>
+                {bulkData?.map((employee, index) => {
+                  return (
+                    <tr key={++index}>
+                      <td>{employee?.StaffId}</td>
+                      <td>{`${trancateWord(employee?.Name?.toString())} `}</td>
+                      <td>
+                        {validateEmail(employee?.Email) ? (
+                          trancateWord(employee?.Email?.toString())
+                        ) : (
+                          <p className="red">
+                            &#x26A0; {trancateWord(employee?.Email?.toString())}
+                          </p>
+                        )}
+                      </td>
+                      <td>
+                        {checkAccNumber(employee?.EmployeeBankAcctNumber) ? (
+                          employee?.EmployeeBankAcctNumber
+                        ) : (
+                          <p className="red">
+                            &#9888; {employee?.EmployeeBankAcctNumber}
+                          </p>
+                        )}
+                      </td>
+                      <td>
+                        {employee?.accountName ? (
+                          employee?.accountName
+                        ) : (
+                          <p className="red">
+                            &#9888; Invalid account name
+                            {/* &#9888; {employee?.EmployeeBankAcctNumber} */}
+                          </p>
+                        )}
+                      </td>
+                      {/* <td>{employee?.dob?.substring(0, 10)}</td> */}
+                      <td>
+                        {checkNumber(employee?.PhoneNumber) ? (
+                          employee?.PhoneNumber
+                        ) : (
+                          <p className="red">&#9888; {employee?.PhoneNumber}</p>
+                        )}
+                      </td>
+                      <td>{trancateWord(employee?.Position?.toString())}</td>
+                      <td>{Capitalize(employee?.EmployeeType)}</td>
+                      <td>
+                        {
+                          new Date(excelDateToJSDate(employee?.DateOfBirth))
+                            ?.toISOString()
+                            ?.split("T")[0]
+                        }
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+            {/* {noEmployees} */}
           </div>
         </div>
       </Container>

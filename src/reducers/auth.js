@@ -47,6 +47,14 @@ import {
   GET_NOT_CREATED_ROLES_FAIL,
   GET_NOT_CREATED_ROLES_SUCCESS,
   GET_NOT_CREATED_ROLES_REQUEST,
+  VERIFY_ACCOUNT_NUMBER_REQUEST,
+  VERIFY_ACCOUNT_NUMBER_SUCCESS,
+  VERIFY_ACCOUNT_NUMBER_FAIL,
+  VERIFY_ACCOUNT_NUMBER_RESET,
+  VERIFY_BULK_ACCOUNT_NUMBER_REQUEST,
+  VERIFY_BULK_ACCOUNT_NUMBER_SUCCESS,
+  VERIFY_BULK_ACCOUNT_NUMBER_FAIL,
+  VERIFY_BULK_ACCOUNT_NUMBER_RESET,
 } from "../types/auth";
 
 export const loginAdminUserReducer = (state = {}, action) => {
@@ -433,6 +441,74 @@ export const ceoUploadSignatureReducer = (state = {}, action) => {
       };
 
     case CEO_UPLOAD_SIGNATURE_IMAGE_RESET:
+      return {};
+
+    default:
+      return state;
+  }
+};
+
+export const verifyAccountNumberReducer = (state = {}, action) => {
+  const { type, payload } = action;
+
+  switch (type) {
+    case VERIFY_ACCOUNT_NUMBER_REQUEST:
+      return {
+        ...state,
+        isLoading: true,
+      };
+
+    case VERIFY_ACCOUNT_NUMBER_SUCCESS:
+      return {
+        ...state,
+        isLoading: false,
+        accountName: payload,
+        // success: true,
+        error: null,
+      };
+
+    case VERIFY_ACCOUNT_NUMBER_FAIL:
+      return {
+        ...state,
+        isLoading: false,
+        error: payload,
+      };
+
+    case VERIFY_ACCOUNT_NUMBER_RESET:
+      return {};
+
+    default:
+      return state;
+  }
+};
+
+export const verifyBulkAccountNumberReducer = (state = {}, action) => {
+  const { type, payload } = action;
+
+  switch (type) {
+    case VERIFY_BULK_ACCOUNT_NUMBER_REQUEST:
+      return {
+        ...state,
+        isLoading: true,
+      };
+
+    case VERIFY_BULK_ACCOUNT_NUMBER_SUCCESS:
+      return {
+        ...state,
+        isLoading: false,
+        verifiedAccounts: payload,
+        // success: true,
+        error: null,
+      };
+
+    case VERIFY_BULK_ACCOUNT_NUMBER_FAIL:
+      return {
+        ...state,
+        isLoading: false,
+        error: payload,
+      };
+
+    case VERIFY_BULK_ACCOUNT_NUMBER_RESET:
       return {};
 
     default:

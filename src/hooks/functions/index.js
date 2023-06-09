@@ -12,7 +12,7 @@ export const removeExtraSpace = (str) => {
 
 export const formatDate = (date) => {
   if (date !== "" && date) {
-    return new Date(date).toISOString().split("T")[0];
+    return new Date(date)?.toISOString().split("T")[0];
   }
   // if (date !== "") {
   //   return new Date(date).toISOString();
@@ -21,9 +21,9 @@ export const formatDate = (date) => {
 
 export const Capitalize = (str) => {
   if (str) {
-    const arr = str.split("-");
-    for (var i = 0; i < arr.length; i++) {
-      arr[i] = arr[i].charAt(0).toUpperCase() + arr[i].slice(1);
+    const arr = str?.split("-");
+    for (var i = 0; i < arr?.length; i++) {
+      arr[i] = arr[i]?.charAt(0)?.toUpperCase() + arr[i].slice(1);
     }
     const str2 = arr.join("-");
     return str2;
@@ -32,6 +32,9 @@ export const Capitalize = (str) => {
 };
 
 export const checkEmail = (arrData) => {
+  const emailPattern =
+    /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+
   const arrEmail = arrData?.map((data) => {
     return data?.Email;
   });
@@ -39,7 +42,11 @@ export const checkEmail = (arrData) => {
     (item, index) => arrEmail?.indexOf(item) != index
   );
 
-  return duplicateItems?.length >= 1;
+  const arrEmail2 = arrData?.some((data) => {
+    return !emailPattern.test(data?.Email);
+  });
+
+  return { test: duplicateItems?.length >= 1, test2: arrEmail2 };
 };
 
 export const checkDate = (arrData) => {
@@ -54,6 +61,35 @@ export const checkDate = (arrData) => {
         data?.JoinDate?.toString()?.trim()
     );
   });
+};
+
+export const checkNumber = (num) => {
+  // let numberRegex = /^\d{11}$/;
+  var numberRegex = new RegExp("^[0-9]{11}$");
+  return numberRegex?.test(num?.toString()?.trim());
+};
+
+export const checkAccNumber = (num) => {
+  // let numberRegex = /^\d{11}$/;
+  var numberRegex = new RegExp("^[0-9]{10}$");
+  return numberRegex?.test(num?.toString()?.trim());
+};
+
+export const validateEmail = (email) => {
+  return email?.match(
+    /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
+  );
+};
+
+export const checkDuplicateAccountNumber = (arrData) => {
+  const arrAccountNumbers = arrData?.map((data) => {
+    return data?.EmployeeBankAcctNumber;
+  });
+  let duplicateItems = arrAccountNumbers?.filter(
+    (item, index) => arrAccountNumbers?.indexOf(item) != index
+  );
+
+  return duplicateItems?.length >= 1;
 };
 
 export const paystructureFormatter = (jsonDoc) => {

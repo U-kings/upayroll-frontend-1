@@ -14,7 +14,7 @@ import { ADMIN_CREATE_EMPLOYEE_RESET } from "../../types/employee";
 import { DropdownList, ErrorBox } from "../../components";
 import { employeeDataValidation } from "../../hooks/validations/employeeDataValidation";
 import { Spinner, Successful } from "../../modals";
-import { logoutAdmin } from "../../actions/auth";
+import { logoutAdmin, verifyAccountNumberFunc } from "../../actions/auth";
 // import { adminGetAllBanksFunc } from "../../actions/banklist";
 import { banks } from "../../values/banks";
 import { hrGetAllStaffGradesFunc } from "../../actions/staffgrade";
@@ -28,17 +28,25 @@ import {
   GET_ALL_DEPARTMENTS_RESET,
 } from "../../types/department";
 import { formatDate } from "../../hooks/functions";
+import { getAllBankNamesFunc } from "../../actions/banklist";
+import { VERIFY_ACCOUNT_NUMBER_RESET } from "../../types/auth";
 const AddEmployee = ({
   toggle,
   toggleMenu,
   mobileToggle,
   toggleMobileMenu,
 }) => {
-  // useDispatch init
   const dispatch = useDispatch();
+  // useDispatch init
   //   init history
   const history = useHistory();
   //   redux state
+  const { bankNames } = useSelector((state) => state.adminGetAllBankNames);
+  const {
+    accountName: employeeAccountName,
+    error: verifyAccountError,
+    isLoading: verifyAccountLoading,
+  } = useSelector((state) => state.verifyAccountNumber);
   const { departments } = useSelector((state) => state.departmentsReducer);
   const { positions } = useSelector(
     (state) => state.departmentPositionsReducer
@@ -83,6 +91,8 @@ const AddEmployee = ({
   const [contractSalary, setContractSalary] = useState(0);
   const [userRole] = useState(adminInfo?.user?.role || "");
 
+  const [bankCode, setBankCode] = useState(null);
+
   const genders = ["Male", "Female"];
   const emptypes = ["Permanent", "Part-time", "Contract", "Intern"];
   // const bankname = ["Sterling Bank", "KeyStone Bank"];
@@ -101,6 +111,7 @@ const AddEmployee = ({
     state: "",
     joinDate: "",
     employeeBankAcctNumber: "",
+    accountName: "",
     contractSalary: 0,
   });
   const [errors, setErrors] = useState({});
@@ -129,6 +140,7 @@ const AddEmployee = ({
     joinDate,
     address,
     employeeBankAcctNumber,
+    accountName,
   } = employeeFormData;
 
   // check if array of object is empty
@@ -139,6 +151,7 @@ const AddEmployee = ({
   useEffect(() => {
     setErrors(employeeDataValidation(employeeFormData));
   }, [employeeFormData]);
+
   //   onSubmit
   const onSubmit = (e) => {
     e.preventDefault();
@@ -191,9 +204,10 @@ const AddEmployee = ({
   //   useEffect
   useEffect(() => {
     if (!adminInfo?.isAuthenticated && !adminInfo?.user?.name) {
-      history.push("/");
+      history.push("/signin");
     } else {
       dispatch(getAllDepartment());
+      dispatch(getAllBankNamesFunc());
       // dispatch(adminGetAllStaffLevels());
       // dispatch(adminGetAllBanksFunc());
       dispatch(hrGetAllStaffGradesFunc());
@@ -286,6 +300,7 @@ const AddEmployee = ({
   //   bank name
   const onOptionClicked5 = (bankname) => () => {
     setSelectedOption5(bankname);
+    setBankCode(bankname?.code);
     setIsOpen5(false);
   };
 
@@ -359,6 +374,7 @@ const AddEmployee = ({
         state: "",
         joinDate: "",
         employeeBankAcctNumber: "",
+        accountName: "",
       });
       setContractSalary(0);
       setSelectedOption(null);
@@ -385,9 +401,49 @@ const AddEmployee = ({
     }
   }, [history]);
 
+  useEffect(() => {
+    if (verifyAccountError) {
+      setTimeout(() => {
+        dispatch({ type: VERIFY_ACCOUNT_NUMBER_RESET });
+      }, 5000);
+    }
+  }, [verifyAccountError, dispatch]);
+
+  useEffect(() => {
+    if (employeeBankAcctNumber?.length === 10 && bankCode) {
+      dispatch(
+        verifyAccountNumberFunc({
+          accountNumber: employeeBankAcctNumber,
+          bankCode: bankCode,
+        })
+      );
+    }
+
+    if (employeeAccountName) {
+      setEmployeeFormData({
+        ...employeeFormData,
+        accountName: employeeAccountName,
+      });
+    }
+    // eslint-disable-next-line
+  }, [dispatch, employeeBankAcctNumber, bankCode, employeeAccountName]);
+
+  useEffect(() => {
+    if (employeeBankAcctNumber?.length !== 10 || !bankCode) {
+      setEmployeeFormData({
+        ...employeeFormData,
+        accountName: "",
+      });
+    }
+    // eslint-disable-next-line
+  }, [employeeBankAcctNumber, bankCode]);
+
+  // console.log(verifyAccountError);
+
   return (
     <>
       {createLoading && <Spinner />}
+      {verifyAccountLoading && <Spinner />}
       <Successful
         isOpen7={
           isOpen7 || (createSuccess && !createLoading && !createEmployeeError)
@@ -431,9 +487,12 @@ const AddEmployee = ({
             }
           />
         )}
+        {verifyAccountError && (
+          <ErrorBox fixed={true} errorMessage={verifyAccountError?.message} />
+        )}
         <form onSubmit={onSubmit}>
           <div className="input__row">
-            <div className="label__group staffId ">
+            <div className="label__group staffId">
               <label>Staff ID</label>
               <input
                 type="text"
@@ -580,13 +639,28 @@ const AddEmployee = ({
                 toggling={toggling5}
                 selectedOption={selectedOption5}
                 text="-- Select a Bank Name"
-                dataSet={banks}
+                dataSet={bankNames}
+                // dataSet={banks}
                 onOptionClicked={onOptionClicked5}
                 maxHeight="20rem"
               />
               <span className="error">
                 {!selectedOption5 ? "*bank name is required" : ""}
               </span>
+            </div>
+          </div>
+          <div className="input__row">
+            <div className="label__group">
+              <label>Account Name</label>
+              <input
+                type="text"
+                name="accountName"
+                value={accountName}
+                onChange={onChange}
+                disabled
+                placeholder="Account Name"
+              />
+              <span className="error">{errors.accountName}</span>
             </div>
           </div>
           <div className="input__row">

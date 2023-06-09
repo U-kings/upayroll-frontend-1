@@ -459,15 +459,15 @@ export const Container = styled.div`
       width: 100%;
       border-radius: 0.3rem;
     }
-    & .table__body {
-      margin-left: 2rem;
-      width: 65%;
-    }
+    // & .table__body {
+    //   margin-left: 2rem;
+    //   width: 65%;
+    // }
     & .form__content {
       width: 35%;
       background-color: ${COLORS.white};
       padding: 0.6rem 1.7rem 3rem 1.7rem;
-      margin: 0;
+      margin-right: 2rem;
       border-radius: 0.3rem;
       box-shadow: 0.2rem 0 1.3rem rgba(0, 0, 0, 0.109);
     }
@@ -485,6 +485,7 @@ export const Container = styled.div`
       }
       & .form__content {
         width: 100%;
+        margin-right: 0;
       }
 
       & .import__text {
@@ -542,6 +543,11 @@ export const NewEmp = styled.div`
   &.edit__emp {
     width: 100%;
     padding: 0.3rem 5rem;
+
+    & .staffId,
+    .workdays {
+      width: 20rem;
+    }
   }
 
   &::-webkit-scrollbar {
@@ -589,6 +595,16 @@ export const NewEmp = styled.div`
 
     & h1 {
       margin-top: 4rem;
+    }
+
+    &.edit__emp {
+      width: 100%;
+      padding: 0.3rem 1.5rem;
+
+      & .staffId,
+      .workdays {
+        width: 100%;
+      }
     }
   }
 `;
@@ -946,6 +962,32 @@ export const ModalContainer = styled.div`
     cursor: pointer;
     background: ${COLORS.grey3};
     border-radius: 10rem;
+  }
+
+  @media only screen and (max-width: 1024px) {
+    &.emp__view {
+      width: 95%;
+    }
+    &.edit__emp {
+      width: 95%;
+    }
+    &.view__slip {
+      /* width: 28%; */
+    }
+    &.uploadslip {
+      width: 95%;
+      background-color: ${COLORS.white};
+      margin: auto;
+      /* padding: 2rem; */
+    }
+    &.comfirm {
+      width: 95%;
+    }
+
+    &.bank__schedule {
+      width: 95%;
+      // width: 80rem;
+    }
   }
 `;
 

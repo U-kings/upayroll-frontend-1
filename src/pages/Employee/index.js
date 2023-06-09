@@ -40,6 +40,7 @@ import {
   ADMIN_DELETE_EMPLOYEE_BY_ID_RESET,
   ADMIN_DELETE_EMPLOYEE_DEDUCTION_BY_ID_RESET,
   ADMIN_EMPLOYEE_TOPUP_RESET,
+  ADMIN_GET_ALL_EMPLOYEE_REQUEST,
   ADMIN_UPDATE_EMPLOYEE_BY_ID_RESET,
 } from "../../types/employee";
 
@@ -254,7 +255,7 @@ const Employee = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
 
   useEffect(() => {
     if (!adminInfo?.isAuthenticated && !adminInfo?.user?.name) {
-      history.push("/");
+      history.push("/signin");
     }
   }, [history, adminInfo]);
 
@@ -275,17 +276,16 @@ const Employee = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
   }, [history, userRole, selectedOption10, dispatch]);
 
   useEffect(() => {
-    if (topSuccess) {
-      setCurrentEmployee(null);
-    }
-
     if (topSuccess && !loadingTopUp) {
-      dispatch({ type: ADMIN_EMPLOYEE_TOPUP_RESET });
+      setCurrentEmployee(null);
     }
 
     if (deleteDeductionSuccess || deleteAllowanceSuccess) {
       dispatch({ type: ADMIN_DELETE_EMPLOYEE_DEDUCTION_BY_ID_RESET });
       dispatch({ type: ADMIN_DELETE_EMPLOYEE_ALLOWANCE_BY_ID_RESET });
+      if (userRole === "HR") {
+        dispatch(adminGetAllEmployee(selectedOption10));
+      }
     }
 
     if (!resetError && resetSucces) {
@@ -296,6 +296,7 @@ const Employee = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
   }, [
     dispatch,
     topSuccess,
+    userRole,
     loadingTopUp,
     deleteDeductionSuccess,
     deleteAllowanceSuccess,
@@ -690,6 +691,17 @@ const Employee = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
   //   }
   // }, [downloadStatusError, downloadStatusLoading]);
 
+  const successPopup = () => {
+    if (userRole === "HR") {
+      if (topSuccess && !loadingTopUp) {
+        dispatch(adminGetAllEmployee(selectedOption10));
+        dispatch({
+          type: ADMIN_EMPLOYEE_TOPUP_RESET,
+        });
+      }
+    }
+  };
+
   const noEmployees =
     users?.length === 0 || searchResult?.length === 0 ? (
       <p className="no__data">No employee found</p>
@@ -697,6 +709,7 @@ const Employee = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
       " "
     );
   const emp = "active";
+
   return (
     <>
       {(getEmployeeLoading || deleteEmployeeLoading) && (
@@ -708,6 +721,15 @@ const Employee = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
 
       {currentEmployee && (
         <SelectMonth isOpen={isOpen} popup={popup} employee={currentEmployee} />
+      )}
+
+      {topSuccess && (
+        <Successful
+          isOpen7={topSuccess}
+          popup7={successPopup}
+          message="Saved Successfully"
+          toggle={toggle}
+        />
       )}
 
       {currentEmployee && (
@@ -1015,9 +1037,13 @@ const Employee = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
                                 </div>{" "}
                               </td>
                               <td>{`${trancateWord(
-                                employee?.user?.name
+                                employee?.user?.name?.toString()
                               )} `}</td>
-                              <td>{trancateWord(employee?.user?.email)}</td>
+                              <td>
+                                {trancateWord(
+                                  employee?.user?.email?.toString()
+                                )}
+                              </td>
                               <td>{employee?.employeeBankAcctNumber}</td>
                               {/* <td>{employee?.dob?.substring(0, 10)}</td> */}
                               <td>{`+234 ${
@@ -1025,10 +1051,14 @@ const Employee = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
                               }`}</td>
                               <td>
                                 {trancateWord(
-                                  employee?.position?.department?.name
+                                  employee?.position?.department?.name?.toString()
                                 )}
                               </td>
-                              <td>{trancateWord(employee?.position?.name)}</td>
+                              <td>
+                                {trancateWord(
+                                  employee?.position?.name.toString()
+                                )}
+                              </td>
                               {userRole === "HR" && (
                                 <td>
                                   <div className="action__icons">

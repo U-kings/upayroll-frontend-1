@@ -79,7 +79,6 @@ const Createroles = () => {
 
   useEffect(() => {
     // dispatch(getNotCreatedRolesFunc());
-    // console.log("hello");
     if (!adminInfo?.isAuthenticated && !adminInfo?.user?.name) {
       history.push("/");
     }

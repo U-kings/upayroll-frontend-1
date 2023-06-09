@@ -56,6 +56,7 @@ const SignUp = () => {
     contactPersonlastName: "",
     contactPersonEmail: "",
     contactPersonMobile: "",
+    companyAddress: "",
     createdBy: "",
     role: "",
     password: "",
@@ -76,6 +77,7 @@ const SignUp = () => {
     contactPersonlastName,
     contactPersonEmail,
     contactPersonMobile,
+    companyAddress,
     createdBy,
     role,
     password,
@@ -94,6 +96,7 @@ const SignUp = () => {
         contactPersonlastName: "",
         contactPersonEmail: "",
         contactPersonMobile: "",
+        companyAddress: "",
         createdBy: "",
         authType: "",
         password: "",
@@ -311,7 +314,7 @@ const SignUp = () => {
                 <Grid item xs={12} sm={12} md={12}>
                   <Box>
                     <TextField
-                      id=""
+                      id="name"
                       label="Company Name"
                       variant="standard"
                       inputProps={{
@@ -331,7 +334,7 @@ const SignUp = () => {
                 <Grid item xs={12} sm={6} md={6}>
                   <Box>
                     <TextField
-                      id=""
+                      id="contactPersonfirstName"
                       label="Contact Person First Name"
                       variant="standard"
                       inputProps={{
@@ -351,7 +354,7 @@ const SignUp = () => {
                 <Grid item xs={12} sm={6} md={6}>
                   <Box>
                     <TextField
-                      id=""
+                      id="contactPersonlastName"
                       label="Contact Person Last Name"
                       variant="standard"
                       inputProps={{
@@ -371,7 +374,7 @@ const SignUp = () => {
                 <Grid item xs={12} sm={6} md={6}>
                   <Box>
                     <TextField
-                      id=""
+                      id="contactPersonEmail"
                       label="Contact Person Email"
                       variant="standard"
                       type="email"
@@ -391,7 +394,7 @@ const SignUp = () => {
                 <Grid item xs={12} sm={6} md={6}>
                   <Box>
                     <TextField
-                      id=""
+                      id="contactPersonMobile"
                       type="tel"
                       title="Please use a 11 digit number with no dashes or dots"
                       pattern="[0-9]{11}"
@@ -413,7 +416,7 @@ const SignUp = () => {
                 {/* <Grid item xs={12} sm={6} md={6}>
                   <Box>
                     <TextField
-                      id=""
+                      id="createdBy"
                       label="Created By"
                       variant="standard"
                       inputProps={{
@@ -498,7 +501,7 @@ const SignUp = () => {
                       />
                     </FormControl>
                     {/* <TextField
-                      id=""
+                      id="comfirmpassword"
                       label="Password"
                       variant="standard"
                       inputProps={{
@@ -513,6 +516,26 @@ const SignUp = () => {
                       required
                       onChange={handleChange}
                     /> */}
+                  </Box>
+                </Grid>
+                <Grid item xs={12} sm={12} md={12}>
+                  <Box>
+                    <TextField
+                      id="companyAddress"
+                      label="Company Address"
+                      variant="standard"
+                      type="text"
+                      inputProps={{
+                        autoComplete: "new-password",
+                        form: {
+                          autoComplete: "off",
+                        },
+                      }}
+                      name="companyAddress"
+                      value={companyAddress}
+                      required
+                      onChange={handleChange}
+                    />
                   </Box>
                 </Grid>
               </Grid>
@@ -538,6 +561,7 @@ const SignUp = () => {
                     contactPersonfirstName === "" ||
                     contactPersonlastName === "" ||
                     contactPersonEmail === "" ||
+                    companyAddress === "" ||
                     password === "" ||
                     role === "" ||
                     // createdBy === "" ||
@@ -573,12 +597,12 @@ const SignUp = () => {
               // mr: "4rem",
               // height: "100vh",
               overflow: "hidden",
-              "& img": {
-                width: "100%",
-              },
+              // "& img": {
+              //   width: "100%",
+              // },
               backgroundImage: `url(${bgImg})`,
               backgroundRepeat: "no-repeat",
-              backgroundSize: "cover",
+              // backgroundSize: "",
               backgroundPositionX: "-10rem",
             }}
           ></Box>
