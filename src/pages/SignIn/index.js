@@ -97,7 +97,11 @@ const SignIn = () => {
                     >
                       <div style={{ margin: "auto", display: "flex" }}>
                         <div className="logo"></div>
-                        <h1>
+                        <h1
+                          style={{
+                            cursor: "pointer",
+                          }}
+                        >
                           Payroll <span>System</span>
                           <span
                             style={{

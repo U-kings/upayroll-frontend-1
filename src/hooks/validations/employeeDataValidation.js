@@ -48,7 +48,7 @@ export const employeeDataValidation = (value) => {
     errors.employeeBankAcctNumber = "*must be 10 characters long!";
   }
   if (value?.accountName?.length === 0) {
-    errors.address = "*account name is required!";
+    errors.accountName = "*account name is required!";
   }
 
   return errors;

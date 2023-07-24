@@ -33,6 +33,7 @@ const UploadSlips = ({
   const fileType2 = [
     "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
   ];
+  const filyType3 = ["text/csv"];
 
   const handleFile = (e) => {
     let selectedFile = e.target.files[0];
@@ -41,7 +42,8 @@ const UploadSlips = ({
       if (
         selectedFile &&
         (fileType.includes(selectedFile.type) ||
-          fileType2.includes(selectedFile.type))
+          fileType2.includes(selectedFile.type) ||
+          filyType3.includes(selectedFile.type))
       ) {
         let reader = new FileReader();
         reader.readAsArrayBuffer(selectedFile);

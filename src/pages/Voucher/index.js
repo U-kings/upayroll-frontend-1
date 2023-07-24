@@ -9,8 +9,10 @@ import {
   accountantDeleteVoucherByIdFunc,
   accountGetApprovedVouchersFunc,
   auditorGetnotApprovedVouchersFunc,
+  auditorPreApprovedVouchersAllFunc,
   auditorPreApprovedVouchersFunc,
   auditorRejectNotApprovedVouchersFunc,
+  ceoApprovedVouchersAllFunc,
   ceoApprovedVouchersFunc,
   ceoGetPreApprovedVouchersFunc,
   ceoRejectPreApprovedVouchersFunc,
@@ -30,6 +32,7 @@ import {
   Comfirm,
   Comment,
   LoadingSpinner,
+  Successful,
   ViewVoucher,
 } from "../../modals";
 import {
@@ -42,6 +45,15 @@ import {
 import { PaginationContainer } from "../../styles/pagination";
 import { COLORS } from "../../values/colors";
 import { commafy } from "../../hooks/calculations/paySlip";
+import {
+  ACCOUNTANT_GET_APPROVED_VOUCHERS_RESET,
+  AUDITOR_PRE_APPROVE_VOUCHERS_ALL_RESET,
+  AUDITOR_PRE_APPROVE_VOUCHERS_RESET,
+  CEO_APPROVE_PRE_APPROVED_VOUCHERS_ALL_RESET,
+  CEO_APPROVE_PRE_APPROVED_VOUCHERS_RESET,
+  CEO_GET_PRE_APPROVED_VOUCHERS_RESET,
+} from "../../types/voucher";
+import { ACCOUNTANT_CREATE_BANKSCHEDULE_RESET } from "../../types/bankschedules";
 
 const Voucher = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
   // history init
@@ -66,8 +78,20 @@ const Voucher = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
     error: auditorPreApprovedVoucherError,
   } = useSelector((state) => state.auditorPreApproveVouchers);
 
+  const {
+    success: auditorPreApprovedVoucherAllSuccess,
+    message: auditorPreApprovedVoucherAllMessage,
+    error: auditorPreApprovedVoucherAllError,
+  } = useSelector((state) => state.auditorPreApproveVouchersAll);
+
   const { success: ceoApproveVoucherSuccess, error: ceoApproveVoucherError } =
     useSelector((state) => state.ceoApprovedPreApprovedVouchers);
+
+  const {
+    success: ceoApproveVoucherAllSuccess,
+    message: ceoApproveVoucherAllMessage,
+    error: ceoApproveVoucherErrorAll,
+  } = useSelector((state) => state.ceoApprovedPreApprovedVouchersAll);
 
   const {
     success: accountantDeleteVoucherByIdSuccess,
@@ -120,6 +144,7 @@ const Voucher = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
   // const [selectedOption9, setSelectedOption9] = useState("");
 
   const [userRole] = useState(adminInfo?.user?.role || "");
+  const [companyId] = useState(adminInfo?.user?.companyId || "");
   const [userRoleName] = useState(adminInfo?.user?.name || "");
   const [profileImg] = useState(adminInfo?.user?.photo || "");
   const [paymentMethod, setPaymentMethod] = useState("");
@@ -179,31 +204,49 @@ const Voucher = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
 
     if (userRole === "HR") {
       history.push("dashboard");
-    } else if (userRole === "Employee") {
+    }
+    if (userRole === "Employee") {
       history.push("dashboard");
     }
-
-    if (vouchers && userRole === "Accountant") {
-      setBankVoucher(vouchers);
-    } else if (auditorPreApprovedVouchers && userRole === "Internal Auditor") {
-      setBankVoucher(auditorPreApprovedVouchers);
-    } else if (ceoPreApprovedVouchers) {
-      if (selectedOption === "Approved") {
-        setBankVoucher(vouchers);
-      } else {
-        setBankVoucher(ceoPreApprovedVouchers);
-      }
-    } else {
-      <LoadingSpinner toggle={toggle} />;
+    if (
+      vouchers &&
+      userRole === "Accountant" &&
+      selectedOption === "Approved"
+    ) {
+      setBankVoucher(vouchers?.approved);
+    }
+    if (
+      vouchers &&
+      userRole === "Accountant" &&
+      selectedOption === "Rejected"
+    ) {
+      setBankVoucher(vouchers?.rejectedBankVouchers);
+    }
+    if (auditorPreApprovedVouchers && userRole === "Internal Auditor") {
+      setBankVoucher(auditorPreApprovedVouchers?.notapproved);
+    }
+    if (vouchers && userRole === "CEO" && selectedOption === "Approved") {
+      setBankVoucher(vouchers?.approved);
+      dispatch({ type: CEO_GET_PRE_APPROVED_VOUCHERS_RESET });
     }
 
-    if (searchTerm.length < 1) {
+    if (
+      ceoPreApprovedVouchers &&
+      userRole === "CEO" &&
+      selectedOption === "Pre-Approved"
+    ) {
+      dispatch({ type: ACCOUNTANT_GET_APPROVED_VOUCHERS_RESET });
+      setBankVoucher(ceoPreApprovedVouchers?.preapproved);
+    }
+
+    if (searchTerm?.length < 1) {
       setSearchResult(bankVoucher);
     }
   }, [
     toggle,
     userRole,
     vouchers,
+    dispatch,
     auditorPreApprovedVouchers,
     ceoPreApprovedVouchers,
     searchTerm,
@@ -217,10 +260,6 @@ const Voucher = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
 
   useEffect(() => {
     if (auditorPreApprovedVoucherSuccess && !auditorPreApprovedVoucherError) {
-      setSearchTerm("");
-    }
-
-    if (ceoApproveVoucherSuccess && !ceoApproveVoucherError) {
       setSearchTerm("");
     }
 
@@ -238,6 +277,9 @@ const Voucher = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
       setSearchTerm("");
     }
   }, [
+    ceoApproveVoucherErrorAll,
+    ceoApproveVoucherAllSuccess,
+    dispatch,
     auditorPreApprovedVoucherSuccess,
     auditorPreApprovedVoucherError,
     ceoApproveVoucherError,
@@ -254,52 +296,33 @@ const Voucher = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
     setIsOpen8(false);
   };
 
-  useEffect(() => {
-    if (pageNumber > 0) {
-      const startNum = pageNumber * 40;
-      setStartCheck(startNum);
-
-      const endNum = usersPerpageCount;
-      setEndCheck(endNum);
-    } else {
-      setStartCheck(0);
-      setEndCheck(usersPerpageCount);
-    }
-  }, [usersPerpageCount, pageNumber]);
-
-  useEffect(() => {
-    let tempData2 = searchResult?.slice(startCheck, endCheck)?.map((user) => {
-      return user;
-    });
-
-    setPageData(tempData2);
-  }, [startCheck, endCheck, searchResult]);
-
   // for checkbox onchange handler
   const handleChange = (e) => {
     const { name, checked } = e.target;
     if (name === "checkAll") {
-      let tempData = searchResult
-        ?.slice(startCheck, endCheck)
-        ?.map((voucher) => {
-          return { ...voucher, isChecked: checked };
-        });
+      // let tempData = searchResult
+      //   ?.slice(startCheck, endCheck)
+      let tempData = searchResult?.map((voucher) => {
+        return { ...voucher, isChecked: checked };
+      });
       let notChecked = searchResult?.filter((el) => {
         return !tempData?.find(
-          (tmp) =>
-            tmp?.paySlip?.employee?.EMPID === el?.paySlip?.employee?.EMPID
+          (tmp) => tmp?.paySlip?.employee?.id === el?.paySlip?.employee?.id
         );
       });
-      let dataJoined = [...tempData, ...notChecked].sort((a, b) => {
-        var dateA = new Date(a.createdAt),
-          dateB = new Date(b.createdAt);
-        return dateA - dateB;
-      });
 
-      setSearchResult(dataJoined);
+      if (tempData) {
+        let dataJoined = [...tempData, ...notChecked].sort((a, b) => {
+          var dateA = new Date(a.createdAt),
+            dateB = new Date(b.createdAt);
+          return dateA - dateB;
+        });
+
+        setSearchResult(dataJoined);
+      }
     } else {
       let tempData = searchResult?.map((voucher) =>
-        voucher?.paySlip?.employee?.EMPID === name
+        voucher?.paySlip?.employee?.id?.toString() === name?.toString()
           ? { ...voucher, isChecked: checked }
           : voucher
       );
@@ -324,8 +347,8 @@ const Voucher = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
 
   useEffect(() => {
     setArrayIds([]);
-    searchResult.forEach((data) => {
-      if (data.isChecked) {
+    searchResult?.forEach((data) => {
+      if (data?.isChecked) {
         setArrayIds((arrayIds) => [...arrayIds, data]);
       }
     });
@@ -339,10 +362,15 @@ const Voucher = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
   // const toggling9 = () => setisopen9(!isopen9);
 
   // Invoke when user click to request another page.
-  const usersPerpage = 40;
+  const usersPerpage = 100;
   const pagesVisited = pageNumber * usersPerpage;
 
-  const pageCount = Math.ceil(searchResult?.length / usersPerpage);
+  const pageCount = Math.ceil(
+    Number(
+      (vouchers || auditorPreApprovedVouchers || ceoPreApprovedVouchers)
+        ?.resultLength
+    ) / usersPerpage
+  );
   // const pageCount = Math.ceil(paySlip.length / usersPerpage);
   const handlePageClick = ({ selected }) => {
     setPageNumber(selected);
@@ -351,20 +379,40 @@ const Voucher = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
   useEffect(() => {
     if (pageNumber > 0) {
       let usersPerpageNum;
-      if (searchResult?.length / (pageNumber + 1) > 40) {
-        usersPerpageNum = (pageNumber + 1) * 40;
+      if (
+        (vouchers || auditorPreApprovedVouchers || ceoPreApprovedVouchers)
+          ?.resultLength /
+          (pageNumber + 1) >
+        100
+      ) {
+        usersPerpageNum = (pageNumber + 1) * 100;
       } else {
-        usersPerpageNum = searchResult?.length;
+        usersPerpageNum = (
+          vouchers ||
+          auditorPreApprovedVouchers ||
+          ceoPreApprovedVouchers
+        )?.resultLength;
       }
       setUsersPerpageCount(usersPerpageNum);
     } else {
-      if (searchResult?.length < 40) {
-        setUsersPerpageCount(searchResult?.length);
+      if (
+        (vouchers || auditorPreApprovedVouchers || ceoPreApprovedVouchers)
+          ?.resultLength < 100
+      ) {
+        setUsersPerpageCount(
+          (vouchers || auditorPreApprovedVouchers || ceoPreApprovedVouchers)
+            ?.resultLength
+        );
       } else {
-        setUsersPerpageCount(40);
+        setUsersPerpageCount(100);
       }
     }
-  }, [searchResult, pageNumber]);
+  }, [
+    vouchers,
+    pageNumber,
+    auditorPreApprovedVouchers,
+    ceoPreApprovedVouchers,
+  ]);
 
   const searchHandler = (searchTerm) => {
     setSearchTerm(searchTerm);
@@ -394,14 +442,30 @@ const Voucher = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
     }
   };
 
+  //auditor preapprove voucher by ids
   const auditorPreApproveVoucherByIds = () => {
     const voucherIds = arrayIds.map((voucher) => voucher?.id);
-    dispatch(auditorPreApprovedVouchersFunc(voucherIds, selectedOption10));
+    if (
+      (vouchers || auditorPreApprovedVouchers || ceoPreApprovedVouchers)
+        ?.resultLength > 100
+    ) {
+      dispatch(auditorPreApprovedVouchersAllFunc(selectedOption10));
+    } else {
+      dispatch(auditorPreApprovedVouchersFunc(voucherIds, selectedOption10));
+    }
   };
 
+  //ceo approve voucher by ids
   const ceoApprovedVoucherByIds = () => {
     const voucherIds = arrayIds.map((voucher) => voucher.id);
-    dispatch(ceoApprovedVouchersFunc(voucherIds, selectedOption10));
+    if (
+      (vouchers || auditorPreApprovedVouchers || ceoPreApprovedVouchers)
+        ?.resultLength > 100
+    ) {
+      dispatch(ceoApprovedVouchersAllFunc(selectedOption10));
+    } else {
+      dispatch(ceoApprovedVouchersFunc(voucherIds, selectedOption10));
+    }
   };
 
   const onCreateBankScheduleFromApprovedVouchers = () => {
@@ -417,7 +481,8 @@ const Voucher = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
       accountantCreateBankscheduleFunc(
         vouchers,
         selectedOption6?.name,
-        selectedOption7,
+        "Netpay Only",
+        // selectedOption7,
         selectedOption10,
         {
           subTotal,
@@ -432,7 +497,8 @@ const Voucher = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
     const voucherIds = arrayIds.map((el) => el?.id);
     const voucherWithComments = voucherIds?.map((el) => {
       return {
-        voucher: el,
+        // voucher: el,
+        id: el,
         comment: rejectComment,
       };
     });
@@ -441,7 +507,9 @@ const Voucher = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
       dispatch(
         auditorRejectNotApprovedVouchersFunc(
           voucherWithComments,
-          selectedOption10
+          selectedOption10,
+          companyId,
+          userRole
         )
       );
     }
@@ -449,7 +517,12 @@ const Voucher = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
     if (userRole === "CEO") {
       // dispatch ceo action
       dispatch(
-        ceoRejectPreApprovedVouchersFunc(voucherWithComments, selectedOption10)
+        ceoRejectPreApprovedVouchersFunc(
+          voucherWithComments,
+          selectedOption10,
+          companyId,
+          userRole
+        )
       );
     }
   };
@@ -479,18 +552,26 @@ const Voucher = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
 
   // confirm Modal popup
   const onOpenConfirm = () => {
-    setIsOpen4(true);
-    setBankScheduleBulk(true);
-    setIsOpen5(false);
+    if (isOpen4 === false || bankScheduleBulk === false) {
+      setIsOpen4(true);
+      setBankScheduleBulk(true);
+    }
+    if (isOpen5 === true) {
+      setIsOpen5(false);
+    }
   };
 
   const onRejectShowConfirm = () => {
     // setIsOpen3(false);
-    setIsOpen(false);
-    setIsOpen4(true);
-    setRejectVoucherBulk(true);
+    if (isOpen === true) {
+      setIsOpen(false);
+    }
     setCurrentVoucher(null);
-    setViewReject(true);
+    if (isOpen4 === true || rejectVoucherBulk === true || viewReject === true) {
+      setIsOpen4(true);
+      setRejectVoucherBulk(true);
+      setViewReject(true);
+    }
   };
 
   //   close all modals
@@ -525,7 +606,9 @@ const Voucher = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
       onSelect(id);
       setViewReject(!viewReject);
     } else {
-      setViewReject(false);
+      if (viewReject === true) {
+        setViewReject(false);
+      }
     }
 
     setRejectComment("");
@@ -561,7 +644,9 @@ const Voucher = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
     const voucher = vouchers?.find((el) => String(el?.id) === String(id));
     if (voucher) {
       setCurrentVoucher(voucher);
-      setIsOpen7(true);
+      if (isOpen7 === false) {
+        setIsOpen7(true);
+      }
     }
   };
 
@@ -621,29 +706,87 @@ const Voucher = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
   };
 
   useEffect(() => {
-    if (userRole === "Accountant") {
-      dispatch(
-        accountGetApprovedVouchersFunc(selectedOption10, selectedOption)
-      );
-      dispatch(adminGetAllBanksFunc());
-    } else if (userRole === "Internal Auditor") {
-      dispatch(auditorGetnotApprovedVouchersFunc(selectedOption10));
-    } else if (userRole === "CEO") {
-      if (selectedOption === "Approved") {
+    if (pageNumber >= 0) {
+      if (userRole === "Accountant") {
         dispatch(
-          accountGetApprovedVouchersFunc(selectedOption10, selectedOption)
+          accountGetApprovedVouchersFunc(
+            selectedOption10,
+            selectedOption,
+            pageNumber ? pageNumber + 1 : 1,
+            100
+          )
         );
-      } else {
-        dispatch(ceoGetPreApprovedVouchersFunc(selectedOption10));
+        dispatch(adminGetAllBanksFunc());
+      } else if (userRole === "Internal Auditor") {
+        dispatch(
+          auditorGetnotApprovedVouchersFunc(
+            selectedOption10,
+            pageNumber ? pageNumber + 1 : 1,
+            100
+          )
+        );
+      } else if (userRole === "CEO") {
+        if (selectedOption === "Approved") {
+          dispatch(
+            accountGetApprovedVouchersFunc(
+              selectedOption10,
+              selectedOption,
+              pageNumber ? pageNumber + 1 : 1,
+              100
+            )
+          );
+        }
+        if (selectedOption === "Pre-Approved") {
+          dispatch(
+            ceoGetPreApprovedVouchersFunc(
+              selectedOption10,
+              pageNumber ? pageNumber + 1 : 1,
+              100
+            )
+          );
+        }
       }
     }
-  }, [userRole, dispatch, selectedOption10, selectedOption]);
+  }, [userRole, pageNumber, dispatch, selectedOption10, selectedOption]);
+
+  const popup8 = () => {
+    if (
+      (ceoApproveVoucherSuccess && !ceoApproveVoucherError) ||
+      (ceoApproveVoucherAllSuccess && !ceoApproveVoucherErrorAll) ||
+      auditorPreApprovedVoucherSuccess
+    ) {
+      setSearchTerm("");
+      dispatch({ type: CEO_APPROVE_PRE_APPROVED_VOUCHERS_RESET });
+      dispatch({ type: CEO_APPROVE_PRE_APPROVED_VOUCHERS_ALL_RESET });
+      dispatch({ type: CEO_GET_PRE_APPROVED_VOUCHERS_RESET });
+      dispatch({ type: AUDITOR_PRE_APPROVE_VOUCHERS_RESET });
+    }
+    if (ceoApproveVoucherAllSuccess && !auditorPreApprovedVoucherAllSuccess) {
+      dispatch({ type: CEO_APPROVE_PRE_APPROVED_VOUCHERS_ALL_RESET });
+      dispatch({ type: CEO_GET_PRE_APPROVED_VOUCHERS_RESET });
+      dispatch({ type: AUDITOR_PRE_APPROVE_VOUCHERS_ALL_RESET });
+    }
+    if (accountantCreateBankScheduleSuccess) {
+      // dispatch();
+      // accountGetApprovedVouchersFunc(
+      //   selectedOption10,
+      //   selectedOption,
+      //   pageNumber ? pageNumber + 1 : 1,
+      //   100
+      // )
+      dispatch({ type: ACCOUNTANT_CREATE_BANKSCHEDULE_RESET });
+    }
+    if (isOpen8 === true) {
+      setIsOpen8(false);
+    }
+  };
 
   const disableButton = () => {
     let isTrue = false;
-    pageData?.forEach((data) => {
-      if (data.isChecked === true) {
-        isTrue = data.isChecked;
+    // pageData?.forEach((data) => {
+    searchResult?.forEach((data) => {
+      if (data?.isChecked === true) {
+        isTrue = data?.isChecked;
       }
     });
     return isTrue;
@@ -656,6 +799,35 @@ const Voucher = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
       {(accountantGetApprovedSalaryslipsLoading ||
         auditorPreApproveVouchersLoading ||
         ceoPreApprovedVouchersLoading) && <LoadingSpinner toggle={toggle} />}
+
+      {(ceoApproveVoucherSuccess || ceoApproveVoucherAllSuccess) && (
+        <Successful
+          isOpen7={ceoApproveVoucherSuccess || ceoApproveVoucherAllSuccess}
+          popup7={popup8}
+          message="Vouchers Successfully Approved!"
+          toggle={toggle}
+        />
+      )}
+      {(auditorPreApprovedVoucherSuccess ||
+        auditorPreApprovedVoucherAllSuccess ||
+        ceoApproveVoucherAllSuccess ||
+        accountantCreateBankScheduleSuccess) && (
+        <Successful
+          isOpen7={
+            auditorPreApprovedVoucherSuccess ||
+            auditorPreApprovedVoucherAllSuccess ||
+            ceoApproveVoucherAllSuccess ||
+            accountantCreateBankScheduleSuccess
+          }
+          popup7={popup8}
+          message={
+            auditorPreApprovedVoucherAllMessage ||
+            ceoApproveVoucherAllMessage ||
+            "Your request is being processed!"
+          }
+          toggle={toggle}
+        />
+      )}
       <BankScheduleOption
         isopen={isOpen5}
         userName={adminInfo?.user?.name}
@@ -780,13 +952,15 @@ const Voucher = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
               {(ceoApproveVoucherError ||
                 auditorPreApprovedVoucherError ||
                 accountantDeleteBulkVouchersError ||
-                accountantDeleteVoucherByIdError) && (
+                accountantDeleteVoucherByIdError ||
+                auditorPreApprovedVoucherAllError) && (
                 <ErrorBox
                   errorMessage={
                     ceoApproveVoucherError ||
                     auditorPreApprovedVoucherError ||
                     accountantDeleteBulkVouchersError ||
-                    accountantDeleteVoucherByIdError
+                    accountantDeleteVoucherByIdError ||
+                    auditorPreApprovedVoucherAllError
                   }
                 />
               )}
@@ -827,7 +1001,7 @@ const Voucher = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
                       <input
                         type="button"
                         className={
-                          bankVoucher.length > 0 &&
+                          bankVoucher?.length > 0 &&
                           bankVoucher?.every(
                             (voucher) =>
                               voucher?.statusLevel === "approved" &&
@@ -836,13 +1010,14 @@ const Voucher = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
                           ) &&
                           selectedOption6 &&
                           // selectedOption7 &&
+
                           disableButton()
                             ? "general__btn margin__left2 mobile__margin__top save__btn"
                             : "general__btn margin__left2 mobile__margin__top disabled__btn"
                         }
                         value="Create Bank Schedule"
                         disabled={
-                          (bankVoucher.length === 0 ||
+                          (bankVoucher?.length === 0 ||
                             !selectedOption6 ||
                             // !selectedOption7 ||
                             !bankVoucher?.every(
@@ -995,9 +1170,13 @@ const Voucher = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
                               name="checkAll"
                               // checked={searchResult.filter((user) => user?.isChecked !== true).length < 1}
                               checked={
-                                searchResult.length === 0
+                                // searchResult?.length === 0
+                                // false
+                                searchResult?.length === 0 ||
+                                searchResult === undefined
                                   ? false
-                                  : !pageData?.some(
+                                  : // : !pageData?.some(
+                                    !searchResult?.some(
                                       (voucher) => voucher?.isChecked !== true
                                     )
                               }
@@ -1024,7 +1203,7 @@ const Voucher = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
                     </thead>
                     <tbody>
                       {searchResult
-                        ?.slice(pagesVisited, pagesVisited + usersPerpage)
+                        // ?.slice(pagesVisited, pagesVisited + usersPerpage)
                         ?.map((voucher, indexes) => (
                           <tr key={voucher?.id}>
                             {(userRole === "Accountant" ||
@@ -1034,7 +1213,7 @@ const Voucher = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
                                 <input
                                   type="checkbox"
                                   // value={item.name}
-                                  name={voucher?.paySlip?.employee?.EMPID}
+                                  name={voucher?.paySlip?.employee?.id}
                                   checked={voucher?.isChecked || false}
                                   onChange={handleChange}
                                 />
@@ -1156,7 +1335,7 @@ const Voucher = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
                   className="pageCount"
                 >
                   <p style={{ fontSize: "1.3rem", fontWeight: "500" }}>
-                    Rows per page : 40
+                    Rows per page : 100
                   </p>
                 </div>
                 <div
@@ -1169,13 +1348,23 @@ const Voucher = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
                 >
                   <p style={{ fontSize: "1.3rem", fontWeight: "500" }}>
                     {`Showing : ${
-                      searchResult?.length < 1
+                      (
+                        vouchers ||
+                        auditorPreApprovedVouchers ||
+                        ceoPreApprovedVouchers
+                      )?.resultLength < 1
                         ? 0
                         : `${
-                            pageNumber > 0 ? pageNumber * 40 + 1 : 1
+                            pageNumber > 0 ? pageNumber * 100 + 1 : 1
                           } - ${usersPerpageCount}`
                     }
-                    of ${searchResult?.length}`}
+                    of ${
+                      (
+                        vouchers ||
+                        auditorPreApprovedVouchers ||
+                        ceoPreApprovedVouchers
+                      )?.resultLength
+                    }`}
                   </p>
                 </div>
               </div>

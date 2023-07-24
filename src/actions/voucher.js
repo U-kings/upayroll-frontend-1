@@ -34,13 +34,19 @@ import {
   ACCOUNTANT_DELETE_BULK_VOUCHERS_FAIL,
   ACCOUNTANT_DELETE_BULK_VOUCHERS_REQUEST,
   ACCOUNTANT_DELETE_BULK_VOUCHERS_SUCCESS,
+  ACCOUNTANT_CREATE_NOT_APPROVED_VOUCHERS_FROM_SALARYSLIPS_ALL_REQUEST,
+  ACCOUNTANT_CREATE_NOT_APPROVED_VOUCHERS_FROM_SALARYSLIPS_ALL_SUCCESS,
+  ACCOUNTANT_CREATE_NOT_APPROVED_VOUCHERS_FROM_SALARYSLIPS_ALL_FAIL,
+  AUDITOR_PRE_APPROVE_VOUCHERS_ALL_REQUEST,
+  AUDITOR_PRE_APPROVE_VOUCHERS_ALL_SUCCESS,
+  AUDITOR_PRE_APPROVE_VOUCHERS_ALL_FAIL,
 } from "../types/voucher";
 // import { cookieTokenValidFunc } from "./auth";
 
-const proxyUrl = process.env.REACT_APP_PROXY_URL;
+import { urlConfig } from "../util/config/config";
 
 export const accountGetApprovedVouchersFunc =
-  (month, type = "") =>
+  (month, type = "", page = 1, perPage = 100) =>
   async (dispatch) => {
     const token = cookie.get("token");
     const config = {
@@ -55,12 +61,13 @@ export const accountGetApprovedVouchersFunc =
       try {
         dispatch({ type: ACCOUNTANT_GET_APPROVED_VOUCHERS_REQUEST });
         const { data } = await axios.get(
-          `${proxyUrl}/api/vouchers/approved?month=${month}`,
+          `${urlConfig.proxyUrl.PROXYURL}api/vouchers/approved?month=${month}&page=${page}&perPage=${perPage}`,
           config
         );
         dispatch({
           type: ACCOUNTANT_GET_APPROVED_VOUCHERS_SUCCESS,
-          payload: data?.approved,
+          payload: data,
+          // payload: data?.approved,
         });
       } catch (error) {
         dispatch({
@@ -74,35 +81,38 @@ export const accountGetApprovedVouchersFunc =
     }
   };
 
-export const accountantGetRejectedVouchers = (month) => async (dispatch) => {
-  const token = cookie.get("token");
-  const config = {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
+export const accountantGetRejectedVouchers =
+  (month, page = 1, perPage = 100) =>
+  async (dispatch) => {
+    const token = cookie.get("token");
+    const config = {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    };
+    try {
+      dispatch({ type: ACCOUNTANT_GET_REJECTED_VOUCHERS_REQUEST });
+      const { data } = await axios.get(
+        `${urlConfig.proxyUrl.PROXYURL}api/vouchers/rejected?month=${month}&statusLevel=not approved,pre approved&page=${page}&perPage=${perPage}`,
+        config
+      );
+      dispatch({
+        type: ACCOUNTANT_GET_REJECTED_VOUCHERS_SUCCESS,
+        payload: data,
+        // payload: data.rejectedBankVouchers,
+      });
+    } catch (error) {
+      dispatch({
+        type: ACCOUNTANT_GET_REJECTED_VOUCHERS_FAIL,
+        payload:
+          error?.response &&
+          (error?.response?.data?.detail || error?.response?.data?.errors)
+            ? error?.response?.data?.detail ||
+              error?.response?.data?.errors?.map((el) => el?.msg)?.join(" ")
+            : error?.message,
+      });
+    }
   };
-  try {
-    dispatch({ type: ACCOUNTANT_GET_REJECTED_VOUCHERS_REQUEST });
-    const { data } = await axios.get(
-      `${proxyUrl}/api/vouchers/rejected?month=${month}&statusLevel=not approved,pre approved`,
-      config
-    );
-    dispatch({
-      type: ACCOUNTANT_GET_REJECTED_VOUCHERS_SUCCESS,
-      payload: data.rejectedBankVouchers,
-    });
-  } catch (error) {
-    dispatch({
-      type: ACCOUNTANT_GET_REJECTED_VOUCHERS_FAIL,
-      payload:
-        error?.response &&
-        (error?.response?.data?.detail || error?.response?.data?.errors)
-          ? error?.response?.data?.detail ||
-            error?.response?.data?.errors?.map((el) => el?.msg)?.join(" ")
-          : error?.message,
-    });
-  }
-};
 
 export const accountantCreateNotApprovedVouchersFunc =
   (approvedSalaryslips) => async (dispatch) => {
@@ -122,7 +132,7 @@ export const accountantCreateNotApprovedVouchersFunc =
         approvedSalaryslipsArr: approvedSalaryslips,
       });
       await axios.post(
-        `${proxyUrl}/api/vouchers/create/notapproved`,
+        `${urlConfig.proxyUrl.PROXYURL}api/vouchers/create/notapproved`,
         body,
         config
       );
@@ -139,9 +149,46 @@ export const accountantCreateNotApprovedVouchersFunc =
       });
     }
   };
+export const accountantCreateNotApprovedVouchersAllFunc =
+  (month) => async (dispatch) => {
+    const token = cookie.get("token");
+    const config = {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+    };
+
+    try {
+      dispatch({
+        type: ACCOUNTANT_CREATE_NOT_APPROVED_VOUCHERS_FROM_SALARYSLIPS_ALL_REQUEST,
+      });
+      const body = JSON.stringify({
+        // approvedSalaryslipsArr: approvedSalaryslips,
+      });
+      const { data } = await axios.post(
+        `${urlConfig.proxyUrl.PROXYURL}api/vouchers/create/notapproved/all?month=${month}`,
+        body,
+        config
+      );
+      dispatch({
+        type: ACCOUNTANT_CREATE_NOT_APPROVED_VOUCHERS_FROM_SALARYSLIPS_ALL_SUCCESS,
+        payload: data,
+      });
+    } catch (error) {
+      dispatch({
+        type: ACCOUNTANT_CREATE_NOT_APPROVED_VOUCHERS_FROM_SALARYSLIPS_ALL_FAIL,
+        payload:
+          error.response && error.response.data.detail
+            ? error.response.data.detail
+            : error.message,
+      });
+    }
+  };
 
 export const auditorGetnotApprovedVouchersFunc =
-  (month) => async (dispatch) => {
+  (month, page = 1, perPage = 100) =>
+  async (dispatch) => {
     const token = cookie.get("token");
     const config = {
       headers: {
@@ -151,12 +198,13 @@ export const auditorGetnotApprovedVouchersFunc =
     try {
       dispatch({ type: AUDITOR_GET_NOT_APPROVED_VOUCHERS_REQUEST });
       const { data } = await axios.get(
-        `${proxyUrl}/api/vouchers/notapproved?month=${month}`,
+        `${urlConfig.proxyUrl.PROXYURL}api/vouchers/notapproved?month=${month}&page=${page}&perPage=${perPage}`,
         config
       );
       dispatch({
         type: AUDITOR_GET_NOT_APPROVED_VOUCHERS_SUCCESS,
-        payload: data.notapproved,
+        payload: data,
+        // payload: data.notapproved,
       });
     } catch (error) {
       dispatch({
@@ -186,7 +234,7 @@ export const auditorPreApprovedVouchersFunc =
       });
 
       await axios.patch(
-        `${proxyUrl}/api/vouchers/create/preapproved`,
+        `${urlConfig.proxyUrl.PROXYURL}api/vouchers/create/preapproved`,
         body,
         config
       );
@@ -203,35 +251,75 @@ export const auditorPreApprovedVouchersFunc =
     }
   };
 
-export const ceoGetPreApprovedVouchersFunc = (month) => async (dispatch) => {
-  const token = cookie.get("token");
-  const config = {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
+export const auditorPreApprovedVouchersAllFunc =
+  (month) => async (dispatch) => {
+    const token = cookie.get("token");
+    const config = {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    };
+
+    try {
+      dispatch({ type: AUDITOR_PRE_APPROVE_VOUCHERS_ALL_REQUEST });
+      const body = JSON.stringify({
+        // notApprovedBankVouchersArrIds: vouchersArr,
+      });
+
+      const { data } = await axios.patch(
+        `${urlConfig.proxyUrl.PROXYURL}api/vouchers/create/preapproved/all?month=${month}`,
+        body,
+        config
+      );
+      dispatch({
+        type: AUDITOR_PRE_APPROVE_VOUCHERS_ALL_SUCCESS,
+        payload: data,
+      });
+      dispatch(auditorGetnotApprovedVouchersFunc(month));
+    } catch (error) {
+      dispatch({
+        type: AUDITOR_PRE_APPROVE_VOUCHERS_ALL_FAIL,
+        payload:
+          error.response && error.response.data.detail
+            ? error.response.data.detail
+            : error.message,
+      });
+    }
   };
-  try {
-    dispatch({ type: CEO_GET_PRE_APPROVED_VOUCHERS_REQUEST });
-    const { data } = await axios.get(
-      `${proxyUrl}/api/vouchers/preapproved?month=${month}`,
-      config
-    );
-    dispatch({
-      type: CEO_GET_PRE_APPROVED_VOUCHERS_SUCCESS,
-      payload: data?.preapproved,
-    });
-  } catch (error) {
-    dispatch({
-      type: CEO_GET_PRE_APPROVED_VOUCHERS_FAIL,
-      payload:
-        error?.response &&
-        (error?.response?.data?.detail || error?.response?.data?.errors)
-          ? error?.response?.data?.detail ||
-            error?.response?.data?.errors?.map((el) => el?.msg)?.join(" ")
-          : error?.message,
-    });
-  }
-};
+
+export const ceoGetPreApprovedVouchersFunc =
+  (month, page = 1, perPage = 100) =>
+  async (dispatch) => {
+    const token = cookie.get("token");
+    const config = {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    };
+    try {
+      dispatch({ type: CEO_GET_PRE_APPROVED_VOUCHERS_REQUEST });
+      const { data } = await axios.get(
+        `${urlConfig.proxyUrl.PROXYURL}api/vouchers/preapproved?month=${month}&page=${page}&perPage=${perPage}`,
+        config
+      );
+      dispatch({
+        type: CEO_GET_PRE_APPROVED_VOUCHERS_SUCCESS,
+        payload: data,
+        // payload: data?.preapproved,
+      });
+    } catch (error) {
+      dispatch({
+        type: CEO_GET_PRE_APPROVED_VOUCHERS_FAIL,
+        payload:
+          error?.response &&
+          (error?.response?.data?.detail || error?.response?.data?.errors)
+            ? error?.response?.data?.detail ||
+              error?.response?.data?.errors?.map((el) => el?.msg)?.join(" ")
+            : error?.message,
+      });
+    }
+  };
 
 export const ceoApprovedVouchersFunc =
   (vouchersArr, month) => async (dispatch) => {
@@ -249,7 +337,7 @@ export const ceoApprovedVouchersFunc =
         preApprovedBankVouchersArrIds: vouchersArr,
       });
       await axios.patch(
-        `${proxyUrl}/api/vouchers/create/approved`,
+        `${urlConfig.proxyUrl.PROXYURL}api/vouchers/create/approved`,
         body,
         config
       );
@@ -266,8 +354,43 @@ export const ceoApprovedVouchersFunc =
     }
   };
 
+export const ceoApprovedVouchersAllFunc = (month) => async (dispatch) => {
+  const token = cookie.get("token");
+  const config = {
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
+  };
+
+  try {
+    dispatch({ type: CEO_APPROVE_PRE_APPROVED_VOUCHERS_REQUEST });
+    const body = JSON.stringify({
+      // preApprovedBankVouchersArrIds: vouchersArr,
+    });
+    const { data } = await axios.patch(
+      `${urlConfig.proxyUrl.PROXYURL}api/vouchers/create/approved/all?month=${month}`,
+      body,
+      config
+    );
+    dispatch({
+      type: CEO_APPROVE_PRE_APPROVED_VOUCHERS_SUCCESS,
+      payload: data,
+    });
+    dispatch(ceoGetPreApprovedVouchersFunc(month));
+  } catch (error) {
+    dispatch({
+      type: CEO_APPROVE_PRE_APPROVED_VOUCHERS_FAIL,
+      payload:
+        error.response && error.response.data.detail
+          ? error.response.data.detail
+          : error.message,
+    });
+  }
+};
+
 export const auditorRejectNotApprovedVouchersFunc =
-  (vouchersArrWithComment, month) => async (dispatch) => {
+  (vouchersArrWithComment, month, companyId, userRole) => async (dispatch) => {
     const token = cookie.get("token");
     const config = {
       headers: {
@@ -281,7 +404,7 @@ export const auditorRejectNotApprovedVouchersFunc =
         bankVouchersArr: vouchersArrWithComment,
       });
       await axios.patch(
-        `${proxyUrl}/api/vouchers/reject/notapproved`,
+        `${urlConfig.proxyUrl.PROXYURL}api/vouchers/reject/notapproved?companyId=${companyId}&role=${userRole}`,
         body,
         config
       );
@@ -299,7 +422,7 @@ export const auditorRejectNotApprovedVouchersFunc =
   };
 
 export const ceoRejectPreApprovedVouchersFunc =
-  (vouchersArrWithComment, month) => async (dispatch) => {
+  (vouchersArrWithComment, month, companyId, userRole) => async (dispatch) => {
     const token = cookie.get("token");
     const config = {
       headers: {
@@ -313,7 +436,7 @@ export const ceoRejectPreApprovedVouchersFunc =
         bankVouchersArr: vouchersArrWithComment,
       });
       await axios.patch(
-        `${proxyUrl}/api/vouchers/reject/preapproved`,
+        `${urlConfig.proxyUrl.PROXYURL}api/vouchers/reject/preapproved?companyId=${companyId}&role=${userRole}`,
         body,
         config
       );
@@ -341,7 +464,10 @@ export const accountantDeleteVoucherByIdFunc =
 
     try {
       dispatch({ type: ACCOUNTANT_DELETE_VOUCHER_BY_ID_REQUEST });
-      await axios.delete(`${proxyUrl}/api/vouchers/${voucherId}`, config);
+      await axios.delete(
+        `${urlConfig.proxyUrl.PROXYURL}api/vouchers/${voucherId}`,
+        config
+      );
       dispatch({
         type: ACCOUNTANT_DELETE_VOUCHER_BY_ID_SUCCESS,
       });
@@ -373,7 +499,11 @@ export const accountantDeleteBulkVoucherFunc =
         bankVoucherArrIds: voucherArrs,
       });
 
-      await axios.patch(`${proxyUrl}/api/vouchers/delete-bulk`, body, config);
+      await axios.patch(
+        `${urlConfig.proxyUrl.PROXYURL}api/vouchers/delete-bulk`,
+        body,
+        config
+      );
       dispatch({
         type: ACCOUNTANT_DELETE_BULK_VOUCHERS_SUCCESS,
       });

@@ -1,5 +1,6 @@
 import axios from "axios";
 import cookie from "js-cookie";
+import { urlConfig } from "../util/config/config";
 import {
   ADMIN_GET_ALL_ALLOWANCES_FAIL,
   ADMIN_GET_ALL_ALLOWANCES_SUCCESS,
@@ -15,7 +16,8 @@ import {
   ADMIN_UPDATE_ALLOWANCE_BY_ID_SUCCESS,
 } from "../types/allowance";
 
-const proxyUrl = process.env.REACT_APP_PROXY_URL;
+
+// import { urlConfig } from "../util/config/config";
 
 export const adminGetAllAllowance = () => async (dispatch) => {
   const token = cookie.get("token");
@@ -27,7 +29,7 @@ export const adminGetAllAllowance = () => async (dispatch) => {
 
   try {
     dispatch({ type: ADMIN_GET_ALL_ALLOWANCES_REQUEST });
-    const { data } = await axios.get(`${proxyUrl}/api/allowances`, config);
+    const { data } = await axios.get(`${urlConfig.proxyUrl.PROXYURL}api/allowances`, config);
     dispatch({ type: ADMIN_GET_ALL_ALLOWANCES_SUCCESS, payload: data });
   } catch (error) {
     dispatch({
@@ -54,7 +56,7 @@ export const adminCreateAllowance = (formdata) => async (dispatch) => {
       type: ADMIN_CREATE_ALLOWANCE_REQUEST,
     });
     const body = JSON.stringify(formdata);
-    await axios.post(`${proxyUrl}/api/allowances`, body, config);
+    await axios.post(`${urlConfig.proxyUrl.PROXYURL}api/allowances`, body, config);
     dispatch({
       type: ADMIN_CREATE_ALLOWANCE_SUCCESS,
     });
@@ -85,7 +87,7 @@ export const adminUpdateAllowanceById =
       });
       const body = JSON.stringify(formData);
       await axios.patch(
-        `${proxyUrl}/api/allowances/${allowanceId}`,
+        `${urlConfig.proxyUrl.PROXYURL}api/allowances/${allowanceId}`,
         body,
         config
       );
@@ -115,7 +117,7 @@ export const adminDeleteAllowanceById = (allowanceId) => async (dispatch) => {
     dispatch({
       type: ADMIN_DELETE_ALLOWANCE_BY_ID_REQUEST,
     });
-    await axios.delete(`${proxyUrl}/api/allowances/${allowanceId}`, config);
+    await axios.delete(`${urlConfig.proxyUrl.PROXYURL}api/allowances/${allowanceId}`, config);
     dispatch({
       type: ADMIN_DELETE_ALLOWANCE_BY_ID_SUCCESS,
     });

@@ -126,7 +126,7 @@ const Createroles = () => {
       dispatch({ type: REGISTER_COMPANY_ADMIN_RESET });
       setPage(page + 1);
       if (page === 4) {
-        history.push("/profile-settings");
+        history.push("/dashboard");
       }
     }
   };

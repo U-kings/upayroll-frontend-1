@@ -31,6 +31,22 @@ export const Capitalize = (str) => {
   }
 };
 
+export function excelDateToJSDate(excelDate) {
+  if (typeof excelDate === "string") {
+    //reverse string from 7/1/1994 to 1994/1/7
+    const date = excelDate.split("/").reverse().join("-");
+    // const date = excelDate;
+    return date;
+    // return new Date(converted_date).toISOString().split('T')[0].replaceAll('-', '/');
+  } else if (typeof excelDate === "number") {
+    let date = new Date(Math.round((excelDate - (25568 + 1)) * 86400 * 1000));
+    let converted_date = date.toLocaleString();
+
+    // return new Date(converted_date);
+    return new Date(converted_date).toISOString().split("T")[0];
+  }
+}
+
 export const checkEmail = (arrData) => {
   const emailPattern =
     /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
@@ -43,6 +59,9 @@ export const checkEmail = (arrData) => {
   );
 
   const arrEmail2 = arrData?.some((data) => {
+    // if (!emailPattern.test(data?.Email)) {
+    //   console.log(data.StaffId);
+    // }
     return !emailPattern.test(data?.Email);
   });
 
@@ -56,9 +75,11 @@ export const checkDate = (arrData) => {
   // ];
 
   return arrData?.some((data) => {
-    return !/^(\d{2}|\d{1})\/(\d{2}|\d{1})\/\d{4}$/.test(
-      data?.DateOfBirth?.toString()?.trim() &&
-        data?.JoinDate?.toString()?.trim()
+    // !/^(\d{2}|\d{1})\-(\d{2}|\d{1})\-\d{4}$/
+
+    return !/^\d{4}\-(\d{2}|\d{1})\-(\d{2}|\d{1})$/.test(
+      excelDateToJSDate(data?.DateOfBirth)?.toString()?.trim() &&
+        excelDateToJSDate(data?.JoinDate)?.toString()?.trim()
     );
   });
 };

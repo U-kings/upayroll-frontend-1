@@ -16,6 +16,13 @@ node_modules/
 /build
 /frontend/build
 
+# folders
+Procfile
+pension and paye data requirement.txt
+salarystructure.txt
+upayroll-frontend.zip
+UPayrollWeb.test2.zip
+
 # misc
 .env
 .DS_Store

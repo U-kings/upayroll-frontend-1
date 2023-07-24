@@ -60,6 +60,19 @@ import {
   AUDITOR_AND_CEO_REJECT_EXCEL_PAYSLIPS_REQUEST,
   AUDITOR_AND_CEO_REJECT_EXCEL_PAYSLIPS_RESET,
   AUDITOR_AND_CEO_REJECT_EXCEL_PAYSLIPS_SUCCESS,
+  HR_SET_NOT_APPROVED_GENERATED_PAYSLIPS_ALL_REQUEST,
+  HR_SET_NOT_APPROVED_GENERATED_PAYSLIPS_ALL_SUCCESS,
+  HR_SET_NOT_APPROVED_GENERATED_PAYSLIPS_ALL_FAIL,
+  HR_SET_NOT_APPROVED_GENERATED_PAYSLIPS_ALL_RESET,
+  ADMIN_GENERATE_BULK_PAYSLIPS_ALL_REQUEST,
+  ADMIN_GENERATE_BULK_PAYSLIPS_ALL_SUCCESS,
+  ADMIN_GENERATE_BULK_PAYSLIPS_ALL_FAIL,
+  ADMIN_GENERATE_BULK_PAYSLIPS_ALL_RESET,
+  AUDITOR_SET_PRE_APPROVED_GENERATED_PAYSLIPS_ALL_REQUEST,
+  AUDITOR_SET_PRE_APPROVED_GENERATED_PAYSLIPS_ALL_SUCCESS,
+  AUDITOR_SET_PRE_APPROVED_GENERATED_PAYSLIPS_ALL_FAIL,
+  AUDITOR_SET_PRE_APPROVED_GENERATED_PAYSLIPS_ALL_RESET,
+  ACCOUNTANT_GET_APPROVED_SALARYSLIPS_RESET,
 } from "../types/payslip";
 
 export const getAllGeneratedPayslipReducer = (state = {}, action) => {
@@ -78,7 +91,7 @@ export const getAllGeneratedPayslipReducer = (state = {}, action) => {
       return {
         ...state,
         isLoading: false,
-        paySlips: payload.paySlips,
+        paySlips: payload,
         error: null,
       };
 
@@ -124,6 +137,9 @@ export const accountantGetApprovedSalaryslipsReducer = (state = {}, action) => {
         error: payload,
       };
 
+    case ACCOUNTANT_GET_APPROVED_SALARYSLIPS_RESET:
+      return {};
+
     default:
       return state;
   }
@@ -143,7 +159,7 @@ export const auditorGetNotApprovedReducer = (state = {}, action) => {
       return {
         ...state,
         isLoading: false,
-        notapproved: payload.notapproved,
+        notapproved: payload,
         error: null,
       };
 
@@ -187,6 +203,40 @@ export const auditorSetPreApprovedPayslipsReducer = (state = {}, action) => {
       };
 
     case AUDITOR_SET_PRE_APPROVED_GENERATED_PAYSLIPS_RESET:
+      return {};
+
+    default:
+      return state;
+  }
+};
+
+export const auditorSetPreApprovedPayslipsAllReducer = (state = {}, action) => {
+  const { type, payload } = action;
+
+  switch (type) {
+    case AUDITOR_SET_PRE_APPROVED_GENERATED_PAYSLIPS_ALL_REQUEST:
+      return {
+        ...state,
+        isLoading: true,
+      };
+
+    case AUDITOR_SET_PRE_APPROVED_GENERATED_PAYSLIPS_ALL_SUCCESS:
+      return {
+        ...state,
+        isLoading: false,
+        success: true,
+        message: payload?.message,
+        error: null,
+      };
+
+    case AUDITOR_SET_PRE_APPROVED_GENERATED_PAYSLIPS_ALL_FAIL:
+      return {
+        ...state,
+        isLoading: false,
+        error: payload,
+      };
+
+    case AUDITOR_SET_PRE_APPROVED_GENERATED_PAYSLIPS_ALL_RESET:
       return {};
 
     default:
@@ -263,6 +313,39 @@ export const ceoSetApprovedPayslipsReducer = (state = {}, action) => {
   }
 };
 
+export const ceoSetApprovedPayslipsAllReducer = (state = {}, action) => {
+  const { type, payload } = action;
+
+  switch (type) {
+    case CEO_SET_APPROVED_GENERATED_PAYSLIPS_REQUEST:
+      return {
+        ...state,
+        isLoading: true,
+      };
+
+    case CEO_SET_APPROVED_GENERATED_PAYSLIPS_SUCCESS:
+      return {
+        ...state,
+        isLoading: false,
+        success: true,
+        error: null,
+      };
+
+    case CEO_SET_APPROVED_GENERATED_PAYSLIPS_FAIL:
+      return {
+        ...state,
+        isLoading: false,
+        error: payload,
+      };
+
+    case CEO_SET_APPROVED_GENERATED_PAYSLIPS_RESET:
+      return {};
+
+    default:
+      return state;
+  }
+};
+
 export const hrSetNotApprovedPayslipsReducer = (state = {}, action) => {
   const { type, payload } = action;
 
@@ -289,6 +372,40 @@ export const hrSetNotApprovedPayslipsReducer = (state = {}, action) => {
       };
 
     case HR_SET_NOT_APPROVED_GENERATED_PAYSLIPS_RESET:
+      return {};
+
+    default:
+      return state;
+  }
+};
+
+export const hrSetNotApprovedPayslipsAllReducer = (state = {}, action) => {
+  const { type, payload } = action;
+
+  switch (type) {
+    case HR_SET_NOT_APPROVED_GENERATED_PAYSLIPS_ALL_REQUEST:
+      return {
+        ...state,
+        isLoading: true,
+      };
+
+    case HR_SET_NOT_APPROVED_GENERATED_PAYSLIPS_ALL_SUCCESS:
+      return {
+        ...state,
+        isLoading: false,
+        success: true,
+        message: payload?.message,
+        error: null,
+      };
+
+    case HR_SET_NOT_APPROVED_GENERATED_PAYSLIPS_ALL_FAIL:
+      return {
+        ...state,
+        isLoading: false,
+        error: payload,
+      };
+
+    case HR_SET_NOT_APPROVED_GENERATED_PAYSLIPS_ALL_RESET:
       return {};
 
     default:
@@ -421,6 +538,40 @@ export const adminGenerateBulkPayslipsReducer = (state = {}, action) => {
       };
 
     case ADMIN_GENERATE_BULK_PAYSLIPS_RESET:
+      return {};
+
+    default:
+      return state;
+  }
+};
+
+export const adminGenerateBulkPayslipsAllReducer = (state = {}, action) => {
+  const { type, payload } = action;
+
+  switch (type) {
+    case ADMIN_GENERATE_BULK_PAYSLIPS_ALL_REQUEST:
+      return {
+        ...state,
+        isLoading: true,
+      };
+
+    case ADMIN_GENERATE_BULK_PAYSLIPS_ALL_SUCCESS:
+      return {
+        ...state,
+        isLoading: false,
+        success: true,
+        message: payload?.message,
+        error: null,
+      };
+
+    case ADMIN_GENERATE_BULK_PAYSLIPS_ALL_FAIL:
+      return {
+        ...state,
+        isLoading: false,
+        error: payload,
+      };
+
+    case ADMIN_GENERATE_BULK_PAYSLIPS_ALL_RESET:
       return {};
 
     default:

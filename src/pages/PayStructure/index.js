@@ -36,6 +36,7 @@ import {
 } from "@mui/material";
 import { COLORS } from "../../values/colors";
 import {
+  hrCreateContractStaffGradeFunc,
   hrCreateJuniorStaffGradeFunc,
   hrCreateManagementStaffGradeFunc,
   hrCreateMiddleStaffGradeFunc,
@@ -43,6 +44,7 @@ import {
 } from "../../actions/salarystructure";
 import { paystructureFormatter } from "../../hooks/functions";
 import {
+  HR_CREATE_CONTRACT_STAFF_GRADE_RESET,
   HR_CREATE_JUNIOR_STAFF_GRADE_RESET,
   HR_CREATE_MANAGEMENT_STAFF_GRADE_RESET,
   HR_CREATE_MIDDLE_STAFF_GRADE_RESET,
@@ -105,6 +107,11 @@ const PayStructure = ({
     success: managementStaffGrade,
     error: managementStaffError,
   } = useSelector((state) => state.hrCreateManagementStaffGrade);
+  const {
+    isLoading: contractStaffLoading,
+    success: contractStaffGrade,
+    error: contractStaffError,
+  } = useSelector((state) => state.hrCreateContractStaffGrade);
 
   const { isLoading: downloadLoading, error: downloadError } = useSelector(
     (state) => state.downloadStatus
@@ -116,6 +123,7 @@ const PayStructure = ({
   const hiddenFileInput2 = useRef(null);
   const hiddenFileInput3 = useRef(null);
   const hiddenFileInput4 = useRef(null);
+  const hiddenFileInput5 = useRef(null);
 
   //func state
   const [userRole] = useState(adminInfo?.user?.role || "");
@@ -126,12 +134,19 @@ const PayStructure = ({
   const [fileName2, setFileName2] = useState(null);
   const [fileName3, setFileName3] = useState(null);
   const [fileName4, setFileName4] = useState(null);
+  const [fileName5, setFileName5] = useState(null);
+  const [file, setFile] = useState(null);
+  const [file2, setFile2] = useState(null);
+  const [file3, setFile3] = useState(null);
+  const [file4, setFile4] = useState(null);
+  const [file5, setFile5] = useState(null);
   const [showError, setShowError] = useState(null);
 
   const [juniorStaffGradeData, setJuniorStaffGradeData] = useState([]);
   const [middleStaffGradeData, setMiddleStaffGradeData] = useState([]);
   const [seniorStaffGradeData, setSeniorStaffGradeData] = useState([]);
   const [managementStaffGradeData, setManagementStaffGradeData] = useState([]);
+  const [contractStaffGradeData, setContractStaffGradeData] = useState([]);
 
   const theme = useTheme();
 
@@ -162,9 +177,9 @@ const PayStructure = ({
 
   useEffect(() => {
     if (
-      getBasePayError === "no token was passed" ||
-      getStaffGradeError === "no token was passed" ||
-      getSalaryLevelError === "no token was passed" ||
+      // getBasePayError === "no token was passed" ||
+      // getStaffGradeError === "no token was passed" ||
+      // getSalaryLevelError === "no token was passed" ||
       getStepsError === "no token was passed"
     ) {
       dispatch(logoutAdmin("no token was passed"));
@@ -192,6 +207,9 @@ const PayStructure = ({
       case "managementStaffGrade":
         hiddenFileInput4.current?.click();
         break;
+      case "contractStaffGrade":
+        hiddenFileInput5.current?.click();
+        break;
       default:
         break;
     }
@@ -202,28 +220,37 @@ const PayStructure = ({
   const fileType2 = [
     "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
   ];
+  const filyType3 = ["text/csv"];
 
   const handleFile = (name) => (e) => {
     let selectedFile = e.target.files[0];
     if (selectedFile) {
       switch (name) {
         case "juniorStaffGrade":
+          setFile(e.target.files[0]);
           setFileName(selectedFile?.name);
           break;
         case "middleStaffGrade":
+          setFile2(e.target.files[0]);
           setFileName2(selectedFile?.name);
           break;
         case "seniorStaffGrade":
+          setFile3(e.target.files[0]);
           setFileName3(selectedFile?.name);
           break;
         case "managementStaffGrade":
+          setFile4(e.target.files[0]);
           setFileName4(selectedFile?.name);
+          break;
+        case "contractStaffGrade":
+          setFile5(e.target.files[0]);
+          setFileName5(selectedFile?.name);
           break;
         default:
           break;
       }
 
-      readExcelFile(selectedFile, name);
+      // readExcelFile(selectedFile, name);
     } else {
       setShowError("Please select a file");
     }
@@ -232,7 +259,9 @@ const PayStructure = ({
   const readExcelFile = (file, name) => {
     if (
       file &&
-      (fileType.includes(file?.type) || fileType2.includes(file?.type))
+      (fileType.includes(file?.type) ||
+        fileType2.includes(file?.type) ||
+        filyType3.includes(file?.type))
     ) {
       let reader = new FileReader();
       reader.readAsArrayBuffer(file);
@@ -250,6 +279,9 @@ const PayStructure = ({
           case "managementStaffGrade":
             converToJsonData(e.target?.result, "managementStaffGrade");
             break;
+          case "contractStaffGrade":
+            converToJsonData(e.target?.result, "contractStaffGrade");
+            break;
 
           default:
             break;
@@ -259,6 +291,15 @@ const PayStructure = ({
       setShowError("Please select only specified file type");
     }
   };
+
+  useEffect(() => {
+    if (showError || downloadError) {
+      setTimeout(() => {
+        dispatch({ type: DOWNLOADING_ON_PROCESS_ERROR });
+        setShowError(null);
+      }, 5000);
+    }
+  }, [dispatch, showError, downloadError]);
 
   const converToJsonData = (data, name) => {
     const workbook = XLSL.read(data, { type: "buffer" });
@@ -288,6 +329,11 @@ const PayStructure = ({
             managementStaffGrade: paystructureFormatter(convertedData),
           });
           break;
+        case "contractStaffGrade":
+          setContractStaffGradeData({
+            contractStaffGrade: paystructureFormatter(convertedData),
+          });
+          break;
 
         default:
           break;
@@ -295,32 +341,45 @@ const PayStructure = ({
     }
   };
 
-  useEffect(() => {
-    if (downloadError) {
-      dispatch({ type: DOWNLOADING_ON_PROCESS_ERROR });
-    }
-  }, [dispatch, downloadError]);
-
   const uploadBulk = (name) => () => {
     switch (name) {
       case "juniorStaffGrade":
         if (fileName) {
-          dispatch(hrCreateJuniorStaffGradeFunc(juniorStaffGradeData));
+          const formData = new FormData();
+          formData.append("file", file);
+          dispatch(hrCreateJuniorStaffGradeFunc(formData));
+          // dispatch(hrCreateJuniorStaffGradeFunc(juniorStaffGradeData));
         }
         break;
       case "middleStaffGrade":
         if (fileName2) {
-          dispatch(hrCreateMiddleStaffGradeFunc(middleStaffGradeData));
+          const formData = new FormData();
+          formData.append("file", file2);
+          dispatch(hrCreateMiddleStaffGradeFunc(formData));
+          // dispatch(hrCreateMiddleStaffGradeFunc(middleStaffGradeData));
         }
         break;
       case "seniorStaffGrade":
         if (fileName3) {
-          dispatch(hrCreateSeniorStaffGradeFunc(seniorStaffGradeData));
+          const formData = new FormData();
+          formData.append("file", file3);
+          dispatch(hrCreateSeniorStaffGradeFunc(formData));
+          // dispatch(hrCreateSeniorStaffGradeFunc(seniorStaffGradeData));
         }
         break;
       case "managementStaffGrade":
         if (fileName4) {
-          dispatch(hrCreateManagementStaffGradeFunc(managementStaffGradeData));
+          const formData = new FormData();
+          formData.append("file", file4);
+          dispatch(hrCreateManagementStaffGradeFunc(formData));
+          // dispatch(hrCreateManagementStaffGradeFunc(managementStaffGradeData));
+        }
+        break;
+      case "contractStaffGrade":
+        if (fileName5) {
+          const formData = new FormData();
+          formData.append("file", file5);
+          dispatch(hrCreateContractStaffGradeFunc(formData));
         }
         break;
       default:
@@ -342,6 +401,9 @@ const PayStructure = ({
       case "managementstaffgrade":
         dispatch(downloadPayStructureTemplateExcelFileFunc(type));
         break;
+      case "contractstaffgrade":
+        dispatch(downloadPayStructureTemplateExcelFileFunc(type));
+        break;
       default:
         break;
     }
@@ -356,15 +418,54 @@ const PayStructure = ({
       dispatch({ type: HR_CREATE_SENIOR_STAFF_GRADE_RESET });
     } else if (managementStaffGrade) {
       dispatch({ type: HR_CREATE_MANAGEMENT_STAFF_GRADE_RESET });
+    } else if (contractStaffGrade) {
+      dispatch({ type: HR_CREATE_CONTRACT_STAFF_GRADE_RESET });
     }
   };
+
+  useEffect(() => {
+    if (
+      managementStaffError ||
+      juniorStaffError ||
+      middleStaffError ||
+      seniorStaffError ||
+      contractStaffError
+      // !showError
+    ) {
+      setShowError(
+        managementStaffError ||
+          juniorStaffError ||
+          middleStaffError ||
+          seniorStaffError ||
+          contractStaffError
+      );
+    }
+    // setTimeout(() => {
+    //   setShowError(null);
+    //   // dispatch({ type: DOWNLOADING_ON_PROCESS_ERROR });
+    // }, 4000);
+    // if (showError) {
+    // }
+  }, [
+    showError,
+    managementStaffError,
+    juniorStaffError,
+    middleStaffError,
+    seniorStaffError,
+    contractStaffError,
+  ]);
+
+  // useEffect(() => {
+
+  // }, [showError]);
 
   useEffect(() => {
     if (
       juniorStaffGrade ||
       middleStaffGrade ||
       seniorStaffGrade ||
-      managementStaffGrade
+      managementStaffGrade ||
+      contractStaffGrade
     ) {
       dispatch(hrGetSalaryStepsFunc());
     }
@@ -373,6 +474,7 @@ const PayStructure = ({
     middleStaffGrade,
     seniorStaffGrade,
     managementStaffGrade,
+    contractStaffGrade,
     dispatch,
   ]);
 
@@ -387,6 +489,7 @@ const PayStructure = ({
         middleStaffLoading ||
         seniorStaffLoading ||
         managementStaffLoading ||
+        contractStaffLoading ||
         (downloadLoading && !downloadError)) && (
         <LoadingSpinner toggle={toggle} />
       )}
@@ -394,13 +497,15 @@ const PayStructure = ({
       {(juniorStaffGrade ||
         middleStaffGrade ||
         seniorStaffGrade ||
-        managementStaffGrade) && (
+        managementStaffGrade ||
+        contractStaffGrade) && (
         <Successful
           isOpen7={
             juniorStaffGrade ||
             middleStaffGrade ||
             seniorStaffGrade ||
-            managementStaffGrade
+            managementStaffGrade ||
+            contractStaffGrade
           }
           popup7={popup7}
           message={
@@ -436,23 +541,29 @@ const PayStructure = ({
 
             {/* <input type="button" value="Export Excel" onClick={exportExel} /> */}
             <Container maxWidth="xl">
-              {(juniorStaffError ||
+              {!downloadLoading && showError && (
+                <ErrorBox fixed={true} errorMessage={showError} />
+              )}
+              {/* {(juniorStaffError ||
                 middleStaffError ||
                 seniorStaffError ||
-                managementStaffError) && (
+                managementStaffError ||
+                contractStaffError) && (
                 <ErrorBox
                   errorMessage={
                     juniorStaffError ||
                     middleStaffError ||
                     seniorStaffError ||
-                    managementStaffError
+                    managementStaffError ||
+                    contractStaffError
                   }
+                  fixed={true}
                 />
-              )}
+              )} */}
               <Box sx={{ width: "100%", display: "flex" }}>
-                {!downloadLoading && downloadError && (
+                {/* {!downloadLoading && downloadError && (
                   <ErrorBox errorMessage={downloadError} />
-                )}
+                )} */}
                 <Box
                   sx={{
                     width: { xs: "100%", lg: "70%" },
@@ -484,7 +595,7 @@ const PayStructure = ({
                         (must be a .xls, .xlsx or .csv file extension)
                       </span>
                     </label>
-                    {showError && <ErrorBox errorMessage={showError} />}
+                    {/* {showError && <ErrorBox errorMessage={showError} />} */}
                     <div className="upload_empfile">
                       <p
                         className="choose__btn"
@@ -525,7 +636,7 @@ const PayStructure = ({
                         (must be a .xls, .xlsx or .csv file extension)
                       </span>
                     </label>
-                    {showError && <ErrorBox errorMessage={showError} />}
+                    {/* {showError && <ErrorBox errorMessage={showError} />} */}
                     <div className="upload_empfile">
                       <p
                         className="choose__btn"
@@ -565,7 +676,7 @@ const PayStructure = ({
                         (must be a .xls, .xlsx or .csv file extension)
                       </span>
                     </label>
-                    {showError && <ErrorBox errorMessage={showError} />}
+                    {/* {showError && <ErrorBox errorMessage={showError} />} */}
                     <div className="upload_empfile">
                       <p
                         className="choose__btn"
@@ -605,7 +716,7 @@ const PayStructure = ({
                         (must be a .xls, .xlsx or .csv file extension)
                       </span>
                     </label>
-                    {showError && <ErrorBox errorMessage={showError} />}
+                    {/* {showError && <ErrorBox errorMessage={showError} />} */}
                     <div className="upload_empfile">
                       <p
                         className="choose__btn"
@@ -632,6 +743,46 @@ const PayStructure = ({
                         variant="contained"
                         children="Download Template"
                         onClick={downloadTemplate("managementstaffgrade")}
+                      />
+                    </Stack>
+                  </Box>
+                  <Box sx={{ width: "100%", p: "3rem 0" }}>
+                    <Typography variant="h2">Contract Staff Grade</Typography>
+                    <label>
+                      Select a file to import: ...*
+                      <span
+                        style={{ color: `${COLORS.red}`, fontSize: "1.3rem" }}
+                      >
+                        (must be a .xls, .xlsx or .csv file extension)
+                      </span>
+                    </label>
+                    {/* {showError && <ErrorBox errorMessage={showError} />} */}
+                    <div className="upload_empfile">
+                      <p
+                        className="choose__btn"
+                        onClick={handleClick("contractStaffGrade")}
+                      >
+                        Choose a file
+                      </p>
+                      <p>{fileName5}</p>
+                    </div>
+                    <input
+                      type="file"
+                      ref={hiddenFileInput5}
+                      onChange={handleFile("contractStaffGrade")}
+                      accept=".xls,.xlsx,.csv"
+                      style={{ display: "none" }}
+                    />
+                    <Stack direction={"row"}>
+                      <Button
+                        variant="contained"
+                        children="Upload"
+                        onClick={uploadBulk("contractStaffGrade")}
+                      />
+                      <Button
+                        variant="contained"
+                        children="Download Template"
+                        onClick={downloadTemplate("contractstaffgrade")}
                       />
                     </Stack>
                   </Box>

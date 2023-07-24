@@ -6,7 +6,7 @@ import {
   GET_DASHBOARD_REPORTS_RESULT_SUCCESS,
 } from "../types/dashboard";
 
-const proxyUrl = process.env.REACT_APP_PROXY_URL;
+import { urlConfig } from "../util/config/config";
 
 // import { cookieTokenValidFunc } from "./auth";
 export const getDashboardReportSummaryFunc = () => async (dispatch) => {
@@ -19,7 +19,7 @@ export const getDashboardReportSummaryFunc = () => async (dispatch) => {
   };
   try {
     dispatch({ type: GET_DASHBOARD_REPORTS_RESULT_REQUEST });
-    const { data } = await axios.get(`${proxyUrl}/api/dashboard`, config);
+    const { data } = await axios.get(`${urlConfig.proxyUrl.PROXYURL}api/dashboard`, config);
     dispatch({
       type: GET_DASHBOARD_REPORTS_RESULT_SUCCESS,
       payload: data?.reports,

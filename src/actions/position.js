@@ -1,6 +1,9 @@
 import axios from "axios";
 import cookie from "js-cookie";
 import {
+  ADMIN_CREATE_BULK_POSITION_FAIL,
+  ADMIN_CREATE_BULK_POSITION_REQUEST,
+  ADMIN_CREATE_BULK_POSITION_SUCCESS,
   ADMIN_CREATE_POSITION_FAIL,
   ADMIN_CREATE_POSITION_REQUEST,
   ADMIN_CREATE_POSITION_SUCCESS,
@@ -15,31 +18,36 @@ import {
   ADMIN_UPDATE_POSITION_BY_ID_SUCCESS,
 } from "../types/position";
 
-const proxyUrl = process.env.REACT_APP_PROXY_URL;
+import { urlConfig } from "../util/config/config";
 
-export const adminGetAllPosition = () => async (dispatch) => {
-  const token = cookie.get("token");
-  const config = {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
+export const adminGetAllPosition =
+  (page = 1, perPage = 100) =>
+  async (dispatch) => {
+    const token = cookie.get("token");
+    const config = {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    };
+    try {
+      dispatch({ type: ADMIN_GET_ALL_POSITION_REQUEST });
+      const { data } = await axios.get(
+        `${urlConfig.proxyUrl.PROXYURL}api/positions?page=${page}&perPage=${perPage}`,
+        config
+      );
+      dispatch({ type: ADMIN_GET_ALL_POSITION_SUCCESS, payload: data });
+    } catch (error) {
+      dispatch({
+        type: ADMIN_GET_ALL_POSITION_FAIL,
+        payload:
+          error?.response &&
+          (error?.response?.data?.detail || error?.response?.data?.errors)
+            ? error?.response?.data?.detail ||
+              error?.response?.data?.errors?.map((el) => el?.msg)?.join(" ")
+            : error?.message,
+      });
+    }
   };
-  try {
-    dispatch({ type: ADMIN_GET_ALL_POSITION_REQUEST });
-    const { data } = await axios.get(`${proxyUrl}/api/positions`, config);
-    dispatch({ type: ADMIN_GET_ALL_POSITION_SUCCESS, payload: data });
-  } catch (error) {
-    dispatch({
-      type: ADMIN_GET_ALL_POSITION_FAIL,
-      payload:
-        error?.response &&
-        (error?.response?.data?.detail || error?.response?.data?.errors)
-          ? error?.response?.data?.detail ||
-            error?.response?.data?.errors?.map((el) => el?.msg)?.join(" ")
-          : error?.message,
-    });
-  }
-};
 
 export const adminCreatePosition = (departId, formData) => async (dispatch) => {
   const token = cookie.get("token");
@@ -56,7 +64,7 @@ export const adminCreatePosition = (departId, formData) => async (dispatch) => {
     });
     const body = JSON.stringify(formData);
     await axios.post(
-      `${proxyUrl}/api/positions/${departId}/create`,
+      `${urlConfig.proxyUrl.PROXYURL}api/positions/${departId}/create`,
       body,
       config
     );
@@ -66,6 +74,41 @@ export const adminCreatePosition = (departId, formData) => async (dispatch) => {
   } catch (error) {
     dispatch({
       type: ADMIN_CREATE_POSITION_FAIL,
+      payload:
+        error?.response &&
+        (error?.response?.data?.detail || error?.response?.data?.errors)
+          ? error?.response?.data?.detail ||
+            error?.response?.data?.errors?.map((el) => el?.msg)?.join(" ")
+          : error?.message,
+    });
+  }
+};
+
+export const adminCreateBulkPosition = (formData) => async (dispatch) => {
+  const token = cookie.get("token");
+  const config = {
+    headers: {
+      "Content-Type": "multipart/form-data",
+      Authorization: `Bearer ${token}`,
+    },
+  };
+
+  try {
+    dispatch({
+      type: ADMIN_CREATE_BULK_POSITION_REQUEST,
+    });
+    const body = formData;
+    await axios.post(
+      `${urlConfig.proxyUrl.PROXYURL}api/positions/create-bulk`,
+      body,
+      config
+    );
+    dispatch({
+      type: ADMIN_CREATE_BULK_POSITION_SUCCESS,
+    });
+  } catch (error) {
+    dispatch({
+      type: ADMIN_CREATE_BULK_POSITION_FAIL,
       payload:
         error?.response &&
         (error?.response?.data?.detail || error?.response?.data?.errors)
@@ -92,7 +135,7 @@ export const adminUpdatePositionById =
       });
       const body = JSON.stringify(formData);
       await axios.patch(
-        `${proxyUrl}/api/positions/${postId}/${departId}/update`,
+        `${urlConfig.proxyUrl.PROXYURL}api/positions/${postId}/${departId}/update`,
         body,
         config
       );
@@ -123,7 +166,7 @@ export const adminDeletePositionById = (postId) => async (dispatch) => {
     dispatch({
       type: ADMIN_DELETE_POSITION_BY_ID_REQUEST,
     });
-    await axios.delete(`${proxyUrl}/api/positions/${postId}`, config);
+    await axios.delete(`${urlConfig.proxyUrl.PROXYURL}api/positions/${postId}`, config);
     dispatch({
       type: ADMIN_DELETE_POSITION_BY_ID_SUCCESS,
     });

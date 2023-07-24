@@ -21,6 +21,7 @@ import {
   CEO_APPROVE_BANKSCHEDULES_REQUEST,
   CEO_APPROVE_BANKSCHEDULES_RESET,
   CEO_APPROVE_BANKSCHEDULES_SUCCESS,
+  ACCOUNTANT_GET_APPROVED_BANKSCHEDULE_VOUCHERS_RESET,
 } from "../types/bankschedules";
 
 export const ceoGetNotApprovedBankSchedulesReducer = (state = {}, action) => {
@@ -113,7 +114,7 @@ export const accountantGetBankschedulesReducer = (state = {}, action) => {
         isLoading: false,
         error: payload,
       };
-      
+
     default:
       return state;
   }
@@ -212,6 +213,8 @@ export const accountantGetApprovedBankScheduleVouchersReducer = (
         isLoading: false,
         error: payload,
       };
+    case ACCOUNTANT_GET_APPROVED_BANKSCHEDULE_VOUCHERS_RESET:
+      return {};
 
     default:
       return state;

@@ -29,8 +29,8 @@ import { Spinner, Successful } from "../../modals";
 
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
+import { urlConfig } from "../../util/config/config";
 
-const proxyUrl = process.env.REACT_APP_PROXY_URL;
 
 const SignUp = () => {
   const theme = useTheme();
@@ -48,6 +48,7 @@ const SignUp = () => {
   const history = useHistory();
 
   const [fileName, setFileName] = useState(null);
+  const [file, setFile] = useState(null);
   const [showError, setShowError] = useState(null);
   const [formData, setFormData] = useState({
     name: "",
@@ -88,7 +89,7 @@ const SignUp = () => {
       history.push("dashboard");
     }
 
-    if (!adminRegister?.isLoading && !adminRegister?.error) {
+    if (!adminRegister?.isLoading && adminRegister?.error) {
       setFormData({
         name: "",
         logo: "",
@@ -98,7 +99,7 @@ const SignUp = () => {
         contactPersonMobile: "",
         companyAddress: "",
         createdBy: "",
-        authType: "",
+        // authType: "",
         password: "",
       });
     }
@@ -123,11 +124,25 @@ const SignUp = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    const formData = new FormData();
+    formData.append("logo", file);
+    formData.append("name", name);
+    formData.append("contactPersonfirstName", contactPersonfirstName);
+    formData.append("contactPersonlastName", contactPersonlastName);
+    formData.append("contactPersonEmail", contactPersonEmail);
+    formData.append("contactPersonMobile", contactPersonMobile);
+    formData.append("companyAddress", companyAddress);
+    formData.append("role", role);
+    // formData.append("authType", authType);
+    formData.append("password", password);
     dispatch(registerFunc(formData));
+    // dispatch(registerFunc(formData));
   };
 
   const getCloudinaryKeys = async () => {
-    const { data } = await axios.get(`${proxyUrl}/api/cloudinary/keys`);
+    const { data } = await axios.get(
+      `${urlConfig.proxyUrl.PROXYURL}api/cloudinary/keys`
+    );
     return data;
   };
 
@@ -173,6 +188,7 @@ const SignUp = () => {
         // extFile === "svg" ||
         // extFile === "gif"
       ) {
+        setFile(e.target.files[0]);
         onUploadSignature(selectedFile);
       } else {
         setShowError("Only jpg, jpeg and png files are allowed!");

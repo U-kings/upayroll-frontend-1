@@ -15,7 +15,7 @@ import {
   ADMIN_DELETE_STAFFLEVEL_SUCCESS,
 } from "../types/stafflevel";
 
-const proxyUrl = process.env.REACT_APP_PROXY_URL;
+import { urlConfig } from "../util/config/config";
 
 export const adminGetAllStaffLevels = () => async (dispatch) => {
   const token = cookie.get("token");
@@ -28,7 +28,7 @@ export const adminGetAllStaffLevels = () => async (dispatch) => {
     dispatch({
       type: ADMIN_GET_ALL_STAFFLEVEL_REQUEST,
     });
-    const { data } = await axios.get(`${proxyUrl}/api/stafflevel`, config);
+    const { data } = await axios.get(`${urlConfig.proxyUrl.PROXYURL}api/stafflevel`, config);
     dispatch({ type: ADMIN_GET_ALL_STAFFLEVEL_SUCCESS, payload: data });
   } catch (error) {
     dispatch({
@@ -57,7 +57,7 @@ export const adminCreateStaffLevel = (formData) => async (dispatch) => {
       type: ADMIN_CREATE_STAFFLEVEL_REQUEST,
     });
     const body = JSON.stringify(formData);
-    await axios.post(`${proxyUrl}/api/stafflevel`, body, config);
+    await axios.post(`${urlConfig.proxyUrl.PROXYURL}api/stafflevel`, body, config);
     dispatch({ type: ADMIN_CREATE_STAFFLEVEL_SUCCESS });
   } catch (error) {
     dispatch({
@@ -88,7 +88,7 @@ export const adminUpdateStaffLevel = (formData, id) => async (dispatch) => {
       type: ADMIN_UPDATE_STAFFLEVEL_REQUEST,
     });
     const body = JSON.stringify(formData);
-    await axios.patch(`${proxyUrl}/api/stafflevel/${id}`, body, config);
+    await axios.patch(`${urlConfig.proxyUrl.PROXYURL}api/stafflevel/${id}`, body, config);
     dispatch({ type: ADMIN_UPDATE_STAFFLEVEL_SUCCESS });
     dispatch(adminGetAllStaffLevels());
   } catch (error) {
@@ -116,7 +116,7 @@ export const adminDeleteStaffLevel = (id) => async (dispatch) => {
       type: ADMIN_DELETE_STAFFLEVEL_REQUEST,
     });
 
-    await axios.delete(`${proxyUrl}/api/stafflevel/${id}`, config);
+    await axios.delete(`${urlConfig.proxyUrl.PROXYURL}api/stafflevel/${id}`, config);
     dispatch({ type: ADMIN_DELETE_STAFFLEVEL_SUCCESS });
     dispatch(adminGetAllStaffLevels());
   } catch (error) {

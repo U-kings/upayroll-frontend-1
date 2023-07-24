@@ -31,6 +31,7 @@ import {
   AUDITOR_REJECT_NOT_APPROVED_PAYSLIPS_RESET,
   CEO_REJECT_PRE_APPROVED_PAYSLIPS_RESET,
   AUDITOR_AND_CEO_REJECT_EXCEL_PAYSLIPS_RESET,
+  ADMIN_GENERATE_BULK_PAYSLIPS_ALL_RESET,
 } from "../../types/payslip";
 import { CEO_APPROVE_BANKSCHEDULES_RESET } from "../../types/bankschedules";
 import { useHistory } from "react-router-dom";
@@ -75,8 +76,11 @@ const Comfirm = ({
   stepsId,
   setStepsId,
   isGen,
+  allIsGen,
   setIsGen,
+  setAllIsGen,
   genPayslipAct,
+  genAllPayslipAct,
   delEmployeesFunc,
   setDelBulk,
   delBulk,
@@ -187,6 +191,11 @@ const Comfirm = ({
     error: generatePayslipError,
     isLoading: generatePayslipLoading,
   } = useSelector((state) => state.adminGeneratePayslip);
+  const {
+    success: generateAllBulkPayslipSuccess,
+    error: generateAllBulkPayslipError,
+    isLoading: generateAllBulkPayslipLoading,
+  } = useSelector((state) => state.adminGenerateBulkPayslipsAll);
 
   const {
     success: deleteSalarySlipSuccess,
@@ -350,6 +359,9 @@ const Comfirm = ({
     if (isGen) {
       genPayslipAct();
     }
+    if (allIsGen) {
+      genAllPayslipAct();
+    }
 
     if (delBulk) {
       delEmployeesFunc();
@@ -421,6 +433,9 @@ const Comfirm = ({
     setIsOpen4(false);
     if (isGen) {
       setIsGen(false);
+    }
+    if (allIsGen) {
+      setAllIsGen(false);
     }
     if (delBulk) {
       setDelBulk(false);
@@ -520,11 +535,18 @@ const Comfirm = ({
       dispatch({ type: ADMIN_DELETE_MONTHLYPAYHEADS_RESET });
       setMonthlyPayheadId(null);
       setIsOpen4(false);
-    } else if (generateBulkPayslipSuccess && !generateBulkPayslipError) {
+    } else if (
+      (generateBulkPayslipSuccess && !generateBulkPayslipError) ||
+      generateAllBulkPayslipError
+    ) {
       dispatch({ type: ADMIN_GENERATE_BULK_PAYSLIPS_RESET });
+      dispatch({ type: ADMIN_GENERATE_BULK_PAYSLIPS_ALL_RESET });
 
       history.push("payroll");
-    } else if (generatePayslipSuccess && !generatePayslipError) {
+    } else if (
+      (generatePayslipSuccess && !generatePayslipError) ||
+      generateAllBulkPayslipSuccess
+    ) {
       dispatch({ type: GENERATE_PAYSLIP_RESET });
 
       history.push("payroll");
@@ -696,9 +718,9 @@ const Comfirm = ({
       {deleteStaffLevelLoading && <LoadingSpinner toggle={toggle} />}
       {deleteMonthlyPayheadLoading && <LoadingSpinner toggle={toggle} />}
       {deleteBulkEmployeeLoading && <LoadingSpinner toggle={toggle} />}
-      {(generateBulkPayslipLoading || generatePayslipLoading) && (
-        <LoadingSpinner toggle={toggle} />
-      )}
+      {(generateBulkPayslipLoading ||
+        generatePayslipLoading ||
+        generateAllBulkPayslipLoading) && <LoadingSpinner toggle={toggle} />}
       {(adminDeleteBulkPayslipLoading || deleteSalarySlipLoading) && (
         <LoadingSpinner toggle={toggle} />
       )}
@@ -794,12 +816,17 @@ const Comfirm = ({
       />
       <Successful
         isOpen7={
-          generateBulkPayslipSuccess &&
-          !generateBulkPayslipError &&
-          !generateBulkPayslipLoading
+          (generateBulkPayslipSuccess &&
+            !generateBulkPayslipError &&
+            !generateBulkPayslipLoading) ||
+          generateAllBulkPayslipSuccess
         }
         popup7={popup7}
-        message="Bulk payslips generated successfully!"
+        message={
+          generateAllBulkPayslipSuccess
+            ? "All Payslip generated successfully"
+            : "Bulk payslips generated successfully!"
+        }
       />
       <Successful
         isOpen7={
@@ -1062,7 +1089,12 @@ const Comfirm = ({
             !uploadBulk &&
             !approvedBankScheduleBulk && (
               <h2>
-                {isGen ? "Generate Selected Item" : "Delete Selected Item"}
+                {isGen && !allIsGen
+                  ? "Generate Selected Item"
+                  : !isGen && !allIsGen
+                  ? "Delete Selected Item"
+                  : ""}
+                {allIsGen && !isGen ? "Generate All Payroll" : ""}
               </h2>
             )}
           <h2>

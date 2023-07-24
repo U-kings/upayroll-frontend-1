@@ -18,6 +18,7 @@ import usePasswordToggle from "../../hooks/PasswordToggle/usePasswordToggle";
 import { COLORS } from "../../values/colors";
 import axios from "axios";
 import { Box } from "@mui/material";
+import { urlConfig } from "../../util/config/config";
 
 const ProfileSettings = ({
   toggle,
@@ -27,7 +28,6 @@ const ProfileSettings = ({
 }) => {
   const dispatch = useDispatch();
   const history = useHistory();
-  const proxyUrl = process.env.REACT_APP_PROXY_URL;
   // redux state
   const { adminInfo } = useSelector((state) => state.adminLoginStatus);
   const { isLoading: loadingAdminDetails, error: adminDetailsError } =
@@ -54,6 +54,8 @@ const ProfileSettings = ({
   const [signatureImage, setSignatureImage] = useState(null);
   const [profileImage, setProfileImage] = useState(null);
   const [fileName, setFileName] = useState(null);
+  const [file, setFile] = useState(null);
+  const [file2, setFile2] = useState(null);
   const [showError, setShowError] = useState(null);
   const [userRole] = useState(adminInfo?.user?.role || "");
   const [eSignature] = useState(adminInfo?.user?.signaturePhoto || "");
@@ -97,55 +99,63 @@ const ProfileSettings = ({
     }
   }, [dispatch, adminDetailsError, updateError]);
 
-  const [passwordError, setPasswordError] = useState(false);
-  useEffect(() => {
-    setTimeout(() => {
-      setPasswordError(false);
-    }, 5000);
-  }, [passwordError]);
   const onSubmit = (e) => {
     e.preventDefault();
     if (confirmPassword !== newPassword) {
-      setPasswordError(true);
+      setShowError("Password do not match");
     } else {
-      dispatch(
-        adminUpdateDetails({
-          name,
-          email,
-          oldPassword,
-          newPassword,
-          photo: profileImage,
-        })
-      );
+      const formData = new FormData();
+      formData.append("name", name);
+      formData.append("email", email);
+      formData.append("oldPassword", oldPassword);
+      formData.append("newPassword", newPassword);
+      formData.append("photo", file);
+
+      dispatch(adminUpdateDetails(formData));
+      // dispatch(
+      //   adminUpdateDetails({
+      //     name,
+      //     email,
+      //     oldPassword,
+      //     newPassword,
+      //     photo: profileImage,
+      //   })
+      // );
     }
   };
 
   const getCloudinaryKeys = async () => {
-    const { data } = await axios.get(`${proxyUrl}/api/cloudinary/keys`);
+    const { data } = await axios.get(
+      `${urlConfig.proxyUrl.PROXYURL}api/cloudinary/keys`
+    );
     return data;
   };
 
   const onUploadSignature = async () => {
-    //do whatever you want to do
-    try {
-      const cloudinaryRes = await getCloudinaryKeys();
-      const formData = new FormData();
-      formData.append("file", signatureImage);
-      formData.append("upload_preset", "upayroll");
-      formData.append("cloud_name", cloudinaryRes.cloudinaryKeyName);
+    //up signature to database.
 
-      const res = await fetch(
-        `https://api.cloudinary.com/v1_1/${cloudinaryRes.cloudinaryKeyName}/image/upload`,
-        {
-          method: "post",
-          body: formData,
-        }
-      );
-      const data = await res.json();
-      dispatch(ceoUploadSignatureFunc(data.secure_url));
-    } catch (error) {
-      setShowError(error.message);
-    }
+    const formData = new FormData();
+    formData.append("signature", file2);
+    dispatch(ceoUploadSignatureFunc(formData));
+
+    // try {
+    //   const cloudinaryRes = await getCloudinaryKeys();
+    //   const formData = new FormData();
+    //   formData.append("file", signatureImage);
+    //   formData.append("upload_preset", "upayroll");
+    //   formData.append("cloud_name", cloudinaryRes.cloudinaryKeyName);
+    //   const res = await fetch(
+    //     `https://api.cloudinary.com/v1_1/${cloudinaryRes.cloudinaryKeyName}/image/upload`,
+    //     {
+    //       method: "post",
+    //       body: formData,
+    //     }
+    //   );
+    //   const data = await res.json();
+    //   dispatch(ceoUploadSignatureFunc(data.secure_url));
+    // } catch (error) {
+    //   setShowError(error.message);
+    // }
   };
 
   useEffect(() => {
@@ -165,7 +175,7 @@ const ProfileSettings = ({
       dispatch({ type: CEO_UPLOAD_SIGNATURE_IMAGE_RESET });
       setSignatureImage(null);
       setFileName(null);
-      history.push("profile-settings");
+      // history.push("profile-settings");
     }
     if (updateAdminDetailsSuccess) {
       dispatch({ type: ADMIN_UPDATE_LOGGEDIN_DETAILS_RESET });
@@ -203,10 +213,12 @@ const ProfileSettings = ({
         switch (name) {
           case "profile":
             getImageUrl(selectedFile);
+            setFile(e.target.files[0]);
             // setProfileImage(selectedFile);
 
             break;
           case "signature":
+            setFile2(e.target.files[0]);
             setSignatureImage(selectedFile);
             setFileName(selectedFile?.name);
 
@@ -297,13 +309,7 @@ const ProfileSettings = ({
               {!updateLoading && updateError && (
                 <ErrorBox errorMessage={updateError} />
               )}
-              {passwordError && (
-                <ErrorBox
-                  errorMessage={
-                    passwordError === true ? "Password do not match" : ""
-                  }
-                />
-              )}
+              {showError && <ErrorBox errorMessage={showError} />}
               <form autoComplete="off">
                 <div className="row2">
                   <div>

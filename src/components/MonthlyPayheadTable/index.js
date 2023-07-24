@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { DropdownList } from "..";
+import { DropdownList, ErrorBox } from "..";
 import { Container } from "../../styles/library";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useDispatch, useSelector } from "react-redux";
@@ -145,7 +145,13 @@ const MonthlyPayheadTable = ({ toggle }) => {
     if (createMonthlyPayheadSuccess) {
       dispatch(adminGetAllMonthlyPayheads());
     }
-  }, [dispatch, createMonthlyPayheadSuccess]);
+
+    if (createMonthlyPayheadError) {
+      setTimeout(() => {
+        dispatch({ type: ADMIN_CREATE_MONTHLYPAYHEADS_RESET });
+      }, 4000);
+    }
+  }, [dispatch, createMonthlyPayheadSuccess, createMonthlyPayheadError]);
 
   return (
     <>
@@ -163,7 +169,8 @@ const MonthlyPayheadTable = ({ toggle }) => {
         message="Monthly Payhead Updated Successfully!"
       />
       {monthlyPayheadId && (
-        <Comfirm toggle={toggle}
+        <Comfirm
+          toggle={toggle}
           isOpen4={isOpen4}
           popup4={popup4}
           setIsOpen4={setIsOpen4}
@@ -175,6 +182,9 @@ const MonthlyPayheadTable = ({ toggle }) => {
         <h1>Monthly Pay Heads </h1>
         <div className="container__content">
           <div className="form__content">
+            {createMonthlyPayheadError && (
+              <ErrorBox errorMessage={createMonthlyPayheadError} />
+            )}
             <form className="global__form" onSubmit={onSave}>
               <div className="label__group">
                 <label>Name</label>

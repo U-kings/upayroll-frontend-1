@@ -88,7 +88,7 @@ const AddEmployee = ({
   const [salaryLevel, setSalaryLevel] = useState(null);
   const [salaryStep, setSalaryStep] = useState(null);
   const [notch, setNotch] = useState(null);
-  const [contractSalary, setContractSalary] = useState(0);
+  // const [contractSalary, setContractSalary] = useState(0);
   const [userRole] = useState(adminInfo?.user?.role || "");
 
   const [bankCode, setBankCode] = useState(null);
@@ -112,7 +112,7 @@ const AddEmployee = ({
     joinDate: "",
     employeeBankAcctNumber: "",
     accountName: "",
-    contractSalary: 0,
+    // contractSalary: 0,
   });
   const [errors, setErrors] = useState({});
 
@@ -159,7 +159,7 @@ const AddEmployee = ({
       const position = selectedOption4;
       dispatch(
         adminCreateEmployee(
-          position?.department?.id,
+          position?.departmentId,
           position?.id,
 
           {
@@ -170,7 +170,7 @@ const AddEmployee = ({
             gender: selectedOption,
             employeeType: selectedOption2,
             employeeBank: selectedOption5?.name,
-            contractSalary: contractSalary ? contractSalary : null,
+            // contractSalary: contractSalary ? contractSalary : null,
             notchId: notch && notch.name !== "No Notch" ? notch?.id : null,
             salaryStepId: salaryStep?.id,
             salaryLevelId: salaryStep?.salaryLevelId,
@@ -376,7 +376,7 @@ const AddEmployee = ({
         employeeBankAcctNumber: "",
         accountName: "",
       });
-      setContractSalary(0);
+      // setContractSalary(0);
       setSelectedOption(null);
       setSelectedOption2(null);
       setSelectedOption3(null);
@@ -386,7 +386,9 @@ const AddEmployee = ({
       setSalaryStep(null);
       setNotch(null);
     }
-    setIsOpen7(false);
+    if (setIsOpen7 === true) {
+      setIsOpen7(false);
+    }
   };
 
   useEffect(() => {
@@ -429,7 +431,7 @@ const AddEmployee = ({
   }, [dispatch, employeeBankAcctNumber, bankCode, employeeAccountName]);
 
   useEffect(() => {
-    if (employeeBankAcctNumber?.length !== 10 || !bankCode) {
+    if (employeeBankAcctNumber?.length !== 10 && !bankCode) {
       setEmployeeFormData({
         ...employeeFormData,
         accountName: "",
@@ -680,99 +682,99 @@ const AddEmployee = ({
               <input type="text" placeholder="Country" />
             </div> */}
           </div>
-          {selectedOption2 !== "Contract" &&
+          {/* {selectedOption2 !== "Contract" &&
             selectedOption2 !== "Intern" &&
             selectedOption2 && (
-              <>
-                <div className="input__row">
-                  <div className="label__group">
-                    <label>Salary Grade </label>
-                    <DropdownList
-                      list={true}
-                      isOpen={isOpenSalaryGrade}
-                      toggling={togglingSalaryGrade}
-                      selectedOption={salaryGrade}
-                      text="-- Select a Salary Grade"
-                      dataSet={salaryGrades}
-                      onOptionClicked={onOptionClickedSalaryGrade}
-                    />
-                    <span className="error">
-                      {!salaryGrade ? "*salary grade is required" : ""}
-                    </span>
-                  </div>
-                  <div className="label__group">
-                    <label>Salary Level </label>
-                    <DropdownList
-                      list={true}
-                      isOpen={isOpenSalaryLevel}
-                      toggling={togglingSalaryLevel}
-                      selectedOption={salaryLevel}
-                      text="-- Select a Salary Level"
-                      dataSet={salaryLevels}
-                      onOptionClicked={onOptionClickedSalarylevel}
-                    />
-                    <span className="error">
-                      {!salaryLevel ? "*salary level is required" : ""}
-                    </span>
-                  </div>
-                  {/* <div className="label__group">
+              <> */}
+          <div className="input__row">
+            <div className="label__group">
+              <label>Salary Grade </label>
+              <DropdownList
+                list={true}
+                isOpen={isOpenSalaryGrade}
+                toggling={togglingSalaryGrade}
+                selectedOption={salaryGrade}
+                text="-- Select a Salary Grade"
+                dataSet={salaryGrades}
+                onOptionClicked={onOptionClickedSalaryGrade}
+              />
+              <span className="error">
+                {!salaryGrade ? "*salary grade is required" : ""}
+              </span>
+            </div>
+            <div className="label__group">
+              <label>Salary Level </label>
+              <DropdownList
+                list={true}
+                isOpen={isOpenSalaryLevel}
+                toggling={togglingSalaryLevel}
+                selectedOption={salaryLevel}
+                text="-- Select a Salary Level"
+                dataSet={salaryLevels}
+                onOptionClicked={onOptionClickedSalarylevel}
+              />
+              <span className="error">
+                {!salaryLevel ? "*salary level is required" : ""}
+              </span>
+            </div>
+            {/* <div className="label__group">
               <label>Country</label>
               <input type="text" placeholder="Country" />
             </div> */}
-                </div>
+          </div>
 
-                <div className="input__row">
-                  <div className="label__group">
-                    <label>Salary Step </label>
-                    <DropdownList
-                      list={true}
-                      isOpen={isOpenSalaryStep}
-                      toggling={togglingSalaryStep}
-                      selectedOption={salaryStep}
-                      text="-- Select a Salary Step"
-                      dataSet={salarySteps}
-                      onOptionClicked={onOptionClickedSalaryStep}
-                    />
-                    <span className="error">
-                      {!salaryStep ? "*salary step is required" : ""}
-                    </span>
-                  </div>
+          <div className="input__row">
+            <div className="label__group">
+              <label>Salary Step </label>
+              <DropdownList
+                list={true}
+                isOpen={isOpenSalaryStep}
+                toggling={togglingSalaryStep}
+                selectedOption={salaryStep}
+                text="-- Select a Salary Step"
+                dataSet={salarySteps}
+                onOptionClicked={onOptionClickedSalaryStep}
+              />
+              <span className="error">
+                {!salaryStep ? "*salary step is required" : ""}
+              </span>
+            </div>
 
-                  <div className="label__group">
-                    <label>Notch </label>
-                    <DropdownList
-                      list={true}
-                      isOpen={isOpenNotch}
-                      toggling={togglingNotch}
-                      selectedOption={notch}
-                      text="-- Select a Notch Level"
-                      dataSet={
-                        salaryStep?.notches
-                          ? [
-                              {
-                                id: "238HS4329D",
-                                name: "No Notch",
-                                amount: 0,
-                                stepId: null,
-                              },
-                              ...salaryStep?.notches,
-                            ]
-                          : salaryStep?.notches
-                      }
-                      onOptionClicked={onOptionClickedNotch}
-                    />
-                    <span className="error">&nbsp;</span>
-                  </div>
+            <div className="label__group">
+              <label>Notch </label>
+              <DropdownList
+                list={true}
+                isOpen={isOpenNotch}
+                toggling={togglingNotch}
+                selectedOption={notch}
+                text="-- Select a Notch Level"
+                dataSet={
+                  salaryStep?.notches
+                    ? [
+                        {
+                          id: "238HS4329D",
+                          name: "No Notch",
+                          amount: 0,
+                          stepId: null,
+                        },
+                        ...salaryStep?.notches,
+                      ]
+                    : salaryStep?.notches
+                }
+                onOptionClicked={onOptionClickedNotch}
+              />
+              <span className="error">&nbsp;</span>
+            </div>
 
-                  {/* <div className="label__group">
+            {/* <div className="label__group">
               <label>Country</label>
               <input type="text" placeholder="Country" />
             </div> */}
-                </div>
-              </>
-            )}
+          </div>
+          {/* </>
+            )} */}
 
-          {(selectedOption2 === "Intern" || selectedOption2 === "Contract") && (
+          {/* {(selectedOption2 === "Intern" || selectedOption2 === "Contract") && (
             <>
               <div className="input__row">
                 <div className="label__group">
@@ -790,7 +792,7 @@ const AddEmployee = ({
                 </div>
               </div>
             </>
-          )}
+          )} */}
 
           <div className="input__row">
             <div className="label__group">
@@ -858,9 +860,12 @@ const AddEmployee = ({
               !selectedOption3 ||
               !selectedOption4 ||
               createLoading ||
-              (selectedOption2 !== "Contract" && selectedOption2 !== "Intern"
-                ? !salaryGrade || !salaryLevel || !salaryStep
-                : !contractSalary) ||
+              !salaryGrade ||
+              !salaryLevel ||
+              !salaryStep ||
+              // (selectedOption2 !== "Contract" && selectedOption2 !== "Intern"
+              //   ? !salaryGrade || !salaryLevel || !salaryStep
+              //   : !contractSalary) ||
               !isObjectEmpty(employeeDataValidation(employeeFormData))
                 ? "disabled__btn margin__top"
                 : "add__emp"
@@ -874,10 +879,14 @@ const AddEmployee = ({
               !selectedOption4 ||
               !selectedOption5 ||
               createLoading ||
-              (selectedOption2 !== "Contract" && selectedOption2 !== "Intern"
-                ? !salaryGrade || !salaryLevel || !salaryStep
-                : !contractSalary) ||
+              !salaryGrade ||
+              !salaryLevel ||
+              !salaryStep ||
               !isObjectEmpty(employeeDataValidation(employeeFormData))
+              // (selectedOption2 !== "Contract" && selectedOption2 !== "Intern"
+              //   ? !salaryGrade || !salaryLevel || !salaryStep
+              //   : !contractSalary) ||
+              // !isObjectEmpty(employeeDataValidation(employeeFormData))
             }
             value="Add Employee"
           />

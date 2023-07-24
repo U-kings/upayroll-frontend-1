@@ -15,7 +15,7 @@ import {
 // import { cookieTokenValidFunc } from "../actions/auth";
 import { hrGetSalaryStepsFunc } from "./salarysteps";
 
-const proxyUrl = process.env.REACT_APP_PROXY_URL;
+import { urlConfig } from "../util/config/config";
 
 export const hrGetBasePayFunc = () => async (dispatch) => {
   const token = cookie.get("token");
@@ -27,7 +27,7 @@ export const hrGetBasePayFunc = () => async (dispatch) => {
   };
   try {
     dispatch({ type: HR_GET_BASEPAY_REQUEST });
-    const { data } = await axios.get(`${proxyUrl}/api/basepay`, config);
+    const { data } = await axios.get(`${urlConfig.proxyUrl.PROXYURL}api/basepay`, config);
     dispatch({ type: HR_GET_BASEPAY_SUCCESS, payload: data });
   } catch (error) {
     dispatch({
@@ -55,7 +55,7 @@ export const hrCreateBasePayFunc = (formData) => async (dispatch) => {
   try {
     dispatch({ type: HR_CREATE_BASEPAY_REQUEST });
     const body = JSON.stringify({ ...formData, companyId: companyId });
-    await axios.post(`${proxyUrl}/api/basepay`, body, config);
+    await axios.post(`${urlConfig.proxyUrl.PROXYURL}api/basepay`, body, config);
     dispatch({ type: HR_CREATE_BASEPAY_SUCCESS });
     dispatch(hrGetBasePayFunc());
   } catch (error) {
@@ -84,7 +84,7 @@ export const hrUpdateBasePayFunc =
     try {
       dispatch({ type: HR_UPDATE_BASEPAY_BY_ID_REQUEST });
       const body = JSON.stringify({ ...formData, companyId: companyId });
-      await axios.patch(`${proxyUrl}/api/basepay/${basePayId}`, body, config);
+      await axios.patch(`${urlConfig.proxyUrl.PROXYURL}api/basepay/${basePayId}`, body, config);
       dispatch({ type: HR_UPDATE_BASEPAY_BY_ID_SUCCESS });
       dispatch(hrGetBasePayFunc());
       dispatch(hrGetSalaryStepsFunc());

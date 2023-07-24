@@ -14,6 +14,7 @@ import { useHistory } from "react-router-dom";
 
 import { getDashboardReportSummaryFunc } from "../../actions/dashboard";
 import { LoadingSpinner } from "../../modals";
+import { commafy } from "../../hooks/calculations/paySlip";
 // import { logoutAdmin } from "../../actions/auth";
 // // import { element } from "prop-types";
 // import { useMonthlyPayhead } from "../../hooks/calculations/useMonthlyPayhead";
@@ -59,7 +60,9 @@ const Dashboard = ({
     if (!adminInfo?.isAuthenticated && !adminInfo?.user?.name) {
       history.push("/signin");
     } else {
+      // setTimeout(() => {
       dispatch(getDashboardReportSummaryFunc());
+      // }, 3000);
     }
 
     const requiresPasswordChange = cookie.get("requiresPasswordChange");
@@ -116,7 +119,7 @@ const Dashboard = ({
                           className="icons2"
                           icon={["fas", "users"]}
                         />
-                        <p>{reports?.employees}</p>
+                        <p>{commafy(reports?.employees)}</p>
                       </div>
                     </Box>
                     <Box className="b2">
@@ -126,7 +129,7 @@ const Dashboard = ({
                           className="icons2"
                           icon={["fas", "money-check"]}
                         />
-                        <p>{reports?.payrolls}</p>
+                        <p>{commafy(reports?.payrolls)}</p>
                       </div>
                     </Box>
                     {/* <Box className="b3">
@@ -139,6 +142,16 @@ const Dashboard = ({
                         <p>{reports?.loanRequests}</p>
                       </div>
                     </Box> */}
+                    <Box style={{ flex: "1" }} className="b3">
+                      <p>Vouchers</p>
+                      <div className="row2 margin__top">
+                        <FontAwesomeIcon
+                          className="icons2"
+                          icon={["fas", "clipboard-list"]}
+                        />
+                        <p>{commafy(0)}</p>
+                      </div>
+                    </Box>
                   </div>
                   <div className="row2 margin__top">
                     <Box className="b4">
@@ -148,7 +161,7 @@ const Dashboard = ({
                           className="icons2"
                           icon={["fas", "house-user"]}
                         />
-                        <p>{reports?.departments}</p>
+                        <p>{commafy(reports?.departments)}</p>
                       </div>
                     </Box>
                     <Box style={{ flex: "1" }} className="b5">
@@ -168,7 +181,7 @@ const Dashboard = ({
                           className="icons2"
                           icon={["fas", "clipboard-list"]}
                         />
-                        <p>{reports?.bankSchedules}</p>
+                        <p>{commafy(reports?.bankSchedules)}</p>
                       </div>
                     </Box>
                   </div>
@@ -183,7 +196,7 @@ const Dashboard = ({
                           className="icons2"
                           icon={["fas", "file-invoice-dollar"]}
                         />
-                        <p>75</p>
+                        {/* <p>75</p> */}
                       </div>
                     </Box>
                     {/* <Box style={{ flex: "1" }} className="b3">

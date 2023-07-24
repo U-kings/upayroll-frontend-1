@@ -38,7 +38,9 @@ const ErrorBox = ({ errorMessage, fixed }) => {
 
   useEffect(() => {
     setTimeout(() => {
-      setError(null);
+      if (error) {
+        setError(null);
+      }
     }, 5000);
     // eslint-disable-next-line
   }, []);

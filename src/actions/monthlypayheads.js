@@ -16,7 +16,7 @@ import {
 } from "../types/monthlypayheads";
 // import { cookieTokenValidFunc } from "./auth";
 
-const proxyUrl = process.env.REACT_APP_PROXY_URL;
+import { urlConfig } from "../util/config/config";
 
 export const adminGetAllMonthlyPayheads = () => async (dispatch) => {
   const token = cookie.get("token");
@@ -27,7 +27,7 @@ export const adminGetAllMonthlyPayheads = () => async (dispatch) => {
   };
   try {
     dispatch({ type: ADMIN_GET_MONTHLYPAYHEADS_REQUEST });
-    const { data } = await axios.get(`${proxyUrl}/api/monthlypayhead`, config);
+    const { data } = await axios.get(`${urlConfig.proxyUrl.PROXYURL}api/monthlypayhead`, config);
     dispatch({ type: ADMIN_GET_MONTHLYPAYHEADS_SUCCESS, payload: data });
   } catch (error) {
     dispatch({
@@ -54,7 +54,7 @@ export const adminCreateMonthlyPayhead = (formData) => async (dispatch) => {
   try {
     dispatch({ type: ADMIN_CREATE_MONTHLYPAYHEADS_REQUEST });
     const body = JSON.stringify(formData);
-    await axios.post(`${proxyUrl}/api/monthlypayhead`, body, config);
+    await axios.post(`${urlConfig.proxyUrl.PROXYURL}api/monthlypayhead`, body, config);
     dispatch({ type: ADMIN_CREATE_MONTHLYPAYHEADS_SUCCESS });
   } catch (error) {
     dispatch({
@@ -82,7 +82,7 @@ export const adminUpdateMonthlyPayheadById =
     try {
       dispatch({ type: ADMIN_UPDATE_MONTHLYPAYHEADS_REQUEST });
       const body = JSON.stringify(formData);
-      await axios.patch(`${proxyUrl}/api/monthlypayhead/${id}`, body, config);
+      await axios.patch(`${urlConfig.proxyUrl.PROXYURL}api/monthlypayhead/${id}`, body, config);
       dispatch({ type: ADMIN_UPDATE_MONTHLYPAYHEADS_SUCCESS });
       dispatch(adminGetAllMonthlyPayheads());
     } catch (error) {
@@ -105,7 +105,7 @@ export const adminDeleteMonthlyPayheadById = (id) => async (dispatch) => {
   };
   try {
     dispatch({ type: ADMIN_DELETE_MONTHLYPAYHEADS_REQUEST });
-    await axios.delete(`${proxyUrl}/api/monthlypayhead/${id}`, config);
+    await axios.delete(`${urlConfig.proxyUrl.PROXYURL}api/monthlypayhead/${id}`, config);
     dispatch({ type: ADMIN_DELETE_MONTHLYPAYHEADS_SUCCESS });
     dispatch(adminGetAllMonthlyPayheads());
   } catch (error) {

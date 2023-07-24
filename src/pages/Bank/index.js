@@ -58,7 +58,7 @@ const Bank = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
   // func state
   // const [isOpen4, setIsOpen4] = useState(false);
   const [formData, setFormData] = useState({
-    // name: "",
+    name: "",
     accountNumber: "",
     accountName: "",
     bankAddress: "",
@@ -67,7 +67,7 @@ const Bank = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
   });
 
   const {
-    // name,
+    name,
     accountNumber,
     accountName,
     bankAddress,
@@ -100,17 +100,34 @@ const Bank = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
     }
   };
 
+  useEffect(() => {
+    if (selectedOption5) {
+      setFormData({
+        // name: removeExtraSpace(name),
+        name: selectedOption5?.name,
+        accountNumber: removeExtraSpace(accountNumber),
+        accountName: removeExtraSpace(accountName),
+        bankAddress: bankAddress,
+        bankEmailAddress: removeExtraSpace(bankEmailAddress),
+        bankPhoneNo: removeExtraSpace(bankPhoneNo),
+      });
+    }
+
+    // return () => {
+    //   second
+    // }
+  }, [
+    selectedOption5,
+    accountNumber,
+    accountName,
+    bankAddress,
+    bankEmailAddress,
+    bankPhoneNo,
+  ]);
+
   const onSave = (e) => {
     e.preventDefault();
-    setFormData({
-      // name: removeExtraSpace(name),
-      name: selectedOption5?.name,
-      accountNumber: removeExtraSpace(accountNumber),
-      accountName: removeExtraSpace(accountName),
-      bankAddress: removeExtraSpace(bankAddress),
-      bankEmailAddress: removeExtraSpace(bankEmailAddress),
-      bankPhoneNo: removeExtraSpace(bankPhoneNo),
-    });
+
     if (formData?.id) {
       dispatch(accountantUpdateBankByIdFunc(formData?.id, formData));
     } else {
@@ -126,6 +143,7 @@ const Bank = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
         setFormData({
           name: removeExtraSpace(findBank?.name),
           accountNumber: removeExtraSpace(findBank?.accountNumber),
+          accountName: removeExtraSpace(findBank?.accountName),
           bankAddress: removeExtraSpace(findBank?.bankAddress),
           bankEmailAddress: removeExtraSpace(findBank?.bankEmailAddress),
           bankPhoneNo: findBank?.bankPhoneNo,
@@ -160,6 +178,18 @@ const Bank = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
       });
       // setBankId(null);
     }
+
+    if (createBankSuccess && !createBankError && !createBankLoading) {
+      dispatch({ type: ACCOUNTANT_CREATE_BANK_RESET });
+      setFormData({
+        name: "",
+        accountNumber: "",
+        accountName: "",
+        bankAddress: "",
+        bankEmailAddress: "",
+        bankPhoneNo: "",
+      });
+    }
   };
 
   useEffect(() => {
@@ -178,27 +208,7 @@ const Bank = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
     ) {
       history.push("/dashboard");
     }
-
-    if (createBankSuccess && !createBankError && !createBankLoading) {
-      dispatch({ type: ACCOUNTANT_CREATE_BANK_RESET });
-      setFormData({
-        name: "",
-        accountNumber: "",
-        accountName: "",
-        bankAddress: "",
-        bankEmailAddress: "",
-        bankPhoneNo: "",
-      });
-    }
-  }, [
-    adminInfo,
-    dispatch,
-    userRole,
-    history,
-    createBankError,
-    createBankLoading,
-    createBankSuccess,
-  ]);
+  }, [adminInfo, dispatch, userRole, history]);
 
   useEffect(() => {
     if (verifyAccountError) {
@@ -281,7 +291,7 @@ const Bank = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
                         list={true}
                         isOpen={isOpen5}
                         toggling={toggling5}
-                        selectedOption={selectedOption5}
+                        selectedOption={selectedOption5 || name}
                         text="-- Select a Bank Name"
                         dataSet={bankNames}
                         // dataSet={banks}

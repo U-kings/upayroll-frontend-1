@@ -40,10 +40,13 @@ import {
   adminDeleteEmployeeAllowanceByIdReducer,
   adminDeleteEmployeeDeductionByIdReducer,
   adminDeleteBulkEmployeesByIdsReducer,
+  adminDeleteAllEmployeesReducer,
   adminCreateBulkEmployeeReducer,
   hrUploadContractEmployeeReducer,
   employeeGetAllPayslipsReducer,
   employeeGetPersonalDetailsReducer,
+  adminCreateBulkEmployeeAllReducer,
+  adminCreateBulkEmployeeFileReducer,
 } from "./reducers/employee";
 
 // allowance
@@ -68,6 +71,7 @@ import {
   adminCreatePositionReducer,
   adminDeletePositionByIdReducer,
   adminUpdatePositionByIdReducer,
+  adminCreateBulkPositionReducer,
 } from "./reducers/position";
 
 // payslip
@@ -86,6 +90,10 @@ import {
   auditorRejectNotApprovedPayslipsReducer,
   ceoRejectPreApprovedPayslipsReducer,
   auditorAndCeoRejectExcelPayslipsReducer,
+  adminGenerateBulkPayslipsAllReducer,
+  auditorSetPreApprovedPayslipsAllReducer,
+  ceoSetApprovedPayslipsAllReducer,
+  hrSetNotApprovedPayslipsAllReducer,
 } from "./reducers/payslip";
 
 // stafflevel
@@ -147,6 +155,9 @@ import {
   ceoRejectPreApprovedVouchersReducer,
   accountantDeleteBulkVouchersReducer,
   accountantDeleteVoucherByIdReducer,
+  accountantCreateNotApprovedVouchersAllReducer,
+  auditorPreApproveVouchersAllReducer,
+  ceoApprovedPreApprovedVouchersAllReducer,
 } from "./reducers/voucher";
 
 // bankSchedules
@@ -200,9 +211,10 @@ import {
 import { getDashboardReportsResultReducer } from "./reducers/dashboard";
 import {
   hrCreateJuniorStaffGradeReducer,
-  hrCreateManagementStaffGradeReducer,
   hrCreateMiddleStaffGradeReducer,
   hrCreateSeniorStaffGradeReducer,
+  hrCreateManagementStaffGradeReducer,
+  hrCreateContractStaffGradeReducer,
 } from "./reducers/salarystructure";
 
 // reducers
@@ -227,11 +239,14 @@ const reducers = combineReducers({
   // Employee
   adminCreateEmployeeReducer,
   adminCreateBulkEmployee: adminCreateBulkEmployeeReducer,
+  adminCreateBulkEmployeeAll: adminCreateBulkEmployeeAllReducer,
+  adminCreateBulkEmployeeFile: adminCreateBulkEmployeeFileReducer,
   hrUploadContractEmployee: hrUploadContractEmployeeReducer,
   adminGetAllEmployeeReducer,
   adminUpdateEmployee: adminUpdateEmployeeByIdReducer,
   adminDeleteEmployee: adminDeleteEmployeeByIdReducer,
   adminDeleteBulkEmployeesByIds: adminDeleteBulkEmployeesByIdsReducer,
+  adminDeleteAllEmployees: adminDeleteAllEmployeesReducer,
   adminEmployeeTopUp: adminEmployeeTopUpReducer,
   adminDeleteEmployeeAllowance: adminDeleteEmployeeAllowanceByIdReducer,
   adminDeleteEmployeeDeduction: adminDeleteEmployeeDeductionByIdReducer,
@@ -252,6 +267,7 @@ const reducers = combineReducers({
   // Positions
   adminGetAllPosition: adminGetAllPositionReducer,
   adminCreatePosition: adminCreatePositionReducer,
+  adminCreateBulkPosition: adminCreateBulkPositionReducer,
   adminUpdatePosition: adminUpdatePositionByIdReducer,
   adminDeletePosition: adminDeletePositionByIdReducer,
 
@@ -265,10 +281,12 @@ const reducers = combineReducers({
   // Payslips/Salaryslips
   adminGeneratePayslip: generatePayslipReducer,
   hrSetNotApprovedPayslips: hrSetNotApprovedPayslipsReducer,
+  hrSetNotApprovedPayslipsAll: hrSetNotApprovedPayslipsAllReducer,
   adminGetAllGeneratedPayslip: getAllGeneratedPayslipReducer,
   adminDeleteGeneratedPayslip: deleteGeneratedPayslipByIdReducer,
   adminDeleteBulkPayslips: adminDeleteBulkPayslipsReducer,
   adminGenerateBulkPayslips: adminGenerateBulkPayslipsReducer,
+  adminGenerateBulkPayslipsAll: adminGenerateBulkPayslipsAllReducer,
 
   // Staff Levels
   adminGetAllStafflevel: adminGetAllStafflevelReducer,
@@ -286,11 +304,13 @@ const reducers = combineReducers({
   // Payslips/Salaryslips
   auditorGetNotApproved: auditorGetNotApprovedReducer,
   auditorSetPreApprovedPayslips: auditorSetPreApprovedPayslipsReducer,
+  auditorSetPreApprovedPayslipsAll: auditorSetPreApprovedPayslipsAllReducer,
   auditorRejectNotApprovedPayslips: auditorRejectNotApprovedPayslipsReducer,
 
   // Vouchers
   auditorGetNotApprovedVouchers: auditorGetNotApprovedVouchersReducer,
   auditorPreApproveVouchers: auditorPreApproveVouchersReducer,
+  auditorPreApproveVouchersAll: auditorPreApproveVouchersAllReducer,
   auditorRejectNotApprovedVouchers: auditorRejectNotApprovedVouchersReducer,
 
   // ** CEO **
@@ -298,10 +318,12 @@ const reducers = combineReducers({
   ceoGetPreApprovedAndApprovedPayslips:
     ceoGetPreApprovedAndApprovedPayslipsReducer,
   ceoSetApprovedPayslips: ceoSetApprovedPayslipsReducer,
+  ceoSetApprovedPayslipsAll: ceoSetApprovedPayslipsAllReducer,
   ceoRejectPreApprovedPayslips: ceoRejectPreApprovedPayslipsReducer,
 
   // Vouchers
   ceoApprovedPreApprovedVouchers: ceoApprovedPreApprovedVouchersReducer,
+  ceoApprovedPreApprovedVouchersAll: ceoApprovedPreApprovedVouchersAllReducer,
   ceoGetPreApprovedVouchers: ceoGetPreApprovedVouchersReducer,
   ceoRejectPreApprovedVouchers: ceoRejectPreApprovedVouchersReducer,
 
@@ -320,6 +342,8 @@ const reducers = combineReducers({
   accountantGetApprovedVouchers: accountantGetApprovedVouchersReducer,
   accountantCreateNotApprovedVouchers:
     accountantCreateNotApprovedVouchersReducer,
+  accountantCreateNotApprovedVouchersAll:
+    accountantCreateNotApprovedVouchersAllReducer,
   accountantDeleteBulkVouchers: accountantDeleteBulkVouchersReducer,
   accountantDeleteVoucherById: accountantDeleteVoucherByIdReducer,
 
@@ -375,6 +399,7 @@ const reducers = combineReducers({
   hrCreateMiddleStaffGrade: hrCreateMiddleStaffGradeReducer,
   hrCreateSeniorStaffGrade: hrCreateSeniorStaffGradeReducer,
   hrCreateManagementStaffGrade: hrCreateManagementStaffGradeReducer,
+  hrCreateContractStaffGrade: hrCreateContractStaffGradeReducer,
 
   // downloading
   downloadStatus: downloadingReducer,

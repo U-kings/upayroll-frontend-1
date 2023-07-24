@@ -9,6 +9,7 @@ import {
   ProfileContent,
 } from "../../styles/library";
 import { Box } from "@mui/material";
+import { useSelector } from "react-redux";
 
 const Header = ({
   isopen9,
@@ -22,9 +23,16 @@ const Header = ({
   toggleMobileMenu,
 }) => {
   const history = useHistory();
+
+  // redux state
+  const { adminInfo } = useSelector((state) => state.adminLoginStatus);
+
   const [isOpen, setIsOpen] = useState(false);
   const [buttonDisabled, setButtonDisabled] = useState(false);
-  const [companyLogo] = useState(cookie.get("companyLogo"));
+  // const [companyLogo] = useState(cookie.get("companyLogo"));
+
+  const [companyLogo] = useState(adminInfo?.user?.company?.logo || "");
+  // console.log(companyLogo);
 
   //   toggle func for modals
   const toggling = () => setIsOpen(!isOpen);
@@ -92,12 +100,13 @@ const Header = ({
             <img
               className="company__logo"
               src={companyLogo}
-              width="50rem"
+              width="37rem"
               alt="company-logo"
             />
           </div>
           <h2 onClick={toggling}>
-            {profileText?.slice(0, 1)} . {profileText?.split(" ")[1]?.slice(0, 1)}
+            {profileText?.slice(0, 1)} .{" "}
+            {profileText?.split(" ")[1]?.slice(0, 1)}
           </h2>
           <h2>({userRole})</h2>
           <ProfileContainer onClick={toggling}>

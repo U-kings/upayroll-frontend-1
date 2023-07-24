@@ -45,6 +45,18 @@ import {
   EMPLOYEE_GET_PERSONAL_DETAILS_FAIL,
   EMPLOYEE_GET_PERSONAL_DETAILS_REQUEST,
   EMPLOYEE_GET_PERSONAL_DETAILS_SUCCESS,
+  ADMIN_CREATE_BULK_EMPLOYEE_ALL_REQUEST,
+  ADMIN_CREATE_BULK_EMPLOYEE_ALL_SUCCESS,
+  ADMIN_CREATE_BULK_EMPLOYEE_ALL_FAIL,
+  ADMIN_CREATE_BULK_EMPLOYEE_ALL_RESET,
+  ADMIN_CREATE_BULK_EMPLOYEE_FILE_REQUEST,
+  ADMIN_CREATE_BULK_EMPLOYEE_FILE_SUCCESS,
+  ADMIN_CREATE_BULK_EMPLOYEE_FILE_FAIL,
+  ADMIN_CREATE_BULK_EMPLOYEE_FILE_RESET,
+  ADMIN_DELETE_ALL_EMPLOYEES_REQUEST,
+  ADMIN_DELETE_ALL_EMPLOYEES_SUCCESS,
+  ADMIN_DELETE_ALL_EMPLOYEES_FAIL,
+  ADMIN_DELETE_ALL_EMPLOYEES_RESET,
 } from "../types/employee";
 
 export const adminCreateEmployeeReducer = (state = {}, action) => {
@@ -94,6 +106,7 @@ export const adminCreateBulkEmployeeReducer = (state = {}, action) => {
       return {
         ...state,
         isLoading: false,
+        message: payload?.message,
         success: true,
         error: null,
       };
@@ -106,6 +119,74 @@ export const adminCreateBulkEmployeeReducer = (state = {}, action) => {
       };
 
     case ADMIN_CREATE_BULK_EMPLOYEE_RESET:
+      return {};
+
+    default:
+      return state;
+  }
+};
+
+export const adminCreateBulkEmployeeAllReducer = (state = {}, action) => {
+  const { type, payload } = action;
+
+  switch (type) {
+    case ADMIN_CREATE_BULK_EMPLOYEE_ALL_REQUEST:
+      return {
+        ...state,
+        isLoading: true,
+      };
+
+    case ADMIN_CREATE_BULK_EMPLOYEE_ALL_SUCCESS:
+      return {
+        ...state,
+        isLoading: false,
+        success: true,
+        message: payload?.message,
+        error: null,
+      };
+
+    case ADMIN_CREATE_BULK_EMPLOYEE_ALL_FAIL:
+      return {
+        ...state,
+        isLoading: false,
+        error: payload,
+      };
+
+    case ADMIN_CREATE_BULK_EMPLOYEE_ALL_RESET:
+      return {};
+
+    default:
+      return state;
+  }
+};
+
+export const adminCreateBulkEmployeeFileReducer = (state = {}, action) => {
+  const { type, payload } = action;
+
+  switch (type) {
+    case ADMIN_CREATE_BULK_EMPLOYEE_FILE_REQUEST:
+      return {
+        ...state,
+        isLoading: true,
+      };
+
+    case ADMIN_CREATE_BULK_EMPLOYEE_FILE_SUCCESS:
+      return {
+        ...state,
+        isLoading: false,
+        success: true,
+        message: payload?.message,
+        error: null,
+      };
+
+    case ADMIN_CREATE_BULK_EMPLOYEE_FILE_FAIL:
+      return {
+        ...state,
+        isLoading: false,
+        error: payload,
+      };
+
+    case ADMIN_CREATE_BULK_EMPLOYEE_FILE_RESET:
       return {};
 
     default:
@@ -244,6 +325,39 @@ export const adminDeleteBulkEmployeesByIdsReducer = (state = {}, action) => {
   }
 };
 
+export const adminDeleteAllEmployeesReducer = (state = {}, action) => {
+  const { type, payload } = action;
+
+  switch (type) {
+    case ADMIN_DELETE_ALL_EMPLOYEES_REQUEST:
+      return {
+        ...state,
+        isLoading: true,
+      };
+
+    case ADMIN_DELETE_ALL_EMPLOYEES_SUCCESS:
+      return {
+        ...state,
+        isLoading: false,
+        success: true,
+        error: null,
+      };
+
+    case ADMIN_DELETE_ALL_EMPLOYEES_FAIL:
+      return {
+        ...state,
+        isLoading: false,
+        error: payload,
+      };
+
+    case ADMIN_DELETE_ALL_EMPLOYEES_RESET:
+      return {};
+
+    default:
+      return state;
+  }
+};
+
 export const adminGetAllEmployeeReducer = (state = {}, action) => {
   const { type, payload } = action;
 
@@ -258,7 +372,7 @@ export const adminGetAllEmployeeReducer = (state = {}, action) => {
       return {
         ...state,
         isLoading: false,
-        employees: payload.employees,
+        employees: payload,
         error: null,
       };
 
@@ -389,7 +503,7 @@ export const employeeGetAllPayslipsReducer = (state = {}, action) => {
       return {
         ...state,
         isLoading: false,
-        employeePayslips: payload.employeePayslips,
+        employeePayslips: payload,
         error: null,
       };
 

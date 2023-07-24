@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from "react";
-import { DropdownList, Header, SideNav } from "../../components";
+import React, { useState, useEffect, useRef } from "react";
+import * as XLSL from "xlsx";
+import { DropdownList, ErrorBox, Header, SideNav } from "../../components";
 import {
   DashboardContainer,
   DashboardContent,
@@ -14,14 +15,21 @@ import {
   adminGetAllPosition,
   adminCreatePosition,
   adminUpdatePositionById,
+  adminCreateBulkPosition,
 } from "../../actions/position";
 import { Comfirm, LoadingSpinner, Successful } from "../../modals";
 import {
+  ADMIN_CREATE_BULK_POSITION_RESET,
   ADMIN_CREATE_POSITION_RESET,
   ADMIN_GET_ALL_POSITION_RESET,
   ADMIN_UPDATE_POSITION_BY_ID_RESET,
 } from "../../types/position";
 import { logoutAdmin } from "../../actions/auth";
+import { downloadPositionTemplateExcelFileFunc } from "../../actions/download";
+import { DOWNLOADING_ON_PROCESS_ERROR } from "../../types/download";
+import { COLORS } from "../../values/colors";
+import { PaginationContainer } from "../../styles/pagination";
+import ReactPaginate from "react-paginate";
 
 const Position = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
   // hsitory init
@@ -37,8 +45,11 @@ const Position = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
     isLoading: loadingPositions,
     error: getPositionsError,
   } = useSelector((state) => state.adminGetAllPosition);
-  const { success: createPositionSuccess, isLoading: createPositionLoading } =
-    useSelector((state) => state.adminCreatePosition);
+  const {
+    success: createPositionSuccess,
+    isLoading: createPositionLoading,
+    error: createPositionError,
+  } = useSelector((state) => state.adminCreatePosition);
   const {
     success: updatePositionSuccess,
     isLoading: updatePositionLoading,
@@ -46,20 +57,38 @@ const Position = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
   } = useSelector((state) => state.adminUpdatePosition);
   const { adminInfo } = useSelector((state) => state.adminLoginStatus);
 
+  const { isLoading: downloadLoading, error: downloadError } = useSelector(
+    (state) => state.downloadStatus
+  );
+
+  const {
+    isLoading: createBulkLoading,
+    success: createBulkSuccess,
+    error: createBulkError,
+  } = useSelector((state) => state.adminCreateBulkPosition);
+
   const psn = "active";
 
   // func state
   const [isOpen4, setIsOpen4] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const [isOpen7, setIsOpen7] = useState(false);
+  const [pageNumber, setPageNumber] = useState(0);
+  const [usersPerpageCount, setUsersPerpageCount] = useState(0);
   const [selectedOption, setSelectedOption] = useState(null);
   const [formData, setFormData] = useState({
     name: "",
   });
+  const [fileName, setFileName] = useState(null);
+  const [file, setFile] = useState(null);
+  const [excelData, setExcelData] = useState(null);
+  const [showError, setShowError] = useState(null);
   const [positionId, setPositionId] = useState(null);
   const [userRole] = useState(adminInfo?.user?.role || "");
   const [userRoleName] = useState(adminInfo?.user?.name || "");
   const [profileImg] = useState(adminInfo?.user?.photo || "");
+
+  const hiddenFileInput = useRef(null);
 
   const onOptionClicked = (department) => () => {
     setSelectedOption(department);
@@ -90,12 +119,25 @@ const Position = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
   };
 
   const popup7 = () => {
+    if (createPositionSuccess && !createPositionError) {
+      dispatch({ type: ADMIN_CREATE_POSITION_RESET });
+      setPositionId(null);
+      setIsOpen(null);
+      setSelectedOption(null);
+      setFormData({ name: "" });
+    }
     if (updatePositionSuccess && !updatePositionError) {
       dispatch({ type: ADMIN_UPDATE_POSITION_BY_ID_RESET });
       setPositionId(null);
       setIsOpen(null);
       setSelectedOption(null);
       setFormData({ name: "" });
+    }
+
+    if (createBulkSuccess && !createBulkError) {
+      dispatch({ type: ADMIN_CREATE_BULK_POSITION_RESET });
+      setExcelData(null);
+      setFileName(null);
     }
 
     setIsOpen7(false);
@@ -116,13 +158,77 @@ const Position = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
     }
   };
 
+  const downloadTemplate = () => {
+    dispatch(downloadPositionTemplateExcelFileFunc());
+  };
+
+  const handleFile = () => (e) => {
+    let selectedFile = e.target.files[0];
+    const fileType = ["application/vnd.ms-excel"];
+    const fileType2 = [
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    ];
+    const filyType3 = ["text/csv"];
+
+    if (selectedFile) {
+      setFileName(selectedFile?.name);
+      if (
+        selectedFile &&
+        (fileType.includes(selectedFile?.type) ||
+          fileType2.includes(selectedFile?.type) ||
+          filyType3.includes(selectedFile?.type))
+      ) {
+        setFile(e.target.files[0]);
+        // let reader = new FileReader();
+        // reader.readAsArrayBuffer(selectedFile);
+        // reader.onload = (e) => {
+        //   const workbook = XLSL.read(e.target?.result, { type: "buffer" });
+        //   const worksheetName = workbook.SheetNames[0];
+        //   const worksheet = workbook.Sheets[worksheetName];
+        //   const convertedData = XLSL.utils.sheet_to_json(worksheet);
+        //   setExcelData(convertedData);
+        // };
+      } else {
+        setShowError("Please select only specified file type");
+      }
+    }
+  };
+
+  // Invoke when user click to request another page.
+  const usersPerpage = 100;
+  const pagesVisited = pageNumber * usersPerpage;
+  const pageCount = Math.ceil(Number(positions?.length) / usersPerpage);
+
+  const handleClick = (name) => () => {
+    hiddenFileInput.current?.click();
+  };
+
+  const uploadFile = async () => {
+    // let newData = await excelData?.map((data) => {
+    //   return {
+    //     department: data?.Department?.toString()?.trim(),
+    //     name: data?.Name?.toString()?.trim(),
+    //   };
+    // });
+
+    // if (newData) {
+    //   dispatch(adminCreateBulkPosition(newData));
+    // }
+
+    const formData = new FormData();
+    formData.append("file", file);
+    dispatch(adminCreateBulkPosition(formData));
+  };
+
   // useEffects
   useEffect(() => {
     if (!adminInfo?.isAuthenticated && !adminInfo?.user?.name) {
       history.push("/signin");
     } else {
       dispatch(getAllDepartment());
-      dispatch(adminGetAllPosition());
+      if (pageNumber >= 0) {
+        dispatch(adminGetAllPosition(pageNumber ? pageNumber + 1 : 1, 100));
+      }
     }
     if (
       userRole === "Internal Auditor" ||
@@ -133,13 +239,37 @@ const Position = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
     } else if (userRole === "Employee") {
       history.push("dashboard");
     }
-    if (createPositionSuccess) {
-      dispatch({ type: ADMIN_CREATE_POSITION_RESET });
+    if (createPositionSuccess || createBulkSuccess) {
       setFormData({ name: "" });
       setIsOpen(false);
       setSelectedOption(null);
     }
-  }, [dispatch, adminInfo, userRole, history, createPositionSuccess]);
+  }, [
+    dispatch,
+    adminInfo,
+    userRole,
+    history,
+    pageNumber,
+    createPositionSuccess,
+    createBulkSuccess,
+  ]);
+
+  useEffect(() => {
+    if (showError || downloadError || createPositionError || createBulkError) {
+      setTimeout(() => {
+        dispatch({ type: DOWNLOADING_ON_PROCESS_ERROR });
+        dispatch({ type: ADMIN_CREATE_POSITION_RESET });
+        dispatch({ type: ADMIN_CREATE_BULK_POSITION_RESET });
+        setShowError(null);
+      }, 5000);
+    }
+  }, [
+    dispatch,
+    showError,
+    createPositionError,
+    downloadError,
+    createBulkError,
+  ]);
 
   useEffect(() => {
     if (getPositionsError === "no token was passed") {
@@ -148,23 +278,62 @@ const Position = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
     }
   }, [dispatch, getPositionsError]);
 
+  useEffect(() => {
+    if (pageNumber > 0) {
+      let usersPerpageNum;
+      if (positions?.length / (pageNumber + 1) > 100) {
+        usersPerpageNum = (pageNumber + 1) * 100;
+      } else {
+        usersPerpageNum = positions?.length;
+      }
+      setUsersPerpageCount(usersPerpageNum);
+    } else {
+      if (positions?.length < 100) {
+        setUsersPerpageCount(positions?.length);
+      } else {
+        setUsersPerpageCount(100);
+      }
+    }
+  }, [positions, pageNumber]);
+
+  const handlePageClick = ({ selected }) => {
+    setPageNumber(selected);
+  };
+
   //   toggle func for modals
   const toggling = () => setIsOpen(!isOpen);
+
   return (
     <>
-      {(loadingDepartments || loadingPositions || updatePositionLoading) && (
+      {(loadingDepartments ||
+        loadingPositions ||
+        updatePositionLoading ||
+        createBulkLoading ||
+        (downloadLoading && !downloadError)) && (
         <LoadingSpinner toggle={toggle} />
       )}
 
       <Successful
-        isOpen7={isOpen7 || (updatePositionSuccess && !updatePositionError)}
+        isOpen7={
+          isOpen7 ||
+          (updatePositionSuccess && !updatePositionError) ||
+          createPositionSuccess ||
+          (!createBulkError && createBulkSuccess)
+        }
         setIsOpen7={setIsOpen7}
         popup7={popup7}
-        message="Position updated successfully!"
+        message={
+          createBulkSuccess
+            ? "Position uploaded successfully!"
+            : createPositionSuccess
+            ? "Position Created successfully!"
+            : "Position updated successfully!"
+        }
       />
 
       {positionId && (
-        <Comfirm toggle={toggle}
+        <Comfirm
+          toggle={toggle}
           isOpen4={isOpen4}
           popup4={popup4}
           setIsOpen4={setIsOpen4}
@@ -203,6 +372,15 @@ const Position = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
                     }
                   }}
                 >
+                  {((!downloadLoading && downloadError) ||
+                    createPositionError ||
+                    createBulkError) && (
+                    <ErrorBox
+                      errorMessage={
+                        downloadError || createPositionError || createBulkError
+                      }
+                    />
+                  )}
                   <form className="global__form" onSubmit={onSave}>
                     <div className="label__group">
                       <label>Departments</label>
@@ -255,6 +433,38 @@ const Position = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
                         onClick={onCancel}
                       />
                     </div>
+                    <div className="upload__content">
+                      <h2> download Template</h2>
+                      <div className="upload_empfile">
+                        <p className="choose__btn" onClick={handleClick()}>
+                          Choose a file
+                        </p>
+                        <p>{fileName}</p>
+                      </div>
+                      <input
+                        type="file"
+                        ref={hiddenFileInput}
+                        onChange={handleFile("juniorStaffGrade")}
+                        accept=".xls,.xlsx,.csv"
+                        style={{ display: "none" }}
+                      />
+                      <div className="form__button">
+                        <input
+                          type="button"
+                          className="general__btn save__btn"
+                          value="Upload"
+                          onClick={() => uploadFile()}
+                        />
+                      </div>
+                      <div className="form__button">
+                        <input
+                          type="button"
+                          className="general__btn save__btn"
+                          value="Download"
+                          onClick={() => downloadTemplate()}
+                        />
+                      </div>
+                    </div>
                   </form>
                 </div>
                 <div className="table__body">
@@ -303,6 +513,67 @@ const Position = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
                       </tbody>
                     </table>
                   </div>
+
+                  <PaginationContainer>
+                    <div className="row">
+                      <ReactPaginate
+                        previousLabel={
+                          <FontAwesomeIcon icon={["fas", "angle-left"]} />
+                        }
+                        pageCount={pageCount}
+                        onPageChange={handlePageClick}
+                        containerClassName={"pagination"}
+                        pageClassName={"page__item"}
+                        pageLinkClassName={"page__link"}
+                        previousClassName={"page__item"}
+                        previousLinkClassName={"page__link"}
+                        nextClassName={"page__item"}
+                        nextLinkClassName={"page__link"}
+                        breakClassName={"page__item"}
+                        breakLinkClassName={"page__link"}
+                        // activeClassName={"active"}
+                        activeLinkClassName={"active"}
+                        marginPagesDisplayed={3}
+                        breakLabel={"..."}
+                        nextLabel={
+                          <FontAwesomeIcon icon={["fas", "angle-right"]} />
+                        }
+                      />
+                      <div
+                        style={{
+                          backgroundColor: `${COLORS.white4}`,
+                          margin: "auto 1rem auto 2rem",
+                          padding: ".5rem",
+                        }}
+                        className="pageCount"
+                      >
+                        <p style={{ fontSize: "1.3rem", fontWeight: "500" }}>
+                          Rows per page : 100
+                        </p>
+                      </div>
+                      <div
+                        style={{
+                          backgroundColor: `${COLORS.white4}`,
+                          margin: "auto 0 auto 0",
+                          padding: ".5rem",
+                        }}
+                        className="pageCount"
+                      >
+                        <p style={{ fontSize: "1.3rem", fontWeight: "500" }}>
+                          {`Showing : ${
+                            // searchResult?.length < 1
+                            positions?.length < 1
+                              ? 0
+                              : `${
+                                  pageNumber > 0 ? pageNumber * 100 + 1 : 1
+                                } - ${usersPerpageCount}`
+                          }
+                    of ${positions?.length}`}
+                          {/* of ${vouchers?.resultLength}`} */}
+                        </p>
+                      </div>
+                    </div>
+                  </PaginationContainer>
                 </div>
               </div>
             </Container>

@@ -177,7 +177,10 @@ function App() {
     // Close Modal Prompt
     // Do some idle action like log out your user
     // setState(true);
+
+    //logout user out after idle timeout
     dispatch(logoutAdmin("no token was passed"));
+    // dispatch(logoutAdmin());
   };
 
   // const idleTimer = useIdleTimer({ onPresenceChange });
@@ -249,12 +252,12 @@ function App() {
     }
   });
 
-  useEffect(() => {
-    const sessionKey = sessionStorage.getItem("item_key");
-    if (sessionKey === null) {
-      dispatch(logoutAdmin("no token was passed"));
-    }
-  }, [dispatch]);
+  // useEffect(() => {
+  //   const sessionKey = sessionStorage.getItem("item_key");
+  //   if (sessionKey === null) {
+  //     dispatch(logoutAdmin("no token was passed"));
+  //   }
+  // }, [dispatch]);
 
   return (
     // <Router basename="/upayroll.web">

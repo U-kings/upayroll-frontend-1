@@ -20,37 +20,42 @@ import {
 
 // import { cookieTokenValidFunc } from "./auth";
 
-const proxyUrl = process.env.REACT_APP_PROXY_URL;
+import { urlConfig } from "../util/config/config";
 
-export const getAllDepartment = () => async (dispatch) => {
-  const token = cookie.get("token");
-  const config = {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
+export const getAllDepartment =
+  (page = 1, perPage = 2000) =>
+  async (dispatch) => {
+    const token = cookie.get("token");
+    const config = {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    };
+    try {
+      dispatch({
+        type: GET_ALL_DEPARTMENTS_REQUEST,
+      });
+
+      const { data } = await axios.get(
+        `${urlConfig.proxyUrl.PROXYURL}api/departments?page=${page}&perPage=${perPage}`,
+        config
+      );
+      dispatch({
+        type: GET_ALL_DEPARTMENTS_SUCCESS,
+        payload: data,
+      });
+    } catch (error) {
+      dispatch({
+        type: GET_ALL_DEPARTMENTS_FAIL,
+        payload:
+          error?.response &&
+          (error?.response?.data?.detail || error?.response?.data?.errors)
+            ? error?.response?.data?.detail ||
+              error?.response?.data?.errors?.map((el) => el?.msg)?.join(" ")
+            : error?.message,
+      });
+    }
   };
-  try {
-    dispatch({
-      type: GET_ALL_DEPARTMENTS_REQUEST,
-    });
-
-    const { data } = await axios.get(`${proxyUrl}/api/departments`, config);
-    dispatch({
-      type: GET_ALL_DEPARTMENTS_SUCCESS,
-      payload: data,
-    });
-  } catch (error) {
-    dispatch({
-      type: GET_ALL_DEPARTMENTS_FAIL,
-      payload:
-        error?.response &&
-        (error?.response?.data?.detail || error?.response?.data?.errors)
-          ? error?.response?.data?.detail ||
-            error?.response?.data?.errors?.map((el) => el?.msg)?.join(" ")
-          : error?.message,
-    });
-  }
-};
 
 export const getPositionsByDepartment = (id) => async (dispatch) => {
   const token = cookie.get("token");
@@ -62,7 +67,10 @@ export const getPositionsByDepartment = (id) => async (dispatch) => {
 
   try {
     dispatch({ type: GET_POSITION_BY_DEPARTMENT_REQUEST });
-    const { data } = await axios.get(`${proxyUrl}/api/positions/${id}`, config);
+    const { data } = await axios.get(
+      `${urlConfig.proxyUrl.PROXYURL}api/positions/${id}`,
+      config
+    );
     dispatch({
       type: GET_POSITION_BY_DEPARTMENT_SUCCESS,
       payload: data,
@@ -93,7 +101,7 @@ export const adminCreateDepartment = (formData) => async (dispatch) => {
       type: ADMIN_CREATE_DEPARTMENT_REQUEST,
     });
     const body = JSON.stringify(formData);
-    await axios.post(`${proxyUrl}/api/departments`, body, config);
+    await axios.post(`${urlConfig.proxyUrl.PROXYURL}api/departments`, body, config);
     dispatch({
       type: ADMIN_CREATE_DEPARTMENT_SUCCESS,
     });
@@ -124,7 +132,11 @@ export const adminUpdateDepartmentById =
         type: ADMIN_UPDATE_DEPARTMENT_BY_ID_REQUEST,
       });
       const body = JSON.stringify(formData);
-      await axios.patch(`${proxyUrl}/api/departments/${departId}`, body, config);
+      await axios.patch(
+        `${urlConfig.proxyUrl.PROXYURL}api/departments/${departId}`,
+        body,
+        config
+      );
       dispatch({
         type: ADMIN_UPDATE_DEPARTMENT_BY_ID_SUCCESS,
       });
@@ -151,7 +163,10 @@ export const adminDeleteDepartmentById = (departId) => async (dispatch) => {
     dispatch({
       type: ADMIN_DELETE_DEPARTMENT_BY_ID_REQUEST,
     });
-    await axios.delete(`${proxyUrl}/api/departments/${departId}`, config);
+    await axios.delete(
+      `${urlConfig.proxyUrl.PROXYURL}api/departments/${departId}`,
+      config
+    );
     dispatch({
       type: ADMIN_DELETE_DEPARTMENT_BY_ID_SUCCESS,
     });

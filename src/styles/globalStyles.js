@@ -73,6 +73,25 @@ export const GlobalStyle = createGlobalStyle`
         & input[type="checkbox"]{
             background-color: ${COLORS.white};
         }
+
+        // input[type="checkbox"] {
+        //     appearance: none;
+        //     background-color: #fff;
+        //     margin: 0;
+        //     font: inherit;
+        //     color: currentColor;
+        //     width: 1.15em;
+        //     height: 1.15em;
+        //     border: 0.15em solid currentColor;
+        //     // border-radius: 0.15em;
+        //     border-radius: 0.3rem;
+        //     transform: translateY(-0.075em);
+        // }
+
+        // input[type="checkbox"]:focus {
+        //     outline: max(2px, 0.15em) solid currentColor;
+        //     outline-offset: max(2px, 0.15em);
+        // }
         
         & .button__row{
             display: flex;
@@ -443,12 +462,12 @@ export const GlobalStyle = createGlobalStyle`
 
         & .aligntext__right {
             text-align: right;
-            width: fit-content;
+            // width: fit-content;
         }
 
         & .aligntext__left {
             text-align: left;
-            width: fit-content;
+            // width: fit-content;
         }
 
         & .justify__btw{

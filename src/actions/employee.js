@@ -37,12 +37,21 @@ import {
   EMPLOYEE_GET_PERSONAL_DETAILS_FAIL,
   EMPLOYEE_GET_PERSONAL_DETAILS_REQUEST,
   EMPLOYEE_GET_PERSONAL_DETAILS_SUCCESS,
+  ADMIN_CREATE_BULK_EMPLOYEE_ALL_REQUEST,
+  ADMIN_CREATE_BULK_EMPLOYEE_ALL_SUCCESS,
+  ADMIN_CREATE_BULK_EMPLOYEE_ALL_FAIL,
+  ADMIN_CREATE_BULK_EMPLOYEE_FILE_REQUEST,
+  ADMIN_CREATE_BULK_EMPLOYEE_FILE_SUCCESS,
+  ADMIN_CREATE_BULK_EMPLOYEE_FILE_FAIL,
+  ADMIN_DELETE_ALL_EMPLOYEES_REQUEST,
+  ADMIN_DELETE_ALL_EMPLOYEES_SUCCESS,
+  ADMIN_DELETE_ALL_EMPLOYEES_FAIL,
 } from "../types/employee";
 
-const proxyUrl = process.env.REACT_APP_PROXY_URL;
+import { urlConfig } from "../util/config/config";
 
 export const adminGetAllEmployee =
-  (month = "") =>
+  (month = "", page = 1, perPage = 100) =>
   async (dispatch) => {
     const token = cookie.get("token");
     const config = {
@@ -53,9 +62,9 @@ export const adminGetAllEmployee =
     try {
       dispatch({ type: ADMIN_GET_ALL_EMPLOYEE_REQUEST });
       const { data } = await axios.get(
-        `${proxyUrl}/api/employees/not-generated/payslips${
+        `${urlConfig.proxyUrl.PROXYURL}api/employees/not-generated/payslips${
           month && `?month=${month}`
-        }`,
+        }&page=${page}&perPage=${perPage}`,
         config
       );
       dispatch({ type: ADMIN_GET_ALL_EMPLOYEE_SUCCESS, payload: data });
@@ -88,7 +97,7 @@ export const adminCreateEmployee =
       const body = JSON.stringify(formData);
 
       await axios.post(
-        `${proxyUrl}/api/employees/${departId}/${positionId}/create`,
+        `${urlConfig.proxyUrl.PROXYURL}api/employees/${departId}/${positionId}/create`,
         body,
         config
       );
@@ -120,8 +129,12 @@ export const adminCreateBulkEmployeeFunc = (bulkData) => async (dispatch) => {
     const body = JSON.stringify({
       employeesArr: bulkData,
     });
-    await axios.post(`${proxyUrl}/api/employees/create-bulk`, body, config);
-    dispatch({ type: ADMIN_CREATE_BULK_EMPLOYEE_SUCCESS });
+    const { data } = await axios.post(
+      `${urlConfig.proxyUrl.PROXYURL}api/employees/create-bulk`,
+      body,
+      config
+    );
+    dispatch({ type: ADMIN_CREATE_BULK_EMPLOYEE_SUCCESS, payload: data });
   } catch (error) {
     dispatch({
       type: ADMIN_CREATE_BULK_EMPLOYEE_FAIL,
@@ -134,6 +147,74 @@ export const adminCreateBulkEmployeeFunc = (bulkData) => async (dispatch) => {
     });
   }
 };
+
+export const adminCreateBulkEmployeeAllFunc = (month) => async (dispatch) => {
+  const token = cookie.get("token");
+  const config = {
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
+  };
+
+  try {
+    dispatch({ type: ADMIN_CREATE_BULK_EMPLOYEE_ALL_REQUEST });
+    const body = JSON.stringify({
+      // employeesArr: bulkData,
+    });
+    await axios.post(
+      `${urlConfig.proxyUrl.PROXYURL}api/employees/create-bulk?month=${month}`,
+      body,
+      config
+    );
+    dispatch({ type: ADMIN_CREATE_BULK_EMPLOYEE_ALL_SUCCESS });
+  } catch (error) {
+    dispatch({
+      type: ADMIN_CREATE_BULK_EMPLOYEE_ALL_FAIL,
+      payload:
+        error?.response &&
+        (error?.response?.data?.detail || error?.response?.data?.errors)
+          ? error?.response?.data?.detail ||
+            error?.response?.data?.errors?.map((el) => el?.msg)?.join(" ")
+          : error?.message,
+    });
+  }
+};
+
+export const adminCreateBulkEmployeeFileFunc =
+  (formData) => async (dispatch) => {
+    const token = cookie.get("token");
+    const config = {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "multipart/form-data",
+      },
+    };
+
+    try {
+      dispatch({ type: ADMIN_CREATE_BULK_EMPLOYEE_FILE_REQUEST });
+      const body = formData;
+      const { data } = await axios.post(
+        `${urlConfig.proxyUrl.PROXYURL}api/employees/create-bulk/excel`,
+        body,
+        config
+      );
+      dispatch({
+        type: ADMIN_CREATE_BULK_EMPLOYEE_FILE_SUCCESS,
+        payload: data,
+      });
+    } catch (error) {
+      dispatch({
+        type: ADMIN_CREATE_BULK_EMPLOYEE_FILE_FAIL,
+        payload:
+          error?.response &&
+          (error?.response?.data?.detail || error?.response?.data?.errors)
+            ? error?.response?.data?.detail ||
+              error?.response?.data?.errors?.map((el) => el?.msg)?.join(" ")
+            : error?.message,
+      });
+    }
+  };
 
 export const hrUploadBulkContractStaffFunc =
   (uploadData) => async (dispatch) => {
@@ -153,7 +234,7 @@ export const hrUploadBulkContractStaffFunc =
         },
       });
       await axios.patch(
-        `${proxyUrl}/api/employees/create-bulk/contract`,
+        `${urlConfig.proxyUrl.PROXYURL}api/employees/create-bulk/contract`,
         body,
         config
       );
@@ -185,7 +266,7 @@ export const adminUpdateEmployeeById =
       });
       const body = JSON.stringify(formData);
       await axios.patch(
-        `${proxyUrl}/api/employees/${empId}/${departId}/${postId}/update`,
+        `${urlConfig.proxyUrl.PROXYURL}api/employees/${empId}/${departId}/${postId}/update`,
         body,
         config
       );
@@ -212,7 +293,7 @@ export const adminDeleteEmployeeById = (id, month) => async (dispatch) => {
 
   try {
     dispatch({ type: ADMIN_DELETE_EMPLOYEE_BY_ID_REQUEST });
-    await axios.delete(`${proxyUrl}/api/employees/${id}`, config);
+    await axios.delete(`${urlConfig.proxyUrl.PROXYURL}api/employees/${id}`, config);
     dispatch({
       type: ADMIN_DELETE_EMPLOYEE_BY_ID_SUCCESS,
     });
@@ -244,7 +325,11 @@ export const adminDeleteEmployeesByIds =
       const body = JSON.stringify({
         employeeArrIds: empIds,
       });
-      await axios.patch(`${proxyUrl}/api/employees/delete-bulk`, body, config);
+      await axios.patch(
+        `${urlConfig.proxyUrl.PROXYURL}api/employees/delete-bulk`,
+        body,
+        config
+      );
       dispatch({ type: ADMIN_DELETE_BULK_EMPLOYEES_BY_IDS_SUCCESS });
       dispatch(adminGetAllEmployee(month));
     } catch (error) {
@@ -257,6 +342,35 @@ export const adminDeleteEmployeesByIds =
       });
     }
   };
+
+export const adminDeleteAllEmployees = (empIds, month) => async (dispatch) => {
+  const token = cookie.get("token");
+  const config = {
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+  };
+  try {
+    dispatch({ type: ADMIN_DELETE_ALL_EMPLOYEES_REQUEST });
+    const body = JSON.stringify({});
+    await axios.patch(
+      `${urlConfig.proxyUrl.PROXYURL}api/employees/delete-bulk/all`,
+      body,
+      config
+    );
+    dispatch({ type: ADMIN_DELETE_ALL_EMPLOYEES_SUCCESS });
+    dispatch(adminGetAllEmployee(month));
+  } catch (error) {
+    dispatch({
+      type: ADMIN_DELETE_ALL_EMPLOYEES_FAIL,
+      payload:
+        error.response && error.response.data.detail
+          ? error.response.data.detail
+          : error.message,
+    });
+  }
+};
 
 export const adminEmployeeTopUp = (empId, formdata) => async (dispatch) => {
   const token = cookie.get("token");
@@ -273,7 +387,7 @@ export const adminEmployeeTopUp = (empId, formdata) => async (dispatch) => {
     });
     const body = JSON.stringify(formdata);
     await axios.post(
-      `${proxyUrl}/api/employees/${empId}/payheads-topup`,
+      `${urlConfig.proxyUrl.PROXYURL}api/employees/${empId}/payheads-topup`,
       body,
       config
     );
@@ -308,7 +422,7 @@ export const adminDeleteEmployeeAllowance =
         type: ADMIN_DELETE_EMPLOYEE_ALLOWANCE_BY_ID_REQUEST,
       });
       await axios.patch(
-        `${proxyUrl}/api/employees/${empId}/${allowanceId}/allowance/remove`,
+        `${urlConfig.proxyUrl.PROXYURL}api/employees/${empId}/${allowanceId}/allowance/remove`,
         {},
         config
       );
@@ -341,7 +455,7 @@ export const adminDeleteEmployeeDeduction =
         type: ADMIN_DELETE_EMPLOYEE_DEDUCTION_BY_ID_REQUEST,
       });
       await axios.patch(
-        `${proxyUrl}/api/employees/${empId}/${deductionId}/deduction/remove`,
+        `${urlConfig.proxyUrl.PROXYURL}api/employees/${empId}/${deductionId}/deduction/remove`,
         {},
         config
       );
@@ -359,32 +473,33 @@ export const adminDeleteEmployeeDeduction =
     }
   };
 
-export const employeeGetAllPayslipsFunc = () => async (dispatch) => {
-  const token = cookie.get("token");
-  const config = {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
+export const employeeGetAllPayslipsFunc =
+  (companyId, userRole) => async (dispatch) => {
+    const token = cookie.get("token");
+    const config = {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    };
+    try {
+      dispatch({ type: EMPLOYEE_GET_ALL_PAYSLIPS_REQUEST });
+      const { data } = await axios.get(
+        `${urlConfig.proxyUrl.PROXYURL}api/employees/get-generated/payslips/2?companyId=${companyId}&role=${userRole}`,
+        config
+      );
+      dispatch({ type: EMPLOYEE_GET_ALL_PAYSLIPS_SUCCESS, payload: data });
+    } catch (error) {
+      dispatch({
+        type: EMPLOYEE_GET_ALL_PAYSLIPS_FAIL,
+        payload:
+          error?.response &&
+          (error?.response?.data?.detail || error?.response?.data?.errors)
+            ? error?.response?.data?.detail ||
+              error?.response?.data?.errors?.map((el) => el?.msg)?.join(" ")
+            : error?.message,
+      });
+    }
   };
-  try {
-    dispatch({ type: EMPLOYEE_GET_ALL_PAYSLIPS_REQUEST });
-    const { data } = await axios.get(
-      `${proxyUrl}/api/employees/get-generated/payslips`,
-      config
-    );
-    dispatch({ type: EMPLOYEE_GET_ALL_PAYSLIPS_SUCCESS, payload: data });
-  } catch (error) {
-    dispatch({
-      type: EMPLOYEE_GET_ALL_PAYSLIPS_FAIL,
-      payload:
-        error?.response &&
-        (error?.response?.data?.detail || error?.response?.data?.errors)
-          ? error?.response?.data?.detail ||
-            error?.response?.data?.errors?.map((el) => el?.msg)?.join(" ")
-          : error?.message,
-    });
-  }
-};
 
 export const employeeGetPersonalDetailsFunc = () => async (dispatch) => {
   const token = cookie.get("token");
@@ -396,7 +511,7 @@ export const employeeGetPersonalDetailsFunc = () => async (dispatch) => {
   try {
     dispatch({ type: EMPLOYEE_GET_PERSONAL_DETAILS_REQUEST });
     const { data } = await axios.get(
-      `${proxyUrl}/api/employees/loginuser/details`,
+      `${urlConfig.proxyUrl.PROXYURL}api/employees/loginuser/details`,
       config
     );
     dispatch({ type: EMPLOYEE_GET_PERSONAL_DETAILS_SUCCESS, payload: data });

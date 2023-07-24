@@ -413,6 +413,10 @@ export const Container = styled.div`
     padding: 1.5rem;
     margin: auto;
 
+    .upload__content {
+      margin-top: 2rem;
+    }
+
     & .monthlypayhead__text p {
       font-size: 1.5rem;
       font-weight: 500;

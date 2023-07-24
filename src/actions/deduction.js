@@ -15,7 +15,7 @@ import {
   ADMIN_UPDATE_DEDUCTION_BY_ID_SUCCESS,
 } from "../types/deduction";
 
-const proxyUrl = process.env.REACT_APP_PROXY_URL;
+import { urlConfig } from "../util/config/config";
 
 export const adminGetAllDeduction = () => async (dispatch) => {
   const token = cookie.get("token");
@@ -29,7 +29,7 @@ export const adminGetAllDeduction = () => async (dispatch) => {
     dispatch({
       type: ADMIN_GET_ALL_DEDUCTIONS_REQUEST,
     });
-    const { data } = await axios.get(`${proxyUrl}/api/deductions`, config);
+    const { data } = await axios.get(`${urlConfig.proxyUrl.PROXYURL}api/deductions`, config);
     dispatch({
       type: ADMIN_GET_ALL_DEDUCTIONS_SUCCESS,
       payload: data,
@@ -60,7 +60,7 @@ export const adminCreateDeduction = (formData) => async (dispatch) => {
       type: ADMIN_CREATE_DEDUCTION_REQUEST,
     });
     const body = JSON.stringify(formData);
-    await axios.post(`${proxyUrl}/api/deductions`, body, config);
+    await axios.post(`${urlConfig.proxyUrl.PROXYURL}api/deductions`, body, config);
     dispatch({
       type: ADMIN_CREATE_DEDUCTION_SUCCESS,
     });
@@ -93,7 +93,7 @@ export const adminUpdateDeductionById =
 
       const body = JSON.stringify(formData);
       await axios.patch(
-        `${proxyUrl}/api/deductions/${deductionId}`,
+        `${urlConfig.proxyUrl.PROXYURL}api/deductions/${deductionId}`,
         body,
         config
       );
@@ -124,7 +124,7 @@ export const adminDeleteDeductionById = (deductionId) => async (dispatch) => {
     dispatch({
       type: ADMIN_DELETE_DEDUCTION_BY_ID_REQUEST,
     });
-    await axios.delete(`${proxyUrl}/api/deductions/${deductionId}`, config);
+    await axios.delete(`${urlConfig.proxyUrl.PROXYURL}api/deductions/${deductionId}`, config);
     dispatch({
       type: ADMIN_DELETE_DEDUCTION_BY_ID_SUCCESS,
     });

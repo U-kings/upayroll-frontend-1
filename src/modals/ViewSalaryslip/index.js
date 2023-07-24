@@ -11,12 +11,15 @@ import { COLORS } from "../../values/colors";
 import uridiumLogo from "../../resources/uridium.png";
 import productLogo from "../../resources/productLogo.PNG";
 import { useState } from "react";
+import { useSelector } from "react-redux";
 
 const ViewSalaryslip = ({ isOpen8, popup8, paySlip, monthlypayheads }) => {
   // redux state
-  // const { adminInfo } = useSelector((state) => state.adminLoginStatus);
+  const { adminInfo } = useSelector((state) => state.adminLoginStatus);
   // const [userRole] = useState(adminInfo?.user?.role || "");
-  const [companyLogo] = useState(cookie.get("companyLogo"));
+  // const [companyLogo] = useState(cookie.get("companyLogo"));
+
+  const [companyLogo] = useState(adminInfo?.user?.company?.logo || "");
 
   const printSlip = () => {
     window.print();
@@ -41,15 +44,18 @@ const ViewSalaryslip = ({ isOpen8, popup8, paySlip, monthlypayheads }) => {
             <div className="flex__1">
               <img
                 // className="margin__top"
-                style={{margin:"auto"}}
+                style={{ margin: "0 auto auto auto" }}
                 src={companyLogo}
                 // src={uridiumLogo}
                 alt="Uridium logo"
-                height="35"
+                height="75"
               ></img>
             </div>
             <div className="flex__1">
-              <h1 className="payslip__text aligntext__right full__width">
+              <h1
+                style={{ whiteSpace: "nowrap" }}
+                className="payslip__text aligntext__right full__width"
+              >
                 E-PAYSLIP
               </h1>
               <p
@@ -66,7 +72,10 @@ const ViewSalaryslip = ({ isOpen8, popup8, paySlip, monthlypayheads }) => {
           </div>
           <div className="row3 justify__btw">
             <h2>Full Name:</h2>
-            <h2 className="aligntext__right">{`${paySlip?.employee?.user?.name}`}</h2>
+            <h2
+              style={{ whiteSpace: "nowrap" }}
+              className="aligntext__right"
+            >{`${paySlip?.employee?.user?.name}`}</h2>
           </div>
           {/* <div className="row justify__btw">
             <h2>Email:</h2>
@@ -137,7 +146,7 @@ const ViewSalaryslip = ({ isOpen8, popup8, paySlip, monthlypayheads }) => {
             <p style={{ fontWeight: "bold" }}> {commafy(paySlip?.grossPay)}</p>
           </div>
           <div className="row3">
-            <div style={{ borderRight: `solid 2px ${COLORS.white}` }}>
+            <div style={{ borderRight: `solid 2px ${COLORS.white}`, flex: 1 }}>
               <h2 className="bg">Additions</h2>
               {paySlip?.allowances.length > 0 ? (
                 paySlip?.allowances?.map(({ allowance, fee, feeType }) => (
@@ -160,7 +169,7 @@ const ViewSalaryslip = ({ isOpen8, popup8, paySlip, monthlypayheads }) => {
                 <p>No additions added</p>
               )}
             </div>
-            <div className="align__right">
+            <div style={{ flex: 1 }}>
               <h2 className="bg aligntext__right">Deductions</h2>
               {paySlip?.deductions.length > 0 ? (
                 paySlip?.deductions?.map(({ deduction, fee, feeType }) => (
@@ -216,11 +225,25 @@ const ViewSalaryslip = ({ isOpen8, popup8, paySlip, monthlypayheads }) => {
               </>
             )}
           <div className="row3">
-            <h2 className="bg">Total Additions</h2>
-            <h2 className="bg aligntext__right">Total Deductions</h2>
+            <h2 className="bg" style={{ whiteSpace: "nowrap" }}>
+              Total Additions
+            </h2>
+            <h2
+              className="bg aligntext__right"
+              style={{ whiteSpace: "nowrap" }}
+            >
+              Total Deductions
+            </h2>
           </div>
           <div className="row3 justify__btw">
-            <h2>{`${commafy(paySlip?.totalEarnings)}`}</h2>
+            <h2>
+              {paySlip?.totalEarnings
+                ? `${commafy(paySlip?.totalEarnings)}`
+                : ""}
+              {paySlip?.allowanceTotal
+                ? `${commafy(paySlip?.allowanceTotal)}`
+                : ""}
+            </h2>
             <h2 className="aligntext__right">
               {commafy(paySlip?.deductionTotal)}
             </h2>

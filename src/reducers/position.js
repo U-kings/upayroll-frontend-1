@@ -15,6 +15,10 @@ import {
   ADMIN_UPDATE_POSITION_BY_ID_RESET,
   ADMIN_UPDATE_POSITION_BY_ID_SUCCESS,
   ADMIN_GET_ALL_POSITION_RESET,
+  ADMIN_CREATE_BULK_POSITION_REQUEST,
+  ADMIN_CREATE_BULK_POSITION_SUCCESS,
+  ADMIN_CREATE_BULK_POSITION_FAIL,
+  ADMIN_CREATE_BULK_POSITION_RESET,
 } from "../types/position";
 
 export const adminGetAllPositionReducer = (state = {}, action) => {
@@ -76,6 +80,39 @@ export const adminCreatePositionReducer = (state = {}, action) => {
       };
 
     case ADMIN_CREATE_POSITION_RESET:
+      return {};
+
+    default:
+      return state;
+  }
+};
+
+export const adminCreateBulkPositionReducer = (state = {}, action) => {
+  const { type, payload } = action;
+
+  switch (type) {
+    case ADMIN_CREATE_BULK_POSITION_REQUEST:
+      return {
+        ...state,
+        isLoading: true,
+      };
+
+    case ADMIN_CREATE_BULK_POSITION_SUCCESS:
+      return {
+        ...state,
+        isLoading: false,
+        success: true,
+        error: null,
+      };
+
+    case ADMIN_CREATE_BULK_POSITION_FAIL:
+      return {
+        ...state,
+        isLoading: false,
+        error: payload,
+      };
+
+    case ADMIN_CREATE_BULK_POSITION_RESET:
       return {};
 
     default:

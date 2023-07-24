@@ -21,6 +21,9 @@ import {
 import { useHistory } from "react-router-dom";
 import { logoutAdmin } from "../../actions/auth";
 import { ADMIN_GET_ALL_DEDUCTIONS_RESET } from "../../types/deduction";
+import { PaginationContainer } from "../../styles/pagination";
+import ReactPaginate from "react-paginate";
+import { COLORS } from "../../values/colors";
 
 const Department = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
   // dispatch init
@@ -51,13 +54,13 @@ const Department = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
   // func state
   const [isOpen4, setIsOpen4] = useState(false);
   const [isOpen7, setIsOpen7] = useState(false);
+  const [pageNumber, setPageNumber] = useState(0);
+  const [usersPerpageCount, setUsersPerpageCount] = useState(0);
   const [formData, setForm] = useState({ name: "" });
   const [departmentId, setDepartmentId] = useState(null);
   const [userRole] = useState(adminInfo?.user?.role || "");
   const [userRoleName] = useState(adminInfo?.user?.name || "");
   const [profileImg] = useState(adminInfo?.user?.photo || "");
-
-  const dpt = "active";
 
   const onSave = (e) => {
     e.preventDefault();
@@ -106,7 +109,9 @@ const Department = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
     if (!adminInfo?.isAuthenticated && !adminInfo?.user?.name) {
       history.push("/signin");
     } else {
-      dispatch(getAllDepartment());
+      if (pageNumber >= 0) {
+        dispatch(getAllDepartment(pageNumber ? pageNumber + 1 : 1, 100));
+      }
     }
     if (
       userRole === "Internal Auditor" ||
@@ -134,6 +139,7 @@ const Department = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
     dispatch,
     userRole,
     history,
+    pageNumber,
     createDepartmentSuccess,
     CreateDepartmentError,
     updateDepartmentError,
@@ -145,6 +151,35 @@ const Department = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
       dispatch({ type: ADMIN_GET_ALL_DEDUCTIONS_RESET });
     }
   }, [dispatch, departmentsError]);
+
+  // Invoke when user click to request another page.
+  const usersPerpage = 100;
+  const pagesVisited = pageNumber * usersPerpage;
+  const pageCount = Math.ceil(Number(departments?.length) / usersPerpage);
+
+  useEffect(() => {
+    if (pageNumber > 0) {
+      let usersPerpageNum;
+      if (departments?.length / (pageNumber + 1) > 100) {
+        usersPerpageNum = (pageNumber + 1) * 100;
+      } else {
+        usersPerpageNum = departments?.length;
+      }
+      setUsersPerpageCount(usersPerpageNum);
+    } else {
+      if (departments?.length < 100) {
+        setUsersPerpageCount(departments?.length);
+      } else {
+        setUsersPerpageCount(100);
+      }
+    }
+  }, [departments, pageNumber]);
+
+  const handlePageClick = ({ selected }) => {
+    setPageNumber(selected);
+  };
+
+  const dpt = "active";
 
   return (
     <>
@@ -282,6 +317,66 @@ const Department = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
                       </tbody>
                     </table>
                   </div>
+                  <PaginationContainer>
+                    <div className="row">
+                      <ReactPaginate
+                        previousLabel={
+                          <FontAwesomeIcon icon={["fas", "angle-left"]} />
+                        }
+                        pageCount={pageCount}
+                        onPageChange={handlePageClick}
+                        containerClassName={"pagination"}
+                        pageClassName={"page__item"}
+                        pageLinkClassName={"page__link"}
+                        previousClassName={"page__item"}
+                        previousLinkClassName={"page__link"}
+                        nextClassName={"page__item"}
+                        nextLinkClassName={"page__link"}
+                        breakClassName={"page__item"}
+                        breakLinkClassName={"page__link"}
+                        // activeClassName={"active"}
+                        activeLinkClassName={"active"}
+                        marginPagesDisplayed={3}
+                        breakLabel={"..."}
+                        nextLabel={
+                          <FontAwesomeIcon icon={["fas", "angle-right"]} />
+                        }
+                      />
+                      <div
+                        style={{
+                          backgroundColor: `${COLORS.white4}`,
+                          margin: "auto 1rem auto 2rem",
+                          padding: ".5rem",
+                        }}
+                        className="pageCount"
+                      >
+                        <p style={{ fontSize: "1.3rem", fontWeight: "500" }}>
+                          Rows per page : 100
+                        </p>
+                      </div>
+                      <div
+                        style={{
+                          backgroundColor: `${COLORS.white4}`,
+                          margin: "auto 0 auto 0",
+                          padding: ".5rem",
+                        }}
+                        className="pageCount"
+                      >
+                        <p style={{ fontSize: "1.3rem", fontWeight: "500" }}>
+                          {`Showing : ${
+                            // searchResult?.length < 1
+                            departments?.length < 1
+                              ? 0
+                              : `${
+                                  pageNumber > 0 ? pageNumber * 100 + 1 : 1
+                                } - ${usersPerpageCount}`
+                          }
+                    of ${departments?.length}`}
+                          {/* of ${vouchers?.resultLength}`} */}
+                        </p>
+                      </div>
+                    </div>
+                  </PaginationContainer>
                 </div>
               </div>
             </Container>
