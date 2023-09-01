@@ -106,7 +106,7 @@ const SalaryLevel = ({ salaryLevels, staffGrade , toggle}) => {
 
   return (
     <>
-      {" "}
+      
       {createSalaryLevelLoading && <LoadingSpinner toggle={toggle} />}
       {updateSalaryLevelLoading && <LoadingSpinner toggle={toggle} />}
       <Successful
@@ -218,12 +218,12 @@ const SalaryLevel = ({ salaryLevels, staffGrade , toggle}) => {
                             className="icons"
                             onClick={(e) => onSelect(el?.id)}
                           >
-                            {" "}
-                            <FontAwesomeIcon icon={["fas", "edit"]} />{" "}
+                            
+                            <FontAwesomeIcon icon={["fas", "edit"]} />
                           </div>
                           <div className="icons" onClick={(e) => popup(el?.id)}>
-                            {" "}
-                            <FontAwesomeIcon icon={["fas", "trash-alt"]} />{" "}
+                            
+                            <FontAwesomeIcon icon={["fas", "trash-alt"]} />
                           </div>
                         </div>
                       </td>

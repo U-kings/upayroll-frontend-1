@@ -104,16 +104,16 @@ const AdditionTable = ({
                             className="icons"
                             onClick={(e) => onClick2(el?.id, "allowance")}
                           >
-                            {" "}
-                            <FontAwesomeIcon icon={["fas", "edit"]} />{" "}
+                            
+                            <FontAwesomeIcon icon={["fas", "edit"]} />
                           </div>
                           <div
                             title="Delete"
                             className="icons"
                             onClick={(e) => onClick3(el?.id, "allowance")}
                           >
-                            {" "}
-                            <FontAwesomeIcon icon={["fas", "trash-alt"]} />{" "}
+                            
+                            <FontAwesomeIcon icon={["fas", "trash-alt"]} />
                           </div>
                         </div>
                       </td>

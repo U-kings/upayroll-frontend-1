@@ -45,7 +45,6 @@ const ProfileSettings = ({
   } = useSelector((state) => state.ceoUploadSignature);
 
   //   func state
-  const [isopen9, setisopen9] = useState("");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [oldPassword, setOldPassword] = useState("");
@@ -285,7 +284,6 @@ const ProfileSettings = ({
       />
       <DashboardContent>
         <SideNav
-          isopen9={isopen9}
           // emp={emp}
           userRole={userRole}
           toggle={toggle}
@@ -293,7 +291,7 @@ const ProfileSettings = ({
           mobileToggle={mobileToggle}
           toggleMobileMenu={toggleMobileMenu}
         />
-        <Mainbody isopen9={isopen9} toggle={toggle}>
+        <Mainbody toggle={toggle}>
           <Header
             text="Profile Settings"
             userRole={userRole}

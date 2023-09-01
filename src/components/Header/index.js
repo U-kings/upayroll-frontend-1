@@ -105,7 +105,7 @@ const Header = ({
             />
           </div>
           <h2 onClick={toggling}>
-            {profileText?.slice(0, 1)} .{" "}
+            {profileText?.slice(0, 1)} .
             {profileText?.split(" ")[1]?.slice(0, 1)}
           </h2>
           <h2>({userRole})</h2>

@@ -227,8 +227,6 @@ const Payroll = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
     (state) => state.adminGetAllMonthlyPayheads
   );
 
-  // console.log(selectedOption);
-
   useEffect(() => {
     if (!monthlyPayheads) {
       dispatch(adminGetAllMonthlyPayheads());
@@ -257,6 +255,7 @@ const Payroll = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
     }
   }, [
     paySlips,
+    selectedOption,
     toggle,
     userRole,
     history,
@@ -957,10 +956,7 @@ const Payroll = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
   }, [dispatch, getSalaryslipsError, getNotApprovedSalaryslipsError, userRole]);
 
   useEffect(() => {
-    if (
-      currentSlip?.employee?.employeeType !== "Contract" &&
-      currentSlip?.employee?.employeeType !== "Intern"
-    ) {
+    if (currentSlip?.employee?.employeeType !== "Contract-With-No-Grade") {
       if (!currentSlip?.employee?.notch) {
         setGrossSalary(
           currentSlip?.employee?.salaryStep?.amount

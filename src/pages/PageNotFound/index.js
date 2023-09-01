@@ -10,7 +10,7 @@ const PageNotFound = () => {
           className="goback__text"
           to="/"
         >
-          {" "}
+          
           ⬅ 🚀 Go Back
         </Link>
       </PageNotFoundContainer>

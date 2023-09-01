@@ -35,7 +35,7 @@ const LoanRequest = ({
   const history = useHistory();
 
   // redux state
-  const { adminInfo } = useSelector((state) => state.adminLoginStatus);
+  const { employeeInfo } = useSelector((state) => state.employeeLoginStatus);
   const {
     isLoading: loadingDepartments,
     departments,
@@ -57,9 +57,9 @@ const LoanRequest = ({
   const [isOpen7, setIsOpen7] = useState(false);
   const [formData, setForm] = useState({ name: "", rate: 0 });
   const [departmentId, setDepartmentId] = useState(null);
-  const [userRole] = useState(adminInfo?.user?.role || "");
-  const [userRoleName] = useState(adminInfo?.user?.name || "");
-  const [profileImg] = useState(adminInfo?.user?.photo || "");
+  const [userRole] = useState(employeeInfo?.user?.role || "");
+  const [userRoleName] = useState(employeeInfo?.user?.name || "");
+  const [profileImg] = useState(employeeInfo?.user?.photo || "");
 
   const onSave = (e) => {
     e.preventDefault();
@@ -110,10 +110,10 @@ const LoanRequest = ({
   };
 
   useEffect(() => {
-    if (!adminInfo?.isAuthenticated && !adminInfo?.user?.name) {
+    if (!employeeInfo?.user?.name) {
       history.push("/signin");
     } else {
-      dispatch(getAllDepartment());
+      // dispatch(getAllDepartment());
     }
     if (
       userRole === "Internal Auditor" ||
@@ -130,7 +130,7 @@ const LoanRequest = ({
         rate: 0,
       });
     }
-  }, [adminInfo, dispatch, userRole, history, createDepartmentSuccess]);
+  }, [employeeInfo, dispatch, userRole, history, createDepartmentSuccess]);
 
   useEffect(() => {
     if (departmentsError === "no token was passed") {
@@ -145,7 +145,8 @@ const LoanRequest = ({
     <>
       {loadingDepartments && <LoadingSpinner toggle={toggle} />}
       {departmentId && (
-        <Comfirm toggle={toggle}
+        <Comfirm
+          toggle={toggle}
           isOpen4={isOpen4}
           popup4={popup4}
           setIsOpen4={setIsOpen4}
@@ -299,20 +300,16 @@ const LoanRequest = ({
                                   className="icons"
                                   onClick={(e) => onSelect(el?.id)}
                                 >
-                                  {" "}
-                                  <FontAwesomeIcon
-                                    icon={["fas", "edit"]}
-                                  />{" "}
+                                  <FontAwesomeIcon icon={["fas", "edit"]} />
                                 </div>
                                 <div
                                   title="Delete"
                                   className="icons"
                                   onClick={(e) => popup4(el?.id)}
                                 >
-                                  {" "}
                                   <FontAwesomeIcon
                                     icon={["fas", "trash-alt"]}
-                                  />{" "}
+                                  />
                                 </div>
                               </div>
                             </td>

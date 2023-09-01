@@ -15,24 +15,19 @@ import {
   LinkButton,
 } from "../../styles/library";
 import {
-  EditEmployee,
-  ViewEmployee,
+  // EditEmployee,
+  // ViewEmployee,
   SelectMonth,
   LoadingSpinner,
   Comfirm,
   Successful,
+  EditUser,
 } from "../../modals";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useSelector, useDispatch } from "react-redux";
 import { useHistory } from "react-router-dom";
 import ReactPaginate from "react-paginate";
-import {
-  adminGetAllEmployee,
-  adminDeleteEmployeesByIds,
-  adminDeleteEmployeeById,
-  adminDeleteAllEmployees,
-  adminCreateBulkEmployeeWithNoGradeFileFunc,
-} from "../../actions/employee";
+import { adminDeleteAllEmployees } from "../../actions/employee";
 import {
   adminGenerateBulkPayslips,
   adminGenerateBulkPayslipsAll,
@@ -41,7 +36,7 @@ import {
 import {
   ADMIN_DELETE_ALL_EMPLOYEES_RESET,
   ADMIN_DELETE_EMPLOYEE_ALLOWANCE_BY_ID_RESET,
-  ADMIN_DELETE_EMPLOYEE_BY_ID_RESET,
+  // ADMIN_DELETE_EMPLOYEE_BY_ID_RESET,
   ADMIN_DELETE_EMPLOYEE_DEDUCTION_BY_ID_RESET,
   ADMIN_EMPLOYEE_TOPUP_RESET,
   ADMIN_UPDATE_EMPLOYEE_BY_ID_RESET,
@@ -63,8 +58,17 @@ import { ADMIN_GET_MONTHLYPAYHEADS_RESET } from "../../types/monthlypayheads";
 import { COLORS } from "../../values/colors";
 import { trancateWord } from "../../hooks/functions";
 import { downloadEmployeeSummaryExcelFileFunc } from "../../actions/download";
+import {
+  superAdminBulkDeleteUser,
+  superAdminDeleteUser,
+  superAdminGetAllUsers,
+} from "../../actions/users";
+import {
+  SUPER_ADMIN_BULK_DELETE_USERS_RESET,
+  SUPER_ADMIN_DELETE_USER_RESET,
+} from "../../types/users";
 
-const Employee = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
+const Users = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
   // history init
   const history = useHistory();
 
@@ -74,10 +78,11 @@ const Employee = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
   // redux state
   const { adminInfo } = useSelector((state) => state.adminLoginStatus);
   const {
-    isLoading: getEmployeeLoading,
-    employees,
-    error: getEmployeeError,
-  } = useSelector((state) => state.adminGetAllEmployeeReducer);
+    users: usersData,
+    isLoading: getUsersLoading,
+    error: getUsersError,
+  } = useSelector((state) => state.superAdminGetAllUsers);
+
   const { success: updateSuccess, error: updateError } = useSelector(
     (state) => state.adminUpdateEmployee
   );
@@ -86,17 +91,13 @@ const Employee = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
     (state) => state.adminEmployeeTopUp
   );
 
-  const {
-    success: deleteDeductionSuccess,
-    isLoading: deleteAllowanceLoading,
-    error: deleteAllowanceError,
-  } = useSelector((state) => state.adminDeleteEmployeeDeduction);
+  const { success: deleteDeductionSuccess } = useSelector(
+    (state) => state.adminDeleteEmployeeDeduction
+  );
 
-  const {
-    success: deleteAllowanceSuccess,
-    isLoading: deleteDeductionLoading,
-    error: deleteDeductionError,
-  } = useSelector((state) => state.adminDeleteEmployeeAllowance);
+  const { success: deleteAllowanceSuccess } = useSelector(
+    (state) => state.adminDeleteEmployeeAllowance
+  );
 
   const {
     isLoading: generatePayslipLoading,
@@ -113,16 +114,17 @@ const Employee = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
   );
 
   const {
-    success: deleteEmployeeSuccess,
-    error: deleteEmployeeError,
-    isLoading: deleteEmployeeLoading,
-  } = useSelector((state) => state.adminDeleteEmployee);
+    success: deleteUserSuccess,
+    error: deleteUserError,
+    isLoading: deleteUserLoading,
+  } = useSelector((state) => state.superAdminDeleteUser);
 
   const {
-    success: deleteBulkEmployeeSuccess,
-    error: deleteBulkEmployeeError,
-    isLoading: deleteBulkEmployeeLoading,
-  } = useSelector((state) => state.adminDeleteBulkEmployeesByIds);
+    success: deleteBulkUsersSuccess,
+    message: deleteBulkUsersMessage,
+    error: deleteBulkUsersError,
+    isLoading: deleteBulkUsersLoading,
+  } = useSelector((state) => state.superAdminBulkDeleteUsers);
 
   const {
     success: deleteAllEmployeeSuccess,
@@ -145,6 +147,22 @@ const Employee = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
   const { isLoading: downloadStatusLoading, error: downloadStatusError } =
     useSelector((state) => state.downloadStatus);
 
+  //super admin user state
+  const {
+    success: superAdminUpdateUserSuccess,
+    // message: superAdminUpdateUserMessage,
+    // isLoading: superAdminUpdateUserLoading,
+    // error: superAdminUpdateUserError,
+  } = useSelector((state) => state.superAdminUpdateUser);
+
+  //super admin user state
+  const {
+    success: superAdminUpdateUserRoleSuccess,
+    // message: superAdminUpdateUserRoleMessage,
+    // isLoading: superAdminUpdateUserRoleLoading,
+    // error: superAdminUpdateUserRoleError,
+  } = useSelector((state) => state.superAdminUpdateUserRole);
+
   // func state
   const [isOpen, setIsOpen] = useState(false);
   const [isOpen2, setIsOpen2] = useState(false);
@@ -154,11 +172,12 @@ const Employee = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
   const [isOpen10, setIsOpen10] = useState(false);
   const [isGen, setIsGen] = useState(false);
   const [allIsGen, setAllIsGen] = useState(false);
-  const [delBulk, setDelBulk] = useState(false);
+  const [delUsersBulk, setDelUsersBulk] = useState(false);
   const [selectedOption10, setSelectedOption10] = useState(
     currentmonthMethod("long") || ""
   );
-  const [currentEmployee, setCurrentEmployee] = useState(null);
+  const [currentUser, setCurrentUser] = useState(null);
+  const [userId, setUserId] = useState(null);
   const [users, setUsers] = useState([]);
   const [arrayIds, setArrayIds] = useState([]);
   const [searchResult, setSearchResult] = useState([]);
@@ -226,25 +245,49 @@ const Employee = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
 
   useEffect(() => {
     if (
-      getEmployeeError === "no token was passed" ||
+      superAdminUpdateUserSuccess ||
+      superAdminUpdateUserRoleSuccess ||
+      deleteBulkUsersSuccess ||
+      deleteUserSuccess
+    ) {
+      dispatch(
+        superAdminGetAllUsers(
+          // selectedOption10,
+          pageNumber ? pageNumber + 1 : 1,
+          100
+        )
+      );
+    }
+  }, [
+    pageNumber,
+    dispatch,
+    superAdminUpdateUserSuccess,
+    superAdminUpdateUserRoleSuccess,
+    deleteBulkUsersSuccess,
+    deleteUserSuccess,
+  ]);
+
+  useEffect(() => {
+    if (
+      getUsersError === "no token was passed" ||
       getMonthlyPayheadError === "no token was passed" ||
-      getEmployeeError === "Authorization is Invalid!"
+      getUsersError === "Authorization is Invalid!"
     ) {
       dispatch(logoutAdmin("no token was passed"));
       dispatch({ type: ADMIN_GET_ALL_EMPLOYEE_RESET });
       dispatch({ type: ADMIN_GET_MONTHLYPAYHEADS_RESET });
     }
-  }, [getEmployeeError, dispatch, getMonthlyPayheadError]);
+  }, [getUsersError, dispatch, getMonthlyPayheadError]);
 
   useEffect(() => {
-    if (!deleteEmployeeError && deleteEmployeeSuccess) {
-      setCurrentEmployee(null);
+    if (!deleteUserError && deleteUserSuccess) {
+      setCurrentUser(null);
       setIsOpen4(false);
     }
 
-    if (!deleteBulkEmployeeError && deleteBulkEmployeeSuccess) {
+    if (!deleteBulkUsersError && deleteBulkUsersSuccess) {
       setIsOpen4(false);
-      setDelBulk(false);
+      setDelUsersBulk(false);
     }
 
     if (
@@ -257,10 +300,10 @@ const Employee = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
       setIsOpen4(false);
     }
   }, [
-    deleteEmployeeError,
-    deleteEmployeeSuccess,
-    deleteBulkEmployeeError,
-    deleteBulkEmployeeSuccess,
+    deleteUserError,
+    deleteUserSuccess,
+    deleteBulkUsersError,
+    deleteBulkUsersSuccess,
     generateBulkPayslipError,
     generateBulkPayslipSuccess,
     generateAllBulkPayslipSuccess,
@@ -268,49 +311,41 @@ const Employee = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
     generatePayslipSuccess,
   ]);
 
-  // console.log(
-  //   generateBulkPayslipSuccess,
-  //   generatePayslipSuccess,
-  //   generateAllBulkPayslipSuccess
-  // );
-
   // useEffect
   useEffect(() => {
-    if (employees) {
-      setUsers(employees?.employees);
+    if (usersData) {
+      setUsers(usersData?.users);
     }
     if (searchTerm.length < 1) {
       setSearchResult(users);
     }
-  }, [employees, users, searchTerm]);
+  }, [usersData, searchTerm, users]);
 
   useEffect(() => {
     if (!adminInfo?.isAuthenticated && !adminInfo?.user?.name) {
       history.push("/signin");
-    } else {
+    }
+  }, [history, adminInfo]);
+
+  useEffect(() => {
+    if (userRole === "CEO") {
       // dispatch(adminGetAllEmployee(selectedOption10, startCheck, endCheck));
       // dispatch(adminGetAllEmployee(selectedOption10));
-      if (
-        pageNumber >= 0 ||
-        deleteDeductionSuccess ||
-        deleteAllowanceSuccess ||
-        topSuccess
-      ) {
-        if (userRole === "HR") {
-          dispatch(
-            adminGetAllEmployee(
-              selectedOption10,
-              pageNumber ? pageNumber + 1 : 1,
-              100
-            )
-          );
-        }
+
+      if (pageNumber >= 0) {
+        dispatch(
+          superAdminGetAllUsers(
+            // selectedOption10,
+            pageNumber ? pageNumber + 1 : 1,
+            100
+          )
+        );
       }
     }
 
     if (
       userRole === "Internal Auditor" ||
-      userRole === "CEO" ||
+      userRole === "HR" ||
       userRole === "Accountant"
     ) {
       history.push("/dashboard");
@@ -318,29 +353,33 @@ const Employee = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
     if (userRole === "Employee") {
       history.push("/dashboard");
     }
-  }, [
-    history,
-    adminInfo,
-    dispatch,
-    userRole,
-    pageNumber,
-    selectedOption10,
-    deleteDeductionSuccess,
-    deleteAllowanceSuccess,
-    topSuccess,
-  ]);
+  }, [history, userRole, selectedOption10, dispatch, pageNumber]);
 
   useEffect(() => {
-    if (getEmployeeError) {
+    if (getUsersError) {
       setTimeout(() => {
         dispatch({ type: ADMIN_GET_ALL_EMPLOYEE_RESET });
       }, 4000);
     }
-  }, [getEmployeeError, dispatch]);
+  }, [getUsersError, dispatch]);
 
   useEffect(() => {
     if (topSuccess && !loadingTopUp) {
-      setCurrentEmployee(null);
+      setCurrentUser(null);
+    }
+
+    if (deleteDeductionSuccess || deleteAllowanceSuccess) {
+      dispatch({ type: ADMIN_DELETE_EMPLOYEE_DEDUCTION_BY_ID_RESET });
+      dispatch({ type: ADMIN_DELETE_EMPLOYEE_ALLOWANCE_BY_ID_RESET });
+      if (userRole === "HR") {
+        // dispatch(
+        //   adminGetAllEmployee(
+        //     selectedOption10,
+        //     pageNumber ? pageNumber + 1 : 1,
+        //     100
+        //   )
+        // );
+      }
     }
 
     if (!resetError && resetSucces) {
@@ -348,7 +387,19 @@ const Employee = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
         type: ADMIN_RESET_PASSWORD_RESET,
       });
     }
-  }, [dispatch, topSuccess, loadingTopUp, resetError, resetSucces]);
+  }, [
+    dispatch,
+    pageNumber,
+    topSuccess,
+    userRole,
+    loadingTopUp,
+    deleteDeductionSuccess,
+    deleteAllowanceSuccess,
+    resetError,
+    resetSucces,
+    // ,
+    selectedOption10,
+  ]);
 
   //   close all modals
   const closeOption = () => {
@@ -390,7 +441,6 @@ const Employee = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
       return {
         staffId: el?.staffId,
         staffName: el?.user?.name,
-        staffEmail: el?.user?.email,
         doe:
           el?.joinDate?.toLocaleString()?.split("T")[0]?.replaceAll("-", "/") ||
           "",
@@ -415,7 +465,8 @@ const Employee = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
       };
     });
 
-    dispatch(adminCreateBulkEmployeeWithNoGradeFileFunc(employeeData));
+    dispatch(downloadEmployeeSummaryExcelFileFunc(employeeData));
+    // dispatch(downloadAuditLogPdfFileFunc(employeeData));
   };
 
   // useEffect(() => {
@@ -456,13 +507,13 @@ const Employee = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
         let dataJoined = [...tempData, ...notChecked].sort((a, b) => {
           var dateA = new Date(a.createdAt),
             dateB = new Date(b.createdAt);
-          return dateA - dateB;
+          return dateB - dateA;
+          // return dateA - dateB;
         });
         setSearchResult(dataJoined);
       }
     } else {
       let tempData = searchResult?.map((user) =>
-        // console.log(user)
         user?.id?.toString() === name?.toString()
           ? { ...user, isChecked: checked }
           : user
@@ -526,24 +577,28 @@ const Employee = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
     }
   };
 
-  // delete bulk employees
-  const deleteEmployeeByIds = () => {
+  // delete both single and bulk employees
+  const deleteUsersByIds = () => {
     deleteIds();
   };
 
   const deleteIds = () => {
+    if (userId) {
+      dispatch(superAdminDeleteUser(userId));
+    }
     if (arrayIds.length && arrayIds.length === 1) {
       // delete a particular selected employee
-      dispatch(adminDeleteEmployeeById(arrayIds[0].id, selectedOption10));
+      dispatch(superAdminDeleteUser(arrayIds[0].id));
     } else if (arrayIds.length > 1) {
-      if (employees?.resultLength > 100) {
-        // delete all employees
-        dispatch(adminDeleteAllEmployees());
-      } else {
-        // delete all selected employees
-        const newArray = arrayIds.map((user) => user.id);
-        dispatch(adminDeleteEmployeesByIds(newArray, selectedOption10));
-      }
+      // if (usersData?.resultLength > 100) {
+      //   // delete all employees
+      // dispatch(adminDeleteAllEmployees());
+      // } else {
+      //   // delete all selected employees
+      // }
+
+      const newArray = arrayIds.map((user) => user.id);
+      dispatch(superAdminBulkDeleteUser(newArray));
     }
   };
 
@@ -648,14 +703,14 @@ const Employee = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
       dispatch(adminGenerateBulkPayslips(paySlips));
     }
   };
-
   const onSelect = (id) => {
-    const employee = employees?.employees?.find(
+    const employee = usersData?.users?.find(
       (el) => String(el?.id) === String(id)
     );
     // const employee = searchResult?.find((el) => String(el?.id) === String(id));
-    setCurrentEmployee(employee);
+    setCurrentUser(employee);
   };
+
   const popup = (id) => {
     setIsOpen(!isOpen);
     onSelect(id);
@@ -668,9 +723,12 @@ const Employee = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
   const popup3 = (id) => {
     setIsOpen3(!isOpen3);
     onSelect(id);
+    if (isOpen3 === true) {
+      setCurrentUser(null);
+    }
   };
 
-  // generate payslip popup
+  // generate payslip popup / delete user
   const popup4 = (id) => {
     onSelect(id);
     setIsOpen4(!isOpen4);
@@ -683,6 +741,8 @@ const Employee = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
       setIsOpen4(!isOpen4);
       setAllIsGen(!allIsGen);
     }
+
+    setUserId(id);
   };
 
   const popup7 = () => {
@@ -691,10 +751,11 @@ const Employee = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
     }
 
     if (
-      (deleteEmployeeSuccess && !deleteEmployeeError) ||
-      (deleteBulkEmployeeSuccess && !deleteBulkEmployeeError)
+      (deleteUserSuccess && !deleteUserError) ||
+      (deleteBulkUsersSuccess && !deleteBulkUsersError)
     ) {
-      dispatch({ type: ADMIN_DELETE_EMPLOYEE_BY_ID_RESET });
+      dispatch({ type: SUPER_ADMIN_DELETE_USER_RESET });
+      dispatch({ type: SUPER_ADMIN_BULK_DELETE_USERS_RESET });
     }
 
     if (deleteAllEmployeeSuccess && !deleteAllEmployeeError) {
@@ -709,7 +770,7 @@ const Employee = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
   // Invoke when user click to request another page.
   const usersPerpage = 100;
   const pagesVisited = pageNumber * usersPerpage;
-  const pageCount = Math.ceil(Number(employees?.resultLength) / usersPerpage);
+  const pageCount = Math.ceil(Number(usersData?.resultLength) / usersPerpage);
 
   // const pageCount = Math.ceil(searchResult.length / usersPerpage);
   const handlePageClick = ({ selected }) => {
@@ -719,35 +780,50 @@ const Employee = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
   useEffect(() => {
     if (pageNumber > 0) {
       let usersPerpageNum;
-      if (employees?.resultLength / (pageNumber + 1) > 100) {
+      if (usersData?.resultLength / (pageNumber + 1) > 100) {
         usersPerpageNum = (pageNumber + 1) * 100;
       } else {
-        usersPerpageNum = employees?.resultLength;
+        usersPerpageNum = usersData?.resultLength;
       }
       setUsersPerpageCount(usersPerpageNum);
     } else {
-      if (employees?.resultLength < 100) {
-        setUsersPerpageCount(employees?.resultLength);
+      if (usersData?.resultLength < 100) {
+        setUsersPerpageCount(usersData?.resultLength);
       } else {
         setUsersPerpageCount(100);
       }
     }
-  }, [employees, pageNumber]);
+  }, [usersData, pageNumber]);
 
   const filteredData = useCallback(
     (value) => {
+      // const filteredList = users?.filter((data) => {
+      //   return Object.values(
+      //     data?.user?.name +
+      //       " " +
+      //       data?.user?.email +
+      //       " " +
+      //       data?.department?.name +
+      //       " " +
+      //       data?.position?.name +
+      //       " " +
+      //       data?.staffId +
+      //       " "
+      //   )
+      //     .join("")
+      //     .toLowerCase()
+      //     .includes(value?.toLowerCase());
+      // });
       if (value !== "") {
         const filteredList = users?.filter((data) => {
           return Object.values(
-            data?.user?.name +
+            data?.name +
               " " +
-              data?.user?.email +
+              data?.email +
               " " +
-              data?.department?.name +
+              data?.role +
               " " +
-              data?.position?.name +
-              " " +
-              data?.staffId +
+              data?.id +
               " "
           )
             .join("")
@@ -783,15 +859,22 @@ const Employee = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
   //   }
   // }, [downloadStatusError, downloadStatusLoading]);
 
-  const successPopup = () => {
-    if (userRole === "HR") {
-      if (topSuccess && !loadingTopUp) {
-        dispatch({
-          type: ADMIN_EMPLOYEE_TOPUP_RESET,
-        });
-      }
-    }
-  };
+  // const successPopup = () => {
+  //   if (userRole === "HR") {
+  //     if (topSuccess && !loadingTopUp) {
+  //       // dispatch(
+  //       //   adminGetAllEmployee(
+  //       //     selectedOption10,
+  //       //     pageNumber ? pageNumber + 1 : 1,
+  //       //     100
+  //       //   )
+  //       // );
+  //       dispatch({
+  //         type: ADMIN_EMPLOYEE_TOPUP_RESET,
+  //       });
+  //     }
+  //   }
+  // };
 
   const noEmployees =
     users?.length === 0 || searchResult?.length === 0 ? (
@@ -799,77 +882,68 @@ const Employee = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
     ) : (
       " "
     );
-  const emp = "active";
+  const usersActive = "active";
 
   return (
     <>
-      {(getEmployeeLoading || deleteEmployeeLoading) && (
+      {(getUsersLoading || deleteUserLoading) && (
         <LoadingSpinner toggle={toggle} />
       )}
       {downloadStatusLoading && !downloadStatusError && (
         <LoadingSpinner toggle={toggle} />
       )}
 
-      {currentEmployee && (
-        <SelectMonth isOpen={isOpen} popup={popup} employee={currentEmployee} />
+      {currentUser && (
+        <SelectMonth isOpen={isOpen} popup={popup} employee={currentUser} />
       )}
 
-      {(deleteBulkEmployeeLoading || deleteAllEmployeeLoading) && (
+      {(deleteBulkUsersLoading || deleteAllEmployeeLoading) && (
         <LoadingSpinner toggle={toggle} />
       )}
 
-      {topSuccess && (
+      {/* {topSuccess && (
         <Successful
           isOpen7={topSuccess}
           popup7={successPopup}
           message="Saved Successfully"
           toggle={toggle}
         />
-      )}
+      )} */}
 
-      {currentEmployee && (
-        <ViewEmployee
-          toggle={toggle}
-          isOpen2={isOpen2}
-          popup2={popup2}
-          setIsOpen2={setIsOpen2}
-          employee={currentEmployee}
-        />
-      )}
-      {currentEmployee && (
-        <EditEmployee
+      {currentUser && isOpen3 && (
+        <EditUser
           toggle={toggle}
           isOpen3={isOpen3}
           popup3={popup3}
-          employee={currentEmployee}
-          setCurrentEmployee={setCurrentEmployee}
+          user={currentUser}
+          setCurrentUser={setCurrentUser}
           month={selectedOption10}
         />
       )}
-      {currentEmployee && !isGen && !delBulk && (
+      {currentUser && !isGen && !delUsersBulk && (
         <Comfirm
           toggle={toggle}
           isOpen4={isOpen4}
           popup4={popup4}
           setIsOpen4={setIsOpen4}
-          empId={currentEmployee?.id}
+          userId={currentUser?.id}
           month={selectedOption10}
         />
       )}
-      {delBulk && !isGen && (
+      {delUsersBulk && (
         <Comfirm
           toggle={toggle}
           isOpen4={isOpen4}
           popup4={popup4}
           setIsOpen4={setIsOpen4}
-          delBulk={delBulk}
-          setDelBulk={setDelBulk}
-          delEmployeesFunc={deleteEmployeeByIds}
-          setCurrentEmployee={setCurrentEmployee}
+          delUsersBulk={delUsersBulk}
+          setDelUsersBulk={setDelUsersBulk}
+          delUsersFunc={deleteUsersByIds}
+          setCurrentUser={setCurrentUser}
           month={selectedOption10}
         />
       )}
-      {isGen && !allIsGen && (
+      {/* {isGen && !allIsGen && (
         <Comfirm
           toggle={toggle}
           isOpen4={isOpen4}
@@ -879,8 +953,8 @@ const Employee = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
           setIsGen={setIsGen}
           genPayslipAct={calculatePayslipByIds}
         />
-      )}
-      {allIsGen && !isGen && (
+      )} */}
+      {/* {allIsGen && !isGen && (
         <Comfirm
           toggle={toggle}
           isOpen4={isOpen4}
@@ -890,12 +964,10 @@ const Employee = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
           setAllIsGen={setAllIsGen}
           genAllPayslipAct={calculateAllPayslipByIds}
         />
-      )}
+      )} */}
 
       <Successful
-        isOpen7={
-          isOpen7 || (updateSuccess && !updateError && !getEmployeeLoading)
-        }
+        isOpen7={isOpen7 || (updateSuccess && !updateError && !getUsersLoading)}
         setIsOpen7={setIsOpen7}
         popup7={popup7}
         message="Employee updated successfully!"
@@ -903,48 +975,27 @@ const Employee = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
 
       <Successful
         isOpen7={
-          isOpen7 ||
-          (deleteEmployeeSuccess && !deleteEmployeeError && !getEmployeeLoading)
+          isOpen7 || (deleteUserSuccess && !deleteUserError && !getUsersLoading)
         }
         setIsOpen7={setIsOpen7}
         popup7={popup7}
-        message="Employee deleted successfully!"
+        message="User deleted successfully!"
       />
-
       <Successful
         isOpen7={
           isOpen7 ||
-          (deleteAllowanceSuccess &&
-            !deleteAllowanceError &&
-            !deleteAllowanceLoading)
+          (deleteBulkUsersSuccess && !deleteBulkUsersError && !getUsersLoading)
         }
+        setIsOpen7={setIsOpen7}
         popup7={popup7}
-        message="Deleted addition successfully!"
+        message={deleteBulkUsersMessage || "Users deleted successfully!"}
       />
-      <Successful
-        isOpen7={
-          deleteDeductionSuccess &&
-          !deleteDeductionError &&
-          !deleteDeductionLoading
-        }
-        popup7={popup7}
-        message="Deleted deduction successfully!"
-      />
-      <Successful
-        isOpen7={
-          deleteBulkEmployeeSuccess &&
-          !deleteBulkEmployeeError &&
-          !deleteBulkEmployeeLoading
-        }
-        popup7={popup7}
-        message="Employees deleted successfully!"
-      />
-      <Successful
+      {/* <Successful
         isOpen7={
           isOpen7 ||
           (deleteAllEmployeeSuccess &&
             !deleteAllEmployeeError &&
-            !getEmployeeLoading)
+            !getUsersLoading)
         }
         setIsOpen7={setIsOpen7}
         popup7={popup7}
@@ -953,23 +1004,31 @@ const Employee = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
       <Successful
         isOpen7={
           isOpen7 ||
+          (generateBulkPayslipSuccess &&
+            !generateBulkPayslipError &&
+            !getUsersLoading) ||
           (!generateAllBulkPayslipLoading && generateAllBulkPayslipSuccess)
         }
         setIsOpen7={setIsOpen7}
         popup7={popup7}
-        message={generateAllBulkPayslipMessage}
+        message={
+          generateAllBulkPayslipSuccess
+            ? generateAllBulkPayslipMessage
+            : "Bulk payroll generated successfully!"
+        }
       />
       <Successful
         isOpen7={
           isOpen7 ||
-          (generateBulkPayslipSuccess &&
-            !generateBulkPayslipError &&
-            !getEmployeeLoading)
+          (generatePayslipSuccess &&
+            !generatePayslipLoading &&
+            !generatePayslipError &&
+            !getUsersLoading)
         }
         setIsOpen7={setIsOpen7}
         popup7={popup7}
         message="Payroll generated successfully!"
-      />
+      /> */}
       <DashboardContainer onClick={closeOption}>
         <DashboardContent>
           <SideNav
@@ -977,12 +1036,12 @@ const Employee = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
             toggleMenu={toggleMenu}
             mobileToggle={mobileToggle}
             toggleMobileMenu={toggleMobileMenu}
-            emp={emp}
+            usersActive={usersActive}
             userRole={userRole}
           />
           <Mainbody toggle={toggle}>
             <Header
-              text="Employee"
+              text="Users"
               userRole={userRole}
               userRoleName={userRoleName}
               profileimg={profileImg}
@@ -998,22 +1057,22 @@ const Employee = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
                 <ErrorBox errorMessage={generatePayslipError} />
               )}
               {showError ||
-                (getEmployeeError && (
-                  <ErrorBox errorMessage={showError || getEmployeeError} />
+                (getUsersError && (
+                  <ErrorBox errorMessage={showError || getUsersError} />
                 ))}
               <EmpContainer>
                 <div className="row top__btn">
-                  {userRole === "HR" && (
+                  {userRole === "CEO" && (
                     <>
-                      <LinkButton to="/new-employee">
+                      {/* <LinkButton to="/new-employee">
                         <input
                           type="button"
                           className="green__btn"
                           // className="green__btn margin__left2"
                           value="Add Employee"
                         />
-                      </LinkButton>
-                      <input
+                      </LinkButton> */}
+                      {/* <input
                         type="button"
                         // className="general_btn save__btn"
                         className={
@@ -1036,9 +1095,10 @@ const Employee = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
                         type="button"
                         // className="general_btn save__btn"
                         className={
-                          disableButton() &&
-                          selectedOption10 === currentmonthLong
-                            ? "general__btn margin__left2 mobile__margin__top save__btn"
+                          disableButton()
+                            ? // &&
+                              // selectedOption10 === currentmonthLong
+                              "general__btn margin__left2 mobile__margin__top save__btn"
                             : "general__btn margin__left2 mobile__margin__top disabled__btn"
                         }
                         value="Run All Payroll"
@@ -1048,25 +1108,31 @@ const Employee = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
                           setIsOpen4(true);
                         }}
                         disabled={
-                          !disableButton() ||
-                          selectedOption10 !== currentmonthLong
+                          !disableButton()
+                          //  ||
+                          // selectedOption10 !== currentmonthLong
                         }
-                      />
+                      /> */}
                       <input
                         type="button"
                         className={
                           disableButton()
-                            ? "general__btn margin__left2 mobile__margin__top delete__btn"
-                            : "general__btn margin__left2 mobile__margin__top disabled__btn"
+                            ? "general__btn mobile__margin__top delete__btn"
+                            : "general__btn mobile__margin__top disabled__btn"
                         }
+                        // className={
+                        //   disableButton()
+                        //     ? "general__btn margin__left2 mobile__margin__top delete__btn"
+                        //     : "general__btn margin__left2 mobile__margin__top disabled__btn"
+                        // }
                         value="Delete"
                         onClick={() => {
-                          setDelBulk(true);
+                          setDelUsersBulk(true);
                           setIsOpen4(true);
                         }}
                         disabled={!disableButton()}
                       />
-                      <DropdownList
+                      {/* <DropdownList
                         // list={true}
                         isOpen={isOpen10}
                         // toggling={toggling10}
@@ -1078,8 +1144,8 @@ const Employee = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
                         // dataSet={monthArr}
                         onOptionClicked={onOptionClicked10}
                         // onOptionClicked={onOptionClicked10}
-                      />
-                      {searchResult?.length > 0 && (
+                      /> */}
+                      {/* {searchResult?.length > 0 && (
                         <input
                           type="button"
                           // className="general__btn margin__left save__btn"
@@ -1088,11 +1154,11 @@ const Employee = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
                               ? "general__btn margin__left2 mobile__margin__top save__btn"
                               : "general__btn margin__left2 mobile__margin__top disabled__btn"
                           }
-                          value="Download Excel"
+                          value="Download Pdf"
                           onClick={downloadExcel}
                           disabled={!disableButton()}
                         />
-                      )}
+                      )} */}
                     </>
                   )}
                 </div>
@@ -1100,7 +1166,7 @@ const Employee = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
                 <div className="row top__btn">
                   <div style={{ margin: "auto 1rem" }}>
                     <div style={{ display: "flex", margin: ".5rem 0" }}>
-                      <input
+                      {/* <input
                         type="checkbox"
                         id="AllEmployee"
                         onChange={showAllEmployee}
@@ -1113,8 +1179,8 @@ const Employee = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
                           margin: "auto auto auto .8rem",
                         }}
                       >
-                        View All Employee
-                      </p>
+                        View All Users
+                      </p> */}
                     </div>
                   </div>
                   <div className="search__container">
@@ -1134,7 +1200,7 @@ const Employee = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
                   <table>
                     <thead>
                       <tr>
-                        {userRole === "HR" && (
+                        {userRole === "CEO" && (
                           <th>
                             <input
                               type="checkbox"
@@ -1151,31 +1217,28 @@ const Employee = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
                             />
                           </th>
                         )}
-                        <th style={{ paddingLeft: "3.5rem" }}> Staff ID</th>
-                        <th>Full Name</th>
+                        <th style={{ paddingLeft: "3.5rem" }}>ID</th>
+                        <th>Name</th>
                         <th>Email Address</th>
-                        <th>Account No.</th>
-                        <th>Contact</th>
-                        <th>Department</th>
-                        <th>Position</th>
-                        {userRole === "HR" ? <th>Action</th> : ""}
+                        <th>User Role</th>
+                        {userRole === "CEO" ? <th>Action</th> : ""}
                       </tr>
                     </thead>
                     <tbody>
                       {searchResult
                         // .slice(pagesVisited, pagesVisited + usersPerpage)
                         ?.sort((a, b) => b.createdAt - a.createdAt)
-                        ?.map((employee) => {
+                        ?.map((user) => {
                           return (
-                            <tr key={employee?.id}>
-                              {userRole === "HR" && (
+                            <tr key={user?.id}>
+                              {userRole === "CEO" && (
                                 <td>
                                   <input
                                     type="checkbox"
                                     // value={item.name}
-                                    name={employee?.id}
+                                    name={user?.id}
                                     // name={employee?.id}
-                                    checked={employee?.isChecked || false}
+                                    checked={user?.isChecked || false}
                                     onChange={handleChange}
                                   />
                                 </td>
@@ -1186,40 +1249,23 @@ const Employee = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
                                     alt="profile"
                                     // className="profile__img2"
                                     className="margin__right"
-                                    src={employee?.user?.photo}
+                                    src={user?.photo}
                                     width="20"
                                     style={{ borderRadius: "50%" }}
                                     // src={profileimg}
                                   />
                                   <p style={{ fontSize: "1.2rem" }}>
-                                    {employee?.staffId}
+                                    {user?.id}
                                   </p>
                                 </div>
                               </td>
                               <td>{`${trancateWord(
-                                employee?.user?.name?.toString()
+                                user?.name?.toString()
                               )} `}</td>
-                              <td>
-                                {trancateWord(
-                                  employee?.user?.email?.toString()
-                                )}
-                              </td>
-                              <td>{employee?.employeeBankAcctNumber}</td>
+                              <td>{trancateWord(user?.email?.toString())}</td>
+                              <td>{user?.role}</td>
                               {/* <td>{employee?.dob?.substring(0, 10)}</td> */}
-                              <td>{`+234 ${
-                                employee?.mobile ? employee?.mobile : ""
-                              }`}</td>
-                              <td>
-                                {trancateWord(
-                                  employee?.position?.department?.name?.toString()
-                                )}
-                              </td>
-                              <td>
-                                {trancateWord(
-                                  employee?.position?.name.toString()
-                                )}
-                              </td>
-                              {userRole === "HR" && (
+                              {userRole === "CEO" && (
                                 <td>
                                   <div className="action__icons">
                                     {/* <div
@@ -1231,24 +1277,28 @@ const Employee = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
                                         icon={["fas", "calendar-alt"]}
                                       />
                                     </div> */}
-                                    <div
+
+                                    {/* <div
                                       title="View/Add/Delete Payhead"
                                       className="icons"
-                                      onClick={(e) => popup2(employee?.id)}
+                                      onClick={(e) => popup2(user?.id)}
                                     >
-                                      <FontAwesomeIcon icon={["fas", "eye"]} />
-                                    </div>
+                                      
+                                      <FontAwesomeIcon
+                                        icon={["fas", "eye"]}
+                                      />
+                                    </div> */}
                                     <div
                                       title="Edit Employee"
                                       className="icons"
-                                      onClick={(e) => popup3(employee?.id)}
+                                      onClick={(e) => popup3(user?.id)}
                                     >
                                       <FontAwesomeIcon icon={["fas", "edit"]} />
                                     </div>
                                     <div
                                       title="Delete Employee"
                                       className="icons"
-                                      onClick={(e) => popup4(employee?.id)}
+                                      onClick={(e) => popup4(user?.id)}
                                     >
                                       <FontAwesomeIcon
                                         icon={["fas", "trash-alt"]}
@@ -1312,14 +1362,14 @@ const Employee = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
                 >
                   <p style={{ fontSize: "1.3rem", fontWeight: "500" }}>
                     {`Showing : ${
-                      employees?.resultLength < 1
+                      usersData?.resultLength < 1
                         ? 0
                         : `${
                             pageNumber > 0 ? pageNumber * 100 + 1 : 1
                           } - ${usersPerpageCount}`
                     }
                     of ${
-                      employees?.resultLength ? employees?.resultLength : 0
+                      usersData?.resultLength ? usersData?.resultLength : 0
                     }`}
                   </p>
                 </div>
@@ -1332,4 +1382,4 @@ const Employee = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
   );
 };
 
-export default Employee;
+export default Users;

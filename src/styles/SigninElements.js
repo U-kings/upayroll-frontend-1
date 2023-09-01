@@ -108,6 +108,7 @@ export const SigninContent = styled.div`
     cursor: default;
     font-size: 2.7rem;
     font-weight: 500;
+    text-align: center;
 
     & span {
       color: ${COLORS.blue2};

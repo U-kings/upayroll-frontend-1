@@ -332,8 +332,8 @@ const BasePay = ({ basePays, toggle }) => {
                             className="icons"
                             onClick={(e) => onSelect(el?.id)}
                           >
-                            {" "}
-                            <FontAwesomeIcon icon={["fas", "edit"]} />{" "}
+                            
+                            <FontAwesomeIcon icon={["fas", "edit"]} />
                           </div>
                         </div>
                       </td>

@@ -216,6 +216,41 @@ export const adminCreateBulkEmployeeFileFunc =
     }
   };
 
+export const adminCreateBulkEmployeeWithNoGradeFileFunc =
+  (formData) => async (dispatch) => {
+    const token = cookie.get("token");
+    const config = {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "multipart/form-data",
+      },
+    };
+
+    try {
+      dispatch({ type: ADMIN_CREATE_BULK_EMPLOYEE_FILE_REQUEST });
+      const body = formData;
+      const { data } = await axios.post(
+        `${urlConfig.proxyUrl.PROXYURL}api/employees/create-bulk/excel/no-grade`,
+        body,
+        config
+      );
+      dispatch({
+        type: ADMIN_CREATE_BULK_EMPLOYEE_FILE_SUCCESS,
+        payload: data,
+      });
+    } catch (error) {
+      dispatch({
+        type: ADMIN_CREATE_BULK_EMPLOYEE_FILE_FAIL,
+        payload:
+          error?.response &&
+          (error?.response?.data?.detail || error?.response?.data?.errors)
+            ? error?.response?.data?.detail ||
+              error?.response?.data?.errors?.map((el) => el?.msg)?.join(" ")
+            : error?.message,
+      });
+    }
+  };
+
 export const hrUploadBulkContractStaffFunc =
   (uploadData) => async (dispatch) => {
     const token = cookie.get("token");
@@ -293,7 +328,10 @@ export const adminDeleteEmployeeById = (id, month) => async (dispatch) => {
 
   try {
     dispatch({ type: ADMIN_DELETE_EMPLOYEE_BY_ID_REQUEST });
-    await axios.delete(`${urlConfig.proxyUrl.PROXYURL}api/employees/${id}`, config);
+    await axios.delete(
+      `${urlConfig.proxyUrl.PROXYURL}api/employees/${id}`,
+      config
+    );
     dispatch({
       type: ADMIN_DELETE_EMPLOYEE_BY_ID_SUCCESS,
     });
@@ -474,7 +512,8 @@ export const adminDeleteEmployeeDeduction =
   };
 
 export const employeeGetAllPayslipsFunc =
-  (companyId, userRole) => async (dispatch) => {
+  (page = 1, perPage = 100) =>
+  async (dispatch) => {
     const token = cookie.get("token");
     const config = {
       headers: {
@@ -484,7 +523,7 @@ export const employeeGetAllPayslipsFunc =
     try {
       dispatch({ type: EMPLOYEE_GET_ALL_PAYSLIPS_REQUEST });
       const { data } = await axios.get(
-        `${urlConfig.proxyUrl.PROXYURL}api/employees/get-generated/payslips/2?companyId=${companyId}&role=${userRole}`,
+        `${urlConfig.proxyUrl.PROXYURL}api/employees/get-generated/payslips?page=${page}&perPage=${perPage}`,
         config
       );
       dispatch({ type: EMPLOYEE_GET_ALL_PAYSLIPS_SUCCESS, payload: data });

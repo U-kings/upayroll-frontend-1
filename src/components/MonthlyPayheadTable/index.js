@@ -289,15 +289,15 @@ const MonthlyPayheadTable = ({ toggle }) => {
                             className="icons"
                             onClick={(e) => onSelect(mthPayhead?.id)}
                           >
-                            {" "}
-                            <FontAwesomeIcon icon={["fas", "edit"]} />{" "}
+                            
+                            <FontAwesomeIcon icon={["fas", "edit"]} />
                           </div>
                           <div
                             className="icons"
                             onClick={(e) => popup4(mthPayhead?.id)}
                           >
-                            {" "}
-                            <FontAwesomeIcon icon={["fas", "trash-alt"]} />{" "}
+                            
+                            <FontAwesomeIcon icon={["fas", "trash-alt"]} />
                           </div>
                         </div>
                       </td>

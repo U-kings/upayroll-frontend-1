@@ -1,9 +1,10 @@
 import React, { useRef } from "react";
 
 const SearchBar = ({ term, searchKeyWord }) => {
-  const inputEl = useRef("");
+  const inputEl = useRef(null);
   const getSearchTerm = () => {
     searchKeyWord(inputEl.current.value);
+    // searchKeyWord(inputEl.current.value);
   };
   return (
     <>

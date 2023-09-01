@@ -295,20 +295,20 @@ const Department = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
                                   className="icons"
                                   onClick={(e) => onSelect(el?.id)}
                                 >
-                                  {" "}
+                                  
                                   <FontAwesomeIcon
                                     icon={["fas", "edit"]}
-                                  />{" "}
+                                  />
                                 </div>
                                 <div
                                   title="Delete"
                                   className="icons"
                                   onClick={(e) => popup4(el?.id)}
                                 >
-                                  {" "}
+                                  
                                   <FontAwesomeIcon
                                     icon={["fas", "trash-alt"]}
-                                  />{" "}
+                                  />
                                 </div>
                               </div>
                             </td>

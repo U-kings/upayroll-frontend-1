@@ -16,6 +16,24 @@ export const LeftSide = styled.div`
   height: 100vh;
   transition: 360ms ease-in-out;
 
+   &::-webkit-scrollbar {
+    /* display: none; */
+    width: 1rem;
+    height: 1rem;
+    margin-top: 4rem;
+    position: absolute;
+    z-index: 200;
+  }
+  &::-webkit-scrollbar-track {
+    background-color: ${COLORS.black};
+  }
+
+  &::-webkit-scrollbar-thumb {
+    cursor: pointer;
+    background: ${COLORS.grey};
+    border-radius: 0.3rem;
+  }
+
   & .leftside__header {
     position: sticky;
     top: 0;

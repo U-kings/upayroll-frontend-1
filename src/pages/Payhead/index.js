@@ -147,7 +147,7 @@ const Payheads = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
       });
     }
 
-    setIsOpen7(false);
+    if (isOpen7) setIsOpen7(false);
   };
 
   const onSave = (e, type) => {
@@ -256,7 +256,9 @@ const Payheads = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
   const phd = "active";
   return (
     <>
-      {loadingAllowances && loadingDeductions && <LoadingSpinner toggle={toggle} />}
+      {loadingAllowances && loadingDeductions && (
+        <LoadingSpinner toggle={toggle} />
+      )}
       {updateAllowanceLoading && <LoadingSpinner toggle={toggle} />}
       {updateDeductionLoading && <LoadingSpinner toggle={toggle} />}
       <Successful
@@ -272,7 +274,8 @@ const Payheads = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
         message="Deduction updated successfully!"
       />
       {allowanceId && (
-        <Comfirm toggle={toggle}
+        <Comfirm
+          toggle={toggle}
           isOpen4={isOpen4}
           popup4={popup4}
           setIsOpen4={setIsOpen4}
@@ -281,7 +284,8 @@ const Payheads = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
         />
       )}
       {deductionId && (
-        <Comfirm toggle={toggle}
+        <Comfirm
+          toggle={toggle}
           isOpen4={isOpen4}
           popup4={popup4}
           setIsOpen4={setIsOpen4}

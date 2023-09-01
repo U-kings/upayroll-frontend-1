@@ -1248,6 +1248,7 @@ export const PageNotFoundContainer = styled.section`
   /* background-size: cover; */
   position: relative;
   width: 100%;
+  z-index: -1;
   display: flex;
   height: 100vh;
   top: 0;

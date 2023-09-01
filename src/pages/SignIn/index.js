@@ -17,7 +17,7 @@ import {
   LOGIN_ADMIN_USER_RESET,
 } from "../../types/auth";
 import { COLORS } from "../../values/colors";
-import { TextLink } from "../../styles/SidenavElements";
+// import { TextLink } from "../../styles/SidenavElements";
 
 const SignIn = () => {
   const dispatch = useDispatch();
@@ -27,6 +27,11 @@ const SignIn = () => {
     isLoading: isLoadingToken,
     error: tokenError,
   } = useSelector((state) => state.adminLoginStatus);
+  const {
+    employeeInfo,
+    isLoading: employeeIsLoadingToken,
+    error: employeeTokenError,
+  } = useSelector((state) => state.employeeLoginStatus);
   const cookieValid = useSelector((state) => state.checkCookieTokenValid);
   const history = useHistory();
 
@@ -41,9 +46,11 @@ const SignIn = () => {
   const onChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
-
   useEffect(() => {
-    if (adminInfo?.isAuthenticated && adminInfo?.user?.name) {
+    if (
+      (adminInfo?.isAuthenticated && adminInfo?.user?.name) ||
+      (employeeInfo?.isAuthenticated && employeeInfo?.user?.name)
+    ) {
       history.push("dashboard");
     }
 
@@ -57,7 +64,7 @@ const SignIn = () => {
         password: "",
       });
     }
-  }, [adminLogin, history, adminInfo, dispatch]);
+  }, [adminLogin, employeeInfo, history, adminInfo, dispatch]);
 
   useEffect(() => {
     if (cookieValid.status) {
@@ -175,7 +182,7 @@ const SignIn = () => {
               <br />
               <SignUpLink to="/signup">
                 <h3>
-                  Don't have an account?{" "}
+                  Don't have an account?
                   <b style={{ fontSize: "1.5rem" }}> Sign up</b>
                 </h3>
               </SignUpLink>

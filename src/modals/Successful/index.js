@@ -12,11 +12,15 @@ const Successful = ({ isOpen7, popup7, message, isPayslip }) => {
 
   return (
     <>
-      <ModalBackground isOpen7={isOpen7} />
+      <ModalBackground isOpen7={isOpen7 && isOpen7} />
       <ModalContainer isOpen7={isOpen7}>
         <div className="successful__container">
           <div className="row">
-            <FontAwesomeIcon className="success__icon" icon={["fas", "check"]} /> <h3>{message}</h3>
+            <FontAwesomeIcon
+              className="success__icon"
+              icon={["fas", "check"]}
+            />
+            <h3>{message}</h3>
           </div>
         </div>
       </ModalContainer>

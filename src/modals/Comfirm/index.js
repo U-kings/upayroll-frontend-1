@@ -50,11 +50,14 @@ import {
 } from "../../types/bankschedules";
 import { HR_DELETE_STAFFGRADE_BY_ID_RESET } from "../../types/staffgrade";
 import { HR_DELETE_SALARYLEVEL_BY_ID_RESET } from "../../types/salarylevel";
+import { SUPER_ADMIN_BULK_DELETE_USERS_RESET } from "../../types/users";
+import { superAdminDeleteUser } from "../../actions/users";
 
 const Comfirm = ({
   isOpen4,
   setIsOpen4,
   empId,
+  userId,
   departId,
   postId,
   allId,
@@ -81,6 +84,9 @@ const Comfirm = ({
   setAllIsGen,
   genPayslipAct,
   genAllPayslipAct,
+  delUsersFunc,
+  setDelUsersBulk,
+  delUsersBulk,
   delEmployeesFunc,
   setDelBulk,
   delBulk,
@@ -142,6 +148,11 @@ const Comfirm = ({
   const { isLoading: loadingDelete } = useSelector(
     (state) => state.adminDeleteEmployee
   );
+  const {
+    success: deleteBulkUsersSuccess,
+    error: deleteBulkUsersError,
+    isLoading: deleteBulkUsersLoading,
+  } = useSelector((state) => state.superAdminBulkDeleteUsers);
   const {
     success: deleteBulkEmployeeSuccess,
     error: deleteBulkEmployeeError,
@@ -323,6 +334,9 @@ const Comfirm = ({
     if (empId) {
       dispatch(adminDeleteEmployeeById(empId, month));
     }
+    if (userId) {
+      dispatch(superAdminDeleteUser(userId, month));
+    }
     if (departId) {
       dispatch(adminDeleteDepartmentById(departId));
     }
@@ -363,6 +377,9 @@ const Comfirm = ({
       genAllPayslipAct();
     }
 
+    if (delUsersBulk) {
+      delUsersFunc();
+    }
     if (delBulk) {
       delEmployeesFunc();
     }
@@ -436,6 +453,9 @@ const Comfirm = ({
     }
     if (allIsGen) {
       setAllIsGen(false);
+    }
+    if (delUsersBulk) {
+      setDelUsersBulk(false);
     }
     if (delBulk) {
       setDelBulk(false);
@@ -520,8 +540,8 @@ const Comfirm = ({
       setIsOpen4(false);
     } else if (deleteDepartmentSuccess && !deleteDepartmentError) {
       dispatch({ type: ADMIN_DELETE_DEPARTMENT_BY_ID_RESET });
-      setDepartmentId(null);
-      setForm({ name: "" });
+      // setDepartmentId(null);
+      // setForm({ name: "" });
       setIsOpen4(false);
     } else if (deletePositionSuccess && !deletePositionError) {
       dispatch({ type: ADMIN_DELETE_POSITION_BY_ID_RESET });
@@ -541,6 +561,7 @@ const Comfirm = ({
     ) {
       dispatch({ type: ADMIN_GENERATE_BULK_PAYSLIPS_RESET });
       dispatch({ type: ADMIN_GENERATE_BULK_PAYSLIPS_ALL_RESET });
+      setIsOpen4(false);
 
       history.push("payroll");
     } else if (
@@ -548,10 +569,15 @@ const Comfirm = ({
       generateAllBulkPayslipSuccess
     ) {
       dispatch({ type: GENERATE_PAYSLIP_RESET });
+      setIsOpen4(false);
 
       history.push("payroll");
+    } else if (deleteBulkUsersSuccess && !deleteBulkUsersError) {
+      dispatch({ type: SUPER_ADMIN_BULK_DELETE_USERS_RESET });
+      setIsOpen4(false);
     } else if (deleteBulkEmployeeSuccess && !deleteBulkEmployeeError) {
       dispatch({ type: ADMIN_DELETE_BULK_EMPLOYEES_BY_IDS_RESET });
+      setIsOpen4(false);
     } else if (deleteSalarySlipSuccess && !deleteSalarySlipError) {
       dispatch({ type: DELETE_GENERATED_PAYSLIP_BY_ID_RESET });
       setDelBulkPayslip(false);
@@ -561,8 +587,8 @@ const Comfirm = ({
     } else if (adminDeleteBulkPayslipSuccess && !adminDeleteBulkPayslipError) {
       dispatch({ type: ADMIN_DELETE_BULK_PAYSLIPS_RESET });
       setDelBulkPayslip(false);
-      setIsOpen4(false);
       setCurrentSlip(null);
+      setIsOpen4(false);
     } else if (
       hrSetNotApprovedSalaryslipsSuccess &&
       !hrSetNotApprovedSalaryslipsError
@@ -571,8 +597,8 @@ const Comfirm = ({
         type: HR_SET_NOT_APPROVED_GENERATED_PAYSLIPS_RESET,
       });
       setNotApprovedBulk(false);
-      setIsOpen4(false);
       setCurrentSlip(null);
+      setIsOpen4(false);
     } else if (
       auditorSetPreApprovedSalaryslipsSuccess &&
       !auditorSetPreApprovedSalaryslipsError
@@ -581,8 +607,8 @@ const Comfirm = ({
         type: AUDITOR_SET_PRE_APPROVED_GENERATED_PAYSLIPS_RESET,
       });
       setPreApprovedBulk(false);
-      setIsOpen4(false);
       setCurrentSlip(false);
+      setIsOpen4(false);
     } else if (
       ceoSetApprovedSalaryslipsSuccess &&
       !ceoSetApprovedSalaryslipsError
@@ -592,8 +618,8 @@ const Comfirm = ({
       });
 
       setApprovedBulk(false);
-      setIsOpen4(false);
       setCurrentSlip(false);
+      setIsOpen4(false);
     } else if (
       ceoApprovedBankScheduleSuccess &&
       !ceoApprovedBankScheduleError
@@ -613,8 +639,8 @@ const Comfirm = ({
         type: ACCOUNTANT_CREATE_NOT_APPROVED_VOUCHERS_FROM_SALARYSLIPS_RESET,
       });
       setVoucherBulk(false);
-      setIsOpen4(false);
       setCurrentSlip(false);
+      setIsOpen4(false);
       // history.push("voucher");
     } else if (
       auditorPreApprovedVoucherSuccess &&
@@ -707,6 +733,9 @@ const Comfirm = ({
       setIsOpen4(false);
     }
     setIsOpen7(false);
+    // if (isOpen4 === true) {
+    //   setIsOpen4(false);
+    // }
   };
 
   return (
@@ -717,6 +746,7 @@ const Comfirm = ({
       {deletePositionLoading && <LoadingSpinner toggle={toggle} />}
       {deleteStaffLevelLoading && <LoadingSpinner toggle={toggle} />}
       {deleteMonthlyPayheadLoading && <LoadingSpinner toggle={toggle} />}
+      {deleteBulkUsersLoading && <LoadingSpinner toggle={toggle} />}
       {deleteBulkEmployeeLoading && <LoadingSpinner toggle={toggle} />}
       {(generateBulkPayslipLoading ||
         generatePayslipLoading ||
@@ -758,26 +788,6 @@ const Comfirm = ({
       )}
       {deleteStaffGradeLoading && <LoadingSpinner toggle={toggle} />}
       {deleteSalaryLevelLoading && <LoadingSpinner toggle={toggle} />}
-
-      <Successful
-        isOpen7={
-          isOpen7 ||
-          (deleteAllowanceSuccess &&
-            !deleteAllowanceError &&
-            !deleteAllowanceLoading)
-        }
-        popup7={popup7}
-        message="Addition deleted successfully!"
-      />
-      <Successful
-        isOpen7={
-          deleteDeductionSuccess &&
-          !deleteDeductionError &&
-          !deleteDeductionLoading
-        }
-        popup7={popup7}
-        message="Deduction deleted successfully!"
-      />
       <Successful
         isOpen7={
           deleteDepartmentSuccess &&
@@ -785,7 +795,7 @@ const Comfirm = ({
           !deleteDeductionLoading
         }
         popup7={popup7}
-        message="Department deleted successfully!"
+        message="Deleted department successfully!"
       />
       <Successful
         isOpen7={
@@ -794,7 +804,7 @@ const Comfirm = ({
           !deletePositionLoading
         }
         popup7={popup7}
-        message="Position deleted successfully!"
+        message="Deleted position successfully!"
       />
       <Successful
         isOpen7={
@@ -803,7 +813,7 @@ const Comfirm = ({
           !deleteStaffLevelLoading
         }
         popup7={popup7}
-        message="StaffLevel deleted successfully!"
+        message="Deleted staffLevel successfully!"
       />
       <Successful
         isOpen7={
@@ -812,21 +822,7 @@ const Comfirm = ({
           !deleteMonthlyPayheadLoading
         }
         popup7={popup7}
-        message="Monthlypayhead deleted successfully!"
-      />
-      <Successful
-        isOpen7={
-          (generateBulkPayslipSuccess &&
-            !generateBulkPayslipError &&
-            !generateBulkPayslipLoading) ||
-          generateAllBulkPayslipSuccess
-        }
-        popup7={popup7}
-        message={
-          generateAllBulkPayslipSuccess
-            ? "All Payslip generated successfully"
-            : "Bulk payslips generated successfully!"
-        }
+        message="Deleted Monthlypayhead successfully!"
       />
       <Successful
         isOpen7={
@@ -835,16 +831,7 @@ const Comfirm = ({
           !generatePayslipLoading
         }
         popup7={popup7}
-        message="Payslip generated successfully!"
-      />
-      <Successful
-        isOpen7={
-          deleteBulkEmployeeSuccess &&
-          !deleteBulkEmployeeError &&
-          !deleteBulkEmployeeLoading
-        }
-        popup7={popup7}
-        message="Deleted bulk employees successfully!"
+        message="Payroll generated successfully!"
       />
       <Successful
         isOpen7={
@@ -853,7 +840,7 @@ const Comfirm = ({
           !deleteSalarySlipLoading
         }
         popup7={popup7}
-        message="Deleted payslip successfully!"
+        message="Payslip deleted successfully!"
       />
       <Successful
         isOpen7={
@@ -862,7 +849,7 @@ const Comfirm = ({
           !adminDeleteBulkPayslipLoading
         }
         popup7={popup7}
-        message="Deleted bulk payslips successfully!"
+        message="Payslips deleted successfully!"
       />
       <Successful
         isOpen7={
@@ -871,7 +858,7 @@ const Comfirm = ({
           !hrSetNotApprovedSalaryslipsIsLoading
         }
         popup7={popup7}
-        message="Set Salaryslips to not approved successfully!"
+        message="Payslips sent to HR!"
       />
       <Successful
         isOpen7={
@@ -880,7 +867,7 @@ const Comfirm = ({
           !auditorSetPreApprovedSalaryslipsLoading
         }
         popup7={popup7}
-        message="Set Salaryslips to pre approved successfully!"
+        message="Payslips pre approved successfully!"
       />
       <Successful
         isOpen7={
@@ -889,7 +876,7 @@ const Comfirm = ({
           !ceoSetApprovedSalaryslipsLoading
         }
         popup7={popup7}
-        message="Salaryslips approved successfully!"
+        message="Payslips approved successfully!"
       />
       <Successful
         isOpen7={
@@ -898,7 +885,7 @@ const Comfirm = ({
           !ceoApproveVoucherLoading
         }
         popup7={popup7}
-        message="Bank voucher approved successfully!"
+        message="Voucher approved successfully!"
       />
 
       <Successful
@@ -908,7 +895,7 @@ const Comfirm = ({
           !ceoApprovedBankScheduleLoading
         }
         popup7={popup7}
-        message="Bank Schedule approved successfully!"
+        message="Bank schedules approved successfully!"
       />
 
       <Successful
@@ -918,7 +905,7 @@ const Comfirm = ({
           !accountantCreateNotApprovedLoading
         }
         popup7={popup7}
-        message="Created vouchers successfully!"
+        message="Vouchers created successfully!"
       />
 
       <Successful
@@ -928,7 +915,7 @@ const Comfirm = ({
           !ceoApproveVoucherLoading
         }
         popup7={popup7}
-        message="Created pre approved vouchers successfully!"
+        message="Pre approved vouchers rejected successfully!"
       />
 
       <Successful
@@ -938,7 +925,7 @@ const Comfirm = ({
           !ceoApproveVoucherLoading
         }
         popup7={popup7}
-        message="Created approved vouchers successfully!"
+        message="Vouchers approved successfully!"
       />
 
       <Successful
@@ -948,10 +935,10 @@ const Comfirm = ({
           !accountantCreateBankScheduleLoading
         }
         popup7={popup7}
-        message="Create Bank Schedules successfully!"
+        message="Bank schedules created successfully!"
       />
 
-      <Successful
+      {/* <Successful
         isOpen7={
           accountantCreateBankScheduleSuccess &&
           !accountantCreateBankScheduleError &&
@@ -959,7 +946,7 @@ const Comfirm = ({
         }
         popup7={popup7}
         message="Create Bank Schedules successfully!"
-      />
+      /> */}
 
       <Successful
         isOpen7={
@@ -968,7 +955,7 @@ const Comfirm = ({
           !accountantDeleteBanksheduleByIdLoading
         }
         popup7={popup7}
-        message="Deleted Bank Schedule successfully!"
+        message="Bank schedules deleted successfully!"
       />
 
       <Successful
@@ -978,7 +965,7 @@ const Comfirm = ({
           !rejectNotApprovedSalaryLoading
         }
         popup7={popup7}
-        message="Salaryslips is rejected successfully! and sent to HR to review"
+        message="Payslips rejected successfully, and sent to HR to review"
       />
 
       <Successful
@@ -988,7 +975,7 @@ const Comfirm = ({
           !rejectPreApprovedSalaryloading
         }
         popup7={popup7}
-        message="Salaryslips is rejected successfully! and sent to HR to review"
+        message="Pre approved payslips rejected successfully, and sent to HR to review"
       />
 
       <Successful
@@ -998,7 +985,7 @@ const Comfirm = ({
           !auditorAndCeoRejectExcelPayslipsLoading
         }
         popup7={popup7}
-        message="Salaryslips is rejected successfully! and sent to HR to review"
+        message="Payslips rejected successfully, and sent to HR to review"
       />
 
       <Successful
@@ -1008,7 +995,7 @@ const Comfirm = ({
           !rejectNotApprovedBankVouchersError
         }
         popup7={popup7}
-        message="Vouchers is rejected successfully!"
+        message="Vouchers rejected successfully!"
       />
 
       <Successful
@@ -1018,7 +1005,7 @@ const Comfirm = ({
           !rejectPreApprovedBankVouchersLoading
         }
         popup7={popup7}
-        message="Vouchers is rejected successfully!"
+        message="Vouchers rejected successfully!"
       />
 
       <Successful
@@ -1028,7 +1015,7 @@ const Comfirm = ({
           !accountantDeleteVoucherByIdLoading
         }
         popup7={popup7}
-        message="Voucher is deleted successfully!"
+        message="Voucher deleted successfully!"
       />
 
       <Successful
@@ -1038,7 +1025,7 @@ const Comfirm = ({
           !accountantDeleteBulkVouchersLoading
         }
         popup7={popup7}
-        message="Deleted bulk vouchers successfully! "
+        message="Vouchers deleted successfully! "
       />
 
       <Successful
@@ -1048,7 +1035,7 @@ const Comfirm = ({
           !deleteStaffGradeLoading
         }
         popup7={popup7}
-        message="Deleted staff grade successfully! "
+        message="Staff grade deleted successfully! "
       />
 
       <Successful
@@ -1058,18 +1045,14 @@ const Comfirm = ({
           !deleteSalaryLevelLoading
         }
         popup7={popup7}
-        message="Deleted salary level successfully! "
+        message="Salary level deleted successfully! "
       />
 
       {/* <Successful
-        isOpen7={
-          !deleteStepError &&
-          deleteStepSuccess &&
-          !deleteStepLoading
-        }
+        isOpen7={true}
         setIsOpen7={setIsOpen7}
         popup7={popup7}
-        message="deleted step successfully! "
+        message="Deleted step successfully! "
       /> */}
 
       {/* <Successful isOpen7={isOpen7} setIsOpen7={setIsOpen7} popup7={popup7} /> */}
@@ -1090,29 +1073,29 @@ const Comfirm = ({
             !approvedBankScheduleBulk && (
               <h2>
                 {isGen && !allIsGen
-                  ? "Generate Selected Item"
+                  ? "Generate selected items ?"
                   : !isGen && !allIsGen
-                  ? "Delete Selected Item"
+                  ? "Delete selected items ?"
                   : ""}
-                {allIsGen && !isGen ? "Generate All Payroll" : ""}
+                {allIsGen && !isGen ? "Generate all payroll ?" : ""}
               </h2>
             )}
           <h2>
-            {notApprovedBulk && "Submit Selected Items To Auditor"}
-            {preApprovedBulk && "Pre Approved Selected Items"}
-            {approvedBulk && "Approved Selected Items"}
-            {approvedBankScheduleBulk && "Approved Selected Items"}
-            {voucherBulk && "Create Vouchers From Selected Items"}
+            {notApprovedBulk && "Submit selected items to auditor ?"}
+            {preApprovedBulk && "Pre approved selected items ?"}
+            {approvedBulk && "Approved selected items ?"}
+            {approvedBankScheduleBulk && "Approved Selected Items ?"}
+            {voucherBulk && "Create vouchers from selected items ?"}
             {preApprovedVoucherBulk &&
-              "Create Pre Approved Vouchers from Selected Items"}
+              "Pre approved vouchers from selected items ?"}
             {approveVoucherBulk &&
-              "Create Approve Vouchers from Selected Items"}
+              "Create approve vouchers from selected items ?"}
             {bankScheduleBulk &&
-              "Create Bank Schedule from selected approved vouchers"}
-            {currentBankScheduleId && "Delete Selected Bank Schedule Item"}
-            {rejectSalaryslipBulk && "Reject Selected Salaryslips Item"}
-            {rejectVoucherBulk && "Reject Selected Vouchers Item"}
-            {uploadBulk && "Reject Uploaded Salaryslip Items"}
+              "Create bank schedule from selected approved vouchers ?"}
+            {currentBankScheduleId && "Delete selected bank schedule items ?"}
+            {rejectSalaryslipBulk && "Reject selected salaryslips items ?"}
+            {rejectVoucherBulk && "Reject selected vouchers items ?"}
+            {uploadBulk && "Reject uploaded salaryslip items ?"}
           </h2>
           <div className="button__row">
             <input

@@ -99,16 +99,16 @@ const DeductionTable = ({
                             className="icons"
                             onClick={(e) => onClick2(el?.id, "deduction")}
                           >
-                            {" "}
-                            <FontAwesomeIcon icon={["fas", "edit"]} />{" "}
+                            
+                            <FontAwesomeIcon icon={["fas", "edit"]} />
                           </div>
                           <div
                             title="Delete"
                             className="icons"
                             onClick={(e) => onClick3(el?.id, "deduction")}
                           >
-                            {" "}
-                            <FontAwesomeIcon icon={["fas", "trash-alt"]} />{" "}
+                            
+                            <FontAwesomeIcon icon={["fas", "trash-alt"]} />
                           </div>
                         </div>
                       </td>

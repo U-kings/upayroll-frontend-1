@@ -19,6 +19,8 @@ import {
   getNotCreatedRolesReducer,
   verifyAccountNumberReducer,
   verifyBulkAccountNumberReducer,
+  adminSetPasswordReducer,
+  employeeLoginStatusReducer,
 } from "./reducers/auth";
 
 // department reducer
@@ -216,6 +218,14 @@ import {
   hrCreateManagementStaffGradeReducer,
   hrCreateContractStaffGradeReducer,
 } from "./reducers/salarystructure";
+import {
+  superAdminBulkDeleteUsersReducer,
+  superAdminDeleteUserReducer,
+  superAdminGetAllLogsReducer,
+  superAdminGetAllUsersReducer,
+  superAdminUpdateUserReducer,
+  superAdminUpdateUserRoleReducer,
+} from "./reducers/users";
 
 // reducers
 const reducers = combineReducers({
@@ -226,8 +236,10 @@ const reducers = combineReducers({
   getNotCreatedRoles: getNotCreatedRolesReducer,
   confirmEmail: confirmEmailReducer,
   adminLoginStatus: adminLoginStatusReducer,
+  employeeLoginStatus: employeeLoginStatusReducer,
   adminForgotPassword: adminForgotPasswordReducer,
   adminResetPassword: adminResetPasswordReducer,
+  adminSetPassword: adminSetPasswordReducer,
   adminGetLoggedinDetails: adminGetLoggedinDetailsReducer,
   adminUpdateLoggedinDetails: adminUpdateLoggedinDetailsReducer,
   checkCookieTokenValid: checkCookieTokenValidReducer,
@@ -252,6 +264,15 @@ const reducers = combineReducers({
   adminDeleteEmployeeDeduction: adminDeleteEmployeeDeductionByIdReducer,
   employeeGetAllPayslips: employeeGetAllPayslipsReducer,
   employeeGetPersonalDetails: employeeGetPersonalDetailsReducer,
+
+  //users
+  superAdminGetAllUsers: superAdminGetAllUsersReducer,
+  superAdminUpdateUser: superAdminUpdateUserReducer,
+  superAdminUpdateUserRole: superAdminUpdateUserRoleReducer,
+  superAdminGetAllLogs: superAdminGetAllLogsReducer,
+  superAdminDeleteUser: superAdminDeleteUserReducer,
+  superAdminBulkDeleteUsers: superAdminBulkDeleteUsersReducer,
+
   // Allowances
   adminGetAllAllowance: adminGetAllAllowanceReducer,
   adminCreateAllowance: adminCreateAllowanceReducer,
@@ -453,10 +474,17 @@ const getAdminLoginStatusFromCookie = cookie.get("adminStatusData")
   ? JSON.parse(cookie.get("adminStatusData"))
   : null;
 
+const getEmployeeLoginStatusFromCookie = cookie.get("employeeStatusData")
+  ? JSON.parse(cookie.get("employeeStatusData"))
+  : null;
+
 // initialstate
 const initialState = {
   adminLoginStatus: {
     adminInfo: getAdminLoginStatusFromCookie,
+  },
+  employeeLoginStatus: {
+    employeeInfo: getEmployeeLoginStatusFromCookie,
   },
 };
 

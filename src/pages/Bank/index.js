@@ -459,10 +459,10 @@ const Bank = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
                                   className="icons"
                                   onClick={(e) => onSelect(el?.id)}
                                 >
-                                  {" "}
+                                  
                                   <FontAwesomeIcon
                                     icon={["fas", "edit"]}
-                                  />{" "}
+                                  />
                                 </div>
                               </div>
                             </td>

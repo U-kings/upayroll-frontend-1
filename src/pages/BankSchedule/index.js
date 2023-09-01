@@ -43,12 +43,8 @@ import { COLORS } from "../../values/colors";
 import { PaginationContainer } from "../../styles/pagination";
 import ReactPaginate from "react-paginate";
 import { currentmonthMethod } from "../../hooks/months/listMonths";
-import {
-  ACCOUNTANT_GET_APPROVED_BANKSCHEDULE_VOUCHERS_RESET,
-  ACCOUNTANT_GET_MONTHLY_BANKSCHEDULE_REQUEST,
-  CEO_APPROVE_BANKSCHEDULES_RESET,
-  CEO_GET_NOT_APPROVED_BANKSCHEDULES_RESET,
-} from "../../types/bankschedules";
+import { CEO_APPROVE_BANKSCHEDULES_RESET } from "../../types/bankschedules";
+import { DOWNLOADING_ON_PROCESS_ERROR } from "../../types/download";
 
 function BankSchedule({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) {
   // history init
@@ -138,6 +134,14 @@ function BankSchedule({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) {
     searchTerm,
     bankScheduleData,
   ]);
+
+  useEffect(() => {
+    if (downloadStatusError) {
+      setTimeout(() => {
+        dispatch({ type: DOWNLOADING_ON_PROCESS_ERROR });
+      }, 5000);
+    }
+  }, [dispatch, downloadStatusError]);
 
   useEffect(() => {
     if (ceoApprovedBankScheduleSuccess && !ceoApprovedBankScheduleError) {
@@ -261,6 +265,7 @@ function BankSchedule({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) {
           selectedOption6,
           selectedOption6?.accountNumber,
           bankSchedule?.approvedBy,
+          // `bankschedule-${bankSchedule?.paymentType}`,
           `bankschedule-${bankSchedule?.paymentType?.split(" ").join("")}`,
           bankSchedule?.month,
           bankSchedule.ceoSignature,
@@ -269,7 +274,10 @@ function BankSchedule({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) {
         )
       );
     }
-    setIsOpen3(false);
+
+    if (true) {
+      setIsOpen3(false);
+    }
   };
 
   const onDeleteBankScheduleById = () => {
@@ -287,45 +295,45 @@ function BankSchedule({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) {
   useEffect(() => {
     if (!adminInfo?.isAuthenticated && !adminInfo?.user?.name) {
       history.push("/signin");
-    }
+    } else {
+      if (pageNumber >= 0 || ceoApprovedBankScheduleSuccess) {
+        if (
+          userRole === "Accountant" ||
+          // userRole === "CEO" ||
+          userRole === "HR" ||
+          userRole === "Internal Auditor"
+        ) {
+          dispatch(adminGetAllBanksFunc());
+          dispatch(accountantGetApprovedScheduleVouchersFunc());
+          // dispatch(accountantGetMonthlyBankschedulesFunc());
+          dispatch(
+            accountantGetMonthlyBankschedulesFunc(
+              selectedOption6?.name,
+              pageNumber ? pageNumber + 1 : 1,
+              100
+            )
+          );
+        }
 
-    if (pageNumber >= 0) {
-      if (
-        userRole === "Accountant" ||
-        // userRole === "CEO" ||
-        userRole === "HR" ||
-        userRole === "Internal Auditor"
-      ) {
-        dispatch(adminGetAllBanksFunc());
-        dispatch(accountantGetApprovedScheduleVouchersFunc());
-        // dispatch(accountantGetMonthlyBankschedulesFunc());
-        dispatch(
-          accountantGetMonthlyBankschedulesFunc(
-            selectedOption6?.name,
-            pageNumber ? pageNumber + 1 : 1,
-            100
-          )
-        );
-      }
-
-      if (userRole === "CEO") {
-        dispatch(adminGetAllBanksFunc());
-        // dispatch(accountantGetMonthlyBankschedulesFunc());
-        dispatch(accountantGetApprovedScheduleVouchersFunc());
-        dispatch(
-          accountantGetMonthlyBankschedulesFunc(
-            selectedOption6?.name,
-            pageNumber ? pageNumber + 1 : 1,
-            100
-          )
-        );
-        dispatch(
-          ceoGetNotApprovedBankSchedulesFunc(
-            selectedOption10,
-            pageNumber ? pageNumber + 1 : 1,
-            100
-          )
-        );
+        if (userRole === "CEO") {
+          dispatch(adminGetAllBanksFunc());
+          // dispatch(accountantGetMonthlyBankschedulesFunc());
+          dispatch(accountantGetApprovedScheduleVouchersFunc());
+          dispatch(
+            accountantGetMonthlyBankschedulesFunc(
+              selectedOption6?.name,
+              pageNumber ? pageNumber + 1 : 1,
+              100
+            )
+          );
+          dispatch(
+            ceoGetNotApprovedBankSchedulesFunc(
+              selectedOption10,
+              pageNumber ? pageNumber + 1 : 1,
+              100
+            )
+          );
+        }
       }
     }
   }, [
@@ -336,6 +344,7 @@ function BankSchedule({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) {
     pageNumber,
     selectedOption6,
     selectedOption10,
+    ceoApprovedBankScheduleSuccess,
   ]);
 
   // useEffect(() => {
@@ -459,10 +468,17 @@ function BankSchedule({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) {
 
   const popup7 = () => {
     if (ceoApprovedBankScheduleSuccess) {
-      // history.go(0);
-      dispatch({ type: CEO_GET_NOT_APPROVED_BANKSCHEDULES_RESET });
       dispatch({ type: CEO_APPROVE_BANKSCHEDULES_RESET });
-      dispatch({ type: ACCOUNTANT_GET_APPROVED_BANKSCHEDULE_VOUCHERS_RESET });
+      // history.go(0);
+      // dispatch({ type: CEO_GET_NOT_APPROVED_BANKSCHEDULES_RESET });
+      // dispatch({ type: ACCOUNTANT_GET_APPROVED_BANKSCHEDULE_VOUCHERS_RESET });
+      // dispatch(
+      //   accountantGetMonthlyBankschedulesFunc(
+      //     selectedOption6?.name,
+      //     pageNumber ? pageNumber + 1 : 1,
+      //     100
+      //   )
+      // );
       dispatch(
         accountantGetMonthlyBankschedulesFunc(
           selectedOption6?.name,
@@ -477,12 +493,12 @@ function BankSchedule({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) {
 
   return (
     <>
-      <Successful
+      {/* <Successful
         isOpen7={ceoApprovedBankScheduleSuccess}
         // setIsOpen7={setIsOpen7}
         popup7={popup7}
-        message="Done Successfully"
-      />
+        message="Bank Schedule Approved Successfully"
+      /> */}
       {currentBankScheduleId && (
         <Comfirm
           toggle={toggle}

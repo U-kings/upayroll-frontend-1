@@ -55,7 +55,75 @@ import {
   VERIFY_BULK_ACCOUNT_NUMBER_SUCCESS,
   VERIFY_BULK_ACCOUNT_NUMBER_FAIL,
   VERIFY_BULK_ACCOUNT_NUMBER_RESET,
+  ADMIN_SET_PASSWORD_REQUEST,
+  ADMIN_SET_PASSWORD_SUCCESS,
+  ADMIN_SET_PASSWORD_FAIL,
+  ADMIN_SET_PASSWORD_RESET,
+  CHECK_EMPLOYEE_LOGIN_STATUS_REQUEST,
+  CHECK_EMPLOYEE_LOGIN_STATUS_SUCCESS,
+  CHECK_EMPLOYEE_LOGIN_STATUS_FAIL,
 } from "../types/auth";
+
+export const adminLoginStatusReducer = (state = {}, action) => {
+  const { type, payload } = action;
+
+  switch (type) {
+    case CHECK_ADMIN_LOGIN_STATUS_REQUEST:
+      return {
+        ...state,
+        isLoading: true,
+      };
+    case CHECK_ADMIN_LOGIN_STATUS_SUCCESS:
+      return {
+        ...state,
+        isLoading: false,
+        adminInfo: payload,
+      };
+    case CHECK_ADMIN_LOGIN_STATUS_FAIL:
+      return {
+        ...state,
+        isLoading: false,
+        error: payload,
+      };
+    case LOGOUT_ADMIN_USER:
+      return {};
+
+    default:
+      return state;
+  }
+};
+
+export const employeeLoginStatusReducer = (state = {}, action) => {
+  const { type, payload } = action;
+
+  switch (type) {
+    case CHECK_EMPLOYEE_LOGIN_STATUS_REQUEST:
+      return {
+        ...state,
+        isLoading: true,
+      };
+
+    case CHECK_EMPLOYEE_LOGIN_STATUS_SUCCESS:
+      return {
+        ...state,
+        isLoading: false,
+        employeeInfo: payload,
+      };
+
+    case CHECK_EMPLOYEE_LOGIN_STATUS_FAIL:
+      return {
+        ...state,
+        isLoading: false,
+        error: payload,
+      };
+
+    case LOGOUT_ADMIN_USER:
+      return {};
+
+    default:
+      return state;
+  }
+};
 
 export const loginAdminUserReducer = (state = {}, action) => {
   const { type, payload } = action;
@@ -219,38 +287,6 @@ export const confirmEmailReducer = (state = {}, action) => {
   }
 };
 
-export const adminLoginStatusReducer = (state = {}, action) => {
-  const { type, payload } = action;
-
-  switch (type) {
-    case CHECK_ADMIN_LOGIN_STATUS_REQUEST:
-      return {
-        ...state,
-        isLoading: true,
-      };
-
-    case CHECK_ADMIN_LOGIN_STATUS_SUCCESS:
-      return {
-        ...state,
-        isLoading: false,
-        adminInfo: payload,
-      };
-
-    case CHECK_ADMIN_LOGIN_STATUS_FAIL:
-      return {
-        ...state,
-        isLoading: false,
-        error: payload,
-      };
-
-    case LOGOUT_ADMIN_USER:
-      return {};
-
-    default:
-      return state;
-  }
-};
-
 export const adminGetLoggedinDetailsReducer = (state = {}, action) => {
   const { type, payload } = action;
 
@@ -375,6 +411,40 @@ export const adminResetPasswordReducer = (state = {}, action) => {
       };
 
     case ADMIN_RESET_PASSWORD_RESET:
+      return {};
+
+    default:
+      return state;
+  }
+};
+
+export const adminSetPasswordReducer = (state = {}, action) => {
+  const { type, payload } = action;
+
+  switch (type) {
+    case ADMIN_SET_PASSWORD_REQUEST:
+      return {
+        ...state,
+        isLoading: true,
+      };
+
+    case ADMIN_SET_PASSWORD_SUCCESS:
+      return {
+        ...state,
+        isLoading: false,
+        success: true,
+        payload: payload,
+        error: null,
+      };
+
+    case ADMIN_SET_PASSWORD_FAIL:
+      return {
+        ...state,
+        isLoading: false,
+        error: payload,
+      };
+
+    case ADMIN_SET_PASSWORD_RESET:
       return {};
 
     default:

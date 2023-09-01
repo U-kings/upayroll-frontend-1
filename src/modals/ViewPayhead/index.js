@@ -12,13 +12,15 @@ import { useDispatch, useSelector } from "react-redux";
 import {
   ADMIN_DELETE_EMPLOYEE_ALLOWANCE_BY_ID_RESET,
   ADMIN_DELETE_EMPLOYEE_DEDUCTION_BY_ID_RESET,
-  ADMIN_EMPLOYEE_TOPUP_RESET,
 } from "../../types/employee";
 import { ErrorBox } from "../../components";
 import { Comfirm, LoadingSpinner, Successful } from "..";
+import { useTheme } from "@mui/material";
 const ViewEmployee = ({ isOpen2, popup2, setIsOpen2, employee, toggle }) => {
   // dispatch
   const dispatch = useDispatch();
+  const theme = useTheme();
+
   const {
     success: topSuccess,
     error: topError,
@@ -32,6 +34,7 @@ const ViewEmployee = ({ isOpen2, popup2, setIsOpen2, employee, toggle }) => {
   );
   const [isOpen5, setIsOpen5] = useState(false);
   const [isOpen6, setIsOpen6] = useState(false);
+  const [payhead, setPayhead] = useState([]);
   const [employeeAllowance, setEmployeeAllowance] = useState([]);
   const [employeeDeduction, setEmployeeDeduction] = useState([]);
 
@@ -120,6 +123,7 @@ const ViewEmployee = ({ isOpen2, popup2, setIsOpen2, employee, toggle }) => {
           fee: el.fee,
           feeType: el.feeType,
           remark: el.remark,
+          isRecurring: el?.isRecurring,
         };
       });
     } else {
@@ -133,6 +137,7 @@ const ViewEmployee = ({ isOpen2, popup2, setIsOpen2, employee, toggle }) => {
           fee: el.fee,
           feeType: el.feeType,
           remark: el.remark,
+          isRecurring: el?.isRecurring,
         };
       });
     } else {
@@ -144,15 +149,6 @@ const ViewEmployee = ({ isOpen2, popup2, setIsOpen2, employee, toggle }) => {
         deductionsArr: postEmployeeDeduction,
       })
     );
-  };
-
-  const popup5 = () => {
-    setIsOpen5(!isOpen5);
-    setIsOpen2(false);
-    if (isOpen5 && !isOpen2) {
-      setIsOpen2(true);
-    }
-    // closepopus();
   };
 
   const onCancel = () => {
@@ -168,11 +164,45 @@ const ViewEmployee = ({ isOpen2, popup2, setIsOpen2, employee, toggle }) => {
       setIsOpen6(false);
     }
   };
-  const popup6 = () => {
+
+  const closeOption = () => {
+    setPayhead([]);
+  };
+
+  const popup5 = (id, type) => {
+    setIsOpen5(!isOpen5);
+    setIsOpen2(false);
+    if (isOpen5 && !isOpen2) {
+      setIsOpen2(true);
+    }
+
+    onSelect(id, type);
+
+    // closepopus();
+  };
+
+  const popup6 = (id, type) => {
     setIsOpen6(!isOpen6);
     setIsOpen2(false);
     if (isOpen6 && !isOpen2) {
       setIsOpen2(true);
+    }
+
+    onSelect(id, type);
+  };
+
+  const onSelect = (id, type) => {
+    if (type === "addition") {
+      const findId = employeeAllowance.find(
+        (el) => String(el?.allowance?.id) === String(id)
+      );
+      setPayhead(findId);
+    }
+    if (type === "deduction") {
+      const findId = employeeDeduction.find(
+        (el) => String(el?.deduction?.id) === String(id)
+      );
+      setPayhead(findId);
     }
   };
 
@@ -184,15 +214,21 @@ const ViewEmployee = ({ isOpen2, popup2, setIsOpen2, employee, toggle }) => {
         isOpen5={isOpen5}
         popup5={popup5}
         onClose={closepopus}
+        close={closeOption}
         addAllowance={addNewAllowance}
         employee={employee}
+        payhead={payhead}
+        employeeDeduction={employeeDeduction}
       />
       <AddDeduction
         isOpen6={isOpen6}
         popup6={popup6}
         onClose={closepopus}
+        close={closeOption}
         employee={employee}
         addDeduction={addNewDeduction}
+        payhead={payhead}
+        employeeAllowance={employeeAllowance}
       />
       <ModalBackground isOpen2={isOpen2} onClick={popup2} />
       <ModalContainer className="emp__view" isOpen2={isOpen2}>
@@ -220,6 +256,7 @@ const ViewEmployee = ({ isOpen2, popup2, setIsOpen2, employee, toggle }) => {
                 <h2>Additions</h2>
                 <div className="row">
                   <h2>Fee</h2>
+                  <h2>( ReCurring )</h2>
                   <div onClick={popup5} title="Add Addition">
                     <FontAwesomeIcon className="icons" icon={["fas", "plus"]} />
                   </div>
@@ -230,11 +267,17 @@ const ViewEmployee = ({ isOpen2, popup2, setIsOpen2, employee, toggle }) => {
                   <div className="list__items" key={el?.allowance?.id}>
                     <div className="item" title={el?.remark}>
                       <div className="row line">
-                        <p>{el?.allowance?.name}</p>
+                        <p
+                          style={{ cursor: "pointer" }}
+                          onClick={(e) => popup5(el?.allowance?.id, "addition")}
+                        >
+                          {el?.allowance?.name}
+                        </p>
                         <div className="row">
                           <p>
                             {el?.fee}
                             {el?.feeType === "Percentage" && "%"}
+                            {el?.isRecurring ? " (Yes)" : " (No)"}
                           </p>
                           <FontAwesomeIcon
                             title="Delete"
@@ -253,6 +296,7 @@ const ViewEmployee = ({ isOpen2, popup2, setIsOpen2, employee, toggle }) => {
                 <h2>Deductions</h2>
                 <div className="row">
                   <h2>Fee</h2>
+                  <h2>( ReCurring )</h2>
                   <div onClick={popup6} title="Add Deduction">
                     <FontAwesomeIcon className="icons" icon={["fas", "plus"]} />
                   </div>
@@ -263,12 +307,21 @@ const ViewEmployee = ({ isOpen2, popup2, setIsOpen2, employee, toggle }) => {
                   <div className="list__items" key={el?.deduction?.id}>
                     <div className="item" title={el?.remark}>
                       <div className="row line">
-                        <p>{el?.deduction?.name}</p>
+                        <p
+                          style={{ cursor: "pointer" }}
+                          onClick={(e) =>
+                            popup6(el?.deduction?.id, "deduction")
+                          }
+                        >
+                          {el?.deduction?.name}
+                        </p>
                         <div className="row">
                           <p>
                             {el?.fee}
                             {el?.feeType === "Percentage" && "%"}
+                            {el?.isRecurring ? " (Yes)" : " (No)"}
                           </p>
+                          <p>{el?.isRecurring}</p>
                           <FontAwesomeIcon
                             title="Delete"
                             className="delete"

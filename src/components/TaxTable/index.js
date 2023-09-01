@@ -75,19 +75,19 @@ const TaxTable = () => {
                                     onSelect(el?.id, "deduction")
                                   }
                                 >
-                                  {" "}
+                                  
                                   <FontAwesomeIcon
                                     icon={["fas", "edit"]}
-                                  />{" "}
+                                  />
                                 </div>
                                 <div
                                   className="icons"
                                   onClick={(e) => popup4(el?.id, "deduction")}
                                 >
-                                  {" "}
+                                  
                                   <FontAwesomeIcon
                                     icon={["fas", "trash-alt"]}
-                                  />{" "}
+                                  />
                                 </div>
                               </div>
                             </td>

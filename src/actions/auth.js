@@ -44,10 +44,13 @@ import {
   VERIFY_ACCOUNT_NUMBER_SUCCESS,
   VERIFY_ACCOUNT_NUMBER_FAIL,
   VERIFY_ACCOUNT_NUMBER_REQUEST,
+  ADMIN_SET_PASSWORD_REQUEST,
+  ADMIN_SET_PASSWORD_SUCCESS,
+  ADMIN_SET_PASSWORD_FAIL,
+  CHECK_EMPLOYEE_LOGIN_STATUS_REQUEST,
+  CHECK_EMPLOYEE_LOGIN_STATUS_SUCCESS,
+  CHECK_EMPLOYEE_LOGIN_STATUS_FAIL,
 } from "../types/auth";
-
-// import { urlConfig } from "../util/config/config";
-
 import { urlConfig } from "../util/config/config";
 
 export const adminLoginStatus = () => async (dispatch) => {
@@ -85,8 +88,42 @@ export const adminLoginStatus = () => async (dispatch) => {
   }
 };
 
+export const employeeLoginStatus = () => async (dispatch) => {
+  const token = cookie.get("token");
+  const config = {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  };
+
+  try {
+    dispatch({ type: CHECK_EMPLOYEE_LOGIN_STATUS_REQUEST });
+    const { data } = await axios.get(
+      `${urlConfig.proxyUrl.PROXYURL}api/employees/loginuser/details`,
+      config
+    );
+    dispatch({
+      type: CHECK_EMPLOYEE_LOGIN_STATUS_SUCCESS,
+      payload: data?.employee,
+    });
+    cookie.set("companyId", data?.user?.companyId);
+    // cookie.set("companyLogo", data?.user?.company?.logo);
+    cookie.set("employeeStatusData", JSON.stringify(data?.employee));
+    // cookie.set("requiresPasswordChange", data?.user?.requiresPasswordChange);
+  } catch (error) {
+    dispatch({
+      type: CHECK_EMPLOYEE_LOGIN_STATUS_FAIL,
+      payload:
+        error?.response &&
+        (error?.response?.data?.detail || error?.response?.data?.errors)
+          ? error?.response?.data?.detail ||
+            error?.response?.data?.errors?.map((el) => el?.msg)?.join(" ")
+          : error?.message,
+    });
+  }
+};
+
 export const adminLoginFunc = (formData) => async (dispatch) => {
-  // const token = cookie.get("token");
   const config = {
     headers: {
       "Content-Type": "application/json",
@@ -108,6 +145,7 @@ export const adminLoginFunc = (formData) => async (dispatch) => {
     cookie.set("token", data?.token);
     sessionStorage.setItem("item_key", data?.token);
     dispatch(adminLoginStatus());
+    dispatch(employeeLoginStatus());
   } catch (error) {
     dispatch({
       type: LOGIN_ADMIN_USER_FAIL,
@@ -122,7 +160,6 @@ export const adminLoginFunc = (formData) => async (dispatch) => {
 };
 
 export const confirmEmailFunc = (resetToken) => async (dispatch) => {
-  // const token = cookie.get("token");
   const config = {
     headers: {
       "Content-Type": "application/json",
@@ -141,8 +178,6 @@ export const confirmEmailFunc = (resetToken) => async (dispatch) => {
     dispatch({
       type: CONFIRM_EMAIL_SUCCESS,
     });
-    // cookie.set("token", data?.token);
-    // dispatch(adminLoginStatus());
   } catch (error) {
     dispatch({
       type: CONFIRM_EMAIL_FAIL,
@@ -157,11 +192,9 @@ export const confirmEmailFunc = (resetToken) => async (dispatch) => {
 };
 
 export const registerFunc = (formData) => async (dispatch) => {
-  const token = cookie.get("token");
   const config = {
     headers: {
       "Content-Type": "multipart/form-data",
-      // "Content-Type": "application/json",
     },
   };
   try {
@@ -173,8 +206,6 @@ export const registerFunc = (formData) => async (dispatch) => {
     dispatch({
       type: REGISTER_COMPANY_SUCCESS,
     });
-    // cookie.set("token", data?.token);
-    // dispatch(adminLoginStatus());
   } catch (error) {
     dispatch({
       type: REGISTER_COMPANY_FAIL,
@@ -210,8 +241,6 @@ export const registerCompanyAdminFunc = (formData) => async (dispatch) => {
     dispatch({
       type: REGISTER_COMPANY_ADMIN_SUCCESS,
     });
-    // cookie.set("token", data?.token);
-    // dispatch(adminLoginStatus());
   } catch (error) {
     dispatch({
       type: REGISTER_COMPANY_ADMIN_FAIL,
@@ -248,10 +277,6 @@ export const getNotCreatedRolesFunc = () => async (dispatch) => {
       type: GET_NOT_CREATED_ROLES_SUCCESS,
       payload: data,
     });
-
-    // console.log(data);
-    // cookie.set("token", data?.token);
-    // dispatch(adminLoginStatus());
   } catch (error) {
     dispatch({
       type: GET_NOT_CREATED_ROLES_FAIL,
@@ -420,6 +445,39 @@ export const adminResetPasswordFunc = (token, formData) => async (dispatch) => {
   }
 };
 
+export const adminSetPasswordFunc = (userId) => async (dispatch) => {
+  const config = {
+    headers: {
+      "Content-Type": "application/json",
+    },
+  };
+
+  try {
+    dispatch({ type: ADMIN_SET_PASSWORD_REQUEST });
+    const body = JSON.stringify({});
+    const { data } = await axios.patch(
+      `${urlConfig.proxyUrl.PROXYURL}api/users/setPassword/user/${userId}`,
+      body,
+      config
+    );
+    dispatch({
+      type: ADMIN_SET_PASSWORD_SUCCESS,
+      payload: data?.payload,
+    });
+    dispatch(adminLoginStatus());
+  } catch (error) {
+    dispatch({
+      type: ADMIN_SET_PASSWORD_FAIL,
+      payload:
+        error?.response &&
+        (error?.response?.data?.detail || error?.response?.data?.errors)
+          ? error?.response?.data?.detail ||
+            error?.response?.data?.errors?.map((el) => el?.msg)?.join(" ")
+          : error?.message,
+    });
+  }
+};
+
 export const verifyAccountNumberFunc = (formData) => async (dispatch) => {
   const token = cookie.get("token");
   const config = {
@@ -525,15 +583,20 @@ export const logoutAdmin =
       type: LOGOUT_ADMIN_USER,
     });
 
-    cookie.remove("token");
-    cookie.remove("adminStatusData");
-    cookie.remove("companyId");
-    // cookie.remove("companyLogo");
-    cookie.remove("hr");
-    cookie.remove("ia");
-    cookie.remove("ceo");
-    cookie.remove("acct");
-    sessionStorage.removeItem("item_key");
+    if (!checkSession) {
+    } else {
+      cookie.remove("token");
+      cookie.remove("adminStatusData");
+      cookie.remove("employeeStatusData");
+      cookie.remove("requiresPasswordChange");
+      cookie.remove("companyId");
+      // cookie.remove("companyLogo");
+      cookie.remove("hr");
+      cookie.remove("ia");
+      cookie.remove("ceo");
+      cookie.remove("acct");
+      sessionStorage.removeItem("item_key");
+    }
 
     // sessionStorage.removeItem("item_key");
   };

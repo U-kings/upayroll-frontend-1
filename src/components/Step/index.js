@@ -123,7 +123,7 @@ const Step = ({ salarySteps, staffGrade, salaryLevels, toggle }) => {
 
   return (
     <>
-      {" "}
+      
       {createStepsLoading && <LoadingSpinner toggle={toggle} />}
       {updateStepsLoading && <LoadingSpinner toggle={toggle} />}
       <Successful
@@ -135,7 +135,7 @@ const Step = ({ salarySteps, staffGrade, salaryLevels, toggle }) => {
         isOpen7={createStepsSuccess && !createStepsError && !createStepsError}
         popup7={popup7}
         message="Step Created Successfully!"
-      />{" "}
+      />
       {stepsId && (
         <Comfirm toggle={toggle}
           isOpen4={isOpen3}
@@ -262,15 +262,15 @@ const Step = ({ salarySteps, staffGrade, salaryLevels, toggle }) => {
                             className="icons"
                             onClick={(e) => onSelect(el?.id)}
                           >
-                            {" "}
-                            <FontAwesomeIcon icon={["fas", "edit"]} />{" "}
+                            
+                            <FontAwesomeIcon icon={["fas", "edit"]} />
                           </div>
                           {/* <div
                             className="icons"
                             onClick={(e) => popup(el?.id)}
                           >
-                            {" "}
-                            <FontAwesomeIcon icon={["fas", "trash-alt"]} />{" "}
+                            
+                            <FontAwesomeIcon icon={["fas", "trash-alt"]} />
                           </div> */}
                         </div>
                       </td>
@@ -356,12 +356,12 @@ const Step = ({ salarySteps, staffGrade, salaryLevels, toggle }) => {
                           className="icons"
                           onClick={(e) => onSelect(el?.id)}
                         >
-                          {" "}
-                          <FontAwesomeIcon icon={["fas", "edit"]} />{" "}
+                          
+                          <FontAwesomeIcon icon={["fas", "edit"]} />
                         </div>
                         <div className="icons" onClick={(e) => popup(el?.id)}>
-                          {" "}
-                          <FontAwesomeIcon icon={["fas", "trash-alt"]} />{" "}
+                          
+                          <FontAwesomeIcon icon={["fas", "trash-alt"]} />
                         </div>
                       </div>
                     </td> */}

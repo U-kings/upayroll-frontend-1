@@ -40,7 +40,7 @@ const ViewVoucher = ({ isOpen, popup, voucher }) => {
                 <tbody>
                   <tr>
                     <td>
-                      Transfer :{" "}
+                      Transfer :
                       <span
                         style={{
                           widows: "4px",

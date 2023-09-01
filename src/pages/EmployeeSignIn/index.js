@@ -71,7 +71,7 @@ const EmployeeSignIn = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) 
                 Payroll <span>System</span>
               </h1> */}
               <h1 style={{ fontSize: "2.3rem" }}>
-                Employee <span style={{ fontSize: "2.3rem" }}>Sign In</span>{" "}
+                Employee <span style={{ fontSize: "2.3rem" }}>Sign In</span>
                 Portal
               </h1>
               {!adminLogin?.isLoading && adminLogin?.error && (

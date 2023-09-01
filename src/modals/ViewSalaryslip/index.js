@@ -95,42 +95,39 @@ const ViewSalaryslip = ({ isOpen8, popup8, paySlip, monthlypayheads }) => {
               {paySlip?.employee?.position?.name}
             </h2>
           </div> */}
-          {paySlip?.employee?.employeeType !== "Contract" &&
-            paySlip?.employee?.employeeType !== "Intern" && (
-              <div>
-                {monthlypayheads
-                  ?.filter((data) => data?.payType === "GROSS SALARY")
-                  .map(({ name, percentage }, indexes) => (
-                    <div
-                      className="row3"
-                      style={{ backgroundColor: `${COLORS.white4}` }}
-                      key={++indexes}
-                    >
-                      <p style={{ width: "100%", fontWeight: "400" }}>
-                        {name} :
-                      </p>
-                      <p style={{ fontWeight: "400" }}>{`${
-                        paySlip?.grossPay &&
-                        commafy(
+          {paySlip?.employee?.employeeType !== "Contract-With-No-Grade" && (
+            <div>
+              {monthlypayheads
+                ?.filter((data) => data?.payType === "GROSS SALARY")
+                .map(({ name, percentage }, indexes) => (
+                  <div
+                    className="row3"
+                    style={{ backgroundColor: `${COLORS.white4}` }}
+                    key={++indexes}
+                  >
+                    <p style={{ width: "100%", fontWeight: "400" }}>{name} :</p>
+                    <p style={{ fontWeight: "400" }}>{`${
+                      paySlip?.grossPay &&
+                      commafy(
+                        Number(
                           Number(
-                            Number(
-                              Math.round(
-                                (percentage / 100) * paySlip?.grossPay + "e" + 2
-                              ) +
-                                "e-" +
-                                2
-                            )
+                            Math.round(
+                              (percentage / 100) * paySlip?.grossPay + "e" + 2
+                            ) +
+                              "e-" +
+                              2
                           )
                         )
-                      }`}</p>
-                    </div>
-                  ))}
-                {/* <div className="row">
+                      )
+                    }`}</p>
+                  </div>
+                ))}
+              {/* <div className="row">
                   <p style={{ width: "100%", fontWeight: "bold" }}>
-                    U-Wallet(Keep alive):{" "}
+                    U-Wallet(Keep alive):
                   </p>
                   <p style={{ fontWeight: "bold" }}>
-                    {" "}
+                    
                     {paySlip?.uWallet &&
                       commafy(
                         Number(
@@ -139,8 +136,8 @@ const ViewSalaryslip = ({ isOpen8, popup8, paySlip, monthlypayheads }) => {
                       )}
                   </p>
                 </div> */}
-              </div>
-            )}
+            </div>
+          )}
           <div className="row3">
             <p style={{ width: "100%", fontWeight: "bold" }}>GROSSPAY : </p>
             <p style={{ fontWeight: "bold" }}> {commafy(paySlip?.grossPay)}</p>
@@ -148,10 +145,10 @@ const ViewSalaryslip = ({ isOpen8, popup8, paySlip, monthlypayheads }) => {
           <div className="row3">
             <div style={{ borderRight: `solid 2px ${COLORS.white}`, flex: 1 }}>
               <h2 className="bg">Additions</h2>
-              {paySlip?.allowances.length > 0 ? (
+              {paySlip?.allowances?.length > 0 ? (
                 paySlip?.allowances?.map(({ allowance, fee, feeType }) => (
                   <p key={allowance?.id} style={{ whiteSpace: "nowrap" }}>
-                    {allowance?.name} :{" "}
+                    {allowance?.name} :
                     {feeType === "Amount" && `${commafy(fee)}`}
                     {feeType === "Percentage" &&
                       `${commafy(
@@ -171,14 +168,14 @@ const ViewSalaryslip = ({ isOpen8, popup8, paySlip, monthlypayheads }) => {
             </div>
             <div style={{ flex: 1 }}>
               <h2 className="bg aligntext__right">Deductions</h2>
-              {paySlip?.deductions.length > 0 ? (
+              {paySlip?.deductions?.length > 0 ? (
                 paySlip?.deductions?.map(({ deduction, fee, feeType }) => (
                   <p
                     className="aligntext__right"
                     key={deduction?.id}
                     style={{ whiteSpace: "nowrap" }}
                   >
-                    {deduction?.name} :{" "}
+                    {deduction?.name} :
                     {feeType === "Amount" && `${commafy(fee)}`}
                     {feeType === "Percentage" &&
                       `${commafy(
@@ -198,22 +195,21 @@ const ViewSalaryslip = ({ isOpen8, popup8, paySlip, monthlypayheads }) => {
             </div>
           </div>
 
-          {paySlip?.employee?.employeeType !== "Contract" &&
-            paySlip?.employee?.employeeType !== "Intern" && (
-              <>
-                <div className="align__right">
-                  <h2 className="bg aligntext__right">Pension</h2>
-                  <p className="aligntext__right">
-                    {paySlip?.pension && commafy(paySlip?.pension)}
-                  </p>
-                </div>
-                <div className="align__right">
-                  <h2 className="bg aligntext__right">Paye</h2>
-                  <p className="aligntext__right">
-                    {paySlip?.paye && commafy(paySlip?.paye)}
-                  </p>
-                </div>
-                {/* <div className="align__right">
+          {paySlip?.employee?.employeeType !== "Contract-With-No-Grade" && (
+            <>
+              <div className="align__right">
+                <h2 className="bg aligntext__right">Pension</h2>
+                <p className="aligntext__right">
+                  {paySlip?.pension && commafy(paySlip?.pension)}
+                </p>
+              </div>
+              <div className="align__right">
+                <h2 className="bg aligntext__right">Paye</h2>
+                <p className="aligntext__right">
+                  {paySlip?.paye && commafy(paySlip?.paye)}
+                </p>
+              </div>
+              {/* <div className="align__right">
                 <div className="row2">
                   <h2>Number of Working Days</h2>
                   <p>
@@ -222,8 +218,8 @@ const ViewSalaryslip = ({ isOpen8, popup8, paySlip, monthlypayheads }) => {
                   </p>
                 </div>
                 </div> */}
-              </>
-            )}
+            </>
+          )}
           <div className="row3">
             <h2 className="bg" style={{ whiteSpace: "nowrap" }}>
               Total Additions
@@ -249,7 +245,7 @@ const ViewSalaryslip = ({ isOpen8, popup8, paySlip, monthlypayheads }) => {
             </h2>
           </div>
           <h2 className="bg">
-            NETPAY :{" "}
+            NETPAY :
             {commafy(
               Number(
                 Math.round(paySlip?.netPay + paySlip?.uWallet + "e" + 2) +

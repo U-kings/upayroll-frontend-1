@@ -100,7 +100,6 @@ const Voucher = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
 
   const {
     success: accountantDeleteBulkVouchersSuccess,
-
     error: accountantDeleteBulkVouchersError,
   } = useSelector((state) => state.accountantDeleteBulkVouchers);
 
@@ -190,9 +189,71 @@ const Voucher = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
   useEffect(() => {
     if (!adminInfo?.isAuthenticated && !adminInfo?.user?.name) {
       history.push("/signin");
+    } else {
+      if (
+        pageNumber >= 0 ||
+        ceoApproveVoucherSuccess ||
+        ceoApproveVoucherAllSuccess ||
+        auditorPreApprovedVoucherSuccess ||
+        auditorPreApprovedVoucherAllSuccess ||
+        accountantCreateBankScheduleSuccess
+      ) {
+        if (userRole === "Accountant") {
+          dispatch(
+            accountGetApprovedVouchersFunc(
+              selectedOption10,
+              selectedOption,
+              pageNumber ? pageNumber + 1 : 1,
+              100
+            )
+          );
+          dispatch(adminGetAllBanksFunc());
+        } else if (userRole === "Internal Auditor") {
+          dispatch(
+            auditorGetnotApprovedVouchersFunc(
+              selectedOption10,
+              pageNumber ? pageNumber + 1 : 1,
+              100
+            )
+          );
+        } else if (userRole === "CEO") {
+          if (selectedOption === "Approved") {
+            dispatch(
+              accountGetApprovedVouchersFunc(
+                selectedOption10,
+                selectedOption,
+                pageNumber ? pageNumber + 1 : 1,
+                100
+              )
+            );
+          }
+          if (selectedOption === "Pre-Approved") {
+            dispatch(
+              ceoGetPreApprovedVouchersFunc(
+                selectedOption10,
+                pageNumber ? pageNumber + 1 : 1,
+                100
+              )
+            );
+          }
+        }
+      }
     }
     // }, [dispatch, history, adminLogin]);
-  }, [history, adminInfo]);
+  }, [
+    history,
+    adminInfo,
+    userRole,
+    pageNumber,
+    dispatch,
+    selectedOption10,
+    selectedOption,
+    ceoApproveVoucherSuccess,
+    ceoApproveVoucherAllSuccess,
+    auditorPreApprovedVoucherSuccess,
+    auditorPreApprovedVoucherAllSuccess,
+    accountantCreateBankScheduleSuccess,
+  ]);
 
   useEffect(() => {
     if (userRole === "Accountant") {
@@ -235,15 +296,14 @@ const Voucher = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
       userRole === "CEO" &&
       selectedOption === "Pre-Approved"
     ) {
-      dispatch({ type: ACCOUNTANT_GET_APPROVED_VOUCHERS_RESET });
       setBankVoucher(ceoPreApprovedVouchers?.preapproved);
+      dispatch({ type: ACCOUNTANT_GET_APPROVED_VOUCHERS_RESET });
     }
 
     if (searchTerm?.length < 1) {
       setSearchResult(bankVoucher);
     }
   }, [
-    toggle,
     userRole,
     vouchers,
     dispatch,
@@ -567,7 +627,11 @@ const Voucher = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
       setIsOpen(false);
     }
     setCurrentVoucher(null);
-    if (isOpen4 === true || rejectVoucherBulk === true || viewReject === true) {
+    if (
+      isOpen4 === false ||
+      rejectVoucherBulk === false ||
+      viewReject === false
+    ) {
       setIsOpen4(true);
       setRejectVoucherBulk(true);
       setViewReject(true);
@@ -705,77 +769,22 @@ const Voucher = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
     return statusDisplay;
   };
 
-  useEffect(() => {
-    if (pageNumber >= 0) {
-      if (userRole === "Accountant") {
-        dispatch(
-          accountGetApprovedVouchersFunc(
-            selectedOption10,
-            selectedOption,
-            pageNumber ? pageNumber + 1 : 1,
-            100
-          )
-        );
-        dispatch(adminGetAllBanksFunc());
-      } else if (userRole === "Internal Auditor") {
-        dispatch(
-          auditorGetnotApprovedVouchersFunc(
-            selectedOption10,
-            pageNumber ? pageNumber + 1 : 1,
-            100
-          )
-        );
-      } else if (userRole === "CEO") {
-        if (selectedOption === "Approved") {
-          dispatch(
-            accountGetApprovedVouchersFunc(
-              selectedOption10,
-              selectedOption,
-              pageNumber ? pageNumber + 1 : 1,
-              100
-            )
-          );
-        }
-        if (selectedOption === "Pre-Approved") {
-          dispatch(
-            ceoGetPreApprovedVouchersFunc(
-              selectedOption10,
-              pageNumber ? pageNumber + 1 : 1,
-              100
-            )
-          );
-        }
-      }
-    }
-  }, [userRole, pageNumber, dispatch, selectedOption10, selectedOption]);
-
   const popup8 = () => {
     if (
       (ceoApproveVoucherSuccess && !ceoApproveVoucherError) ||
       (ceoApproveVoucherAllSuccess && !ceoApproveVoucherErrorAll) ||
-      auditorPreApprovedVoucherSuccess
+      auditorPreApprovedVoucherSuccess ||
+      auditorPreApprovedVoucherAllSuccess ||
+      accountantCreateBankScheduleSuccess
     ) {
       setSearchTerm("");
       dispatch({ type: CEO_APPROVE_PRE_APPROVED_VOUCHERS_RESET });
       dispatch({ type: CEO_APPROVE_PRE_APPROVED_VOUCHERS_ALL_RESET });
-      dispatch({ type: CEO_GET_PRE_APPROVED_VOUCHERS_RESET });
       dispatch({ type: AUDITOR_PRE_APPROVE_VOUCHERS_RESET });
-    }
-    if (ceoApproveVoucherAllSuccess && !auditorPreApprovedVoucherAllSuccess) {
-      dispatch({ type: CEO_APPROVE_PRE_APPROVED_VOUCHERS_ALL_RESET });
-      dispatch({ type: CEO_GET_PRE_APPROVED_VOUCHERS_RESET });
       dispatch({ type: AUDITOR_PRE_APPROVE_VOUCHERS_ALL_RESET });
-    }
-    if (accountantCreateBankScheduleSuccess) {
-      // dispatch();
-      // accountGetApprovedVouchersFunc(
-      //   selectedOption10,
-      //   selectedOption,
-      //   pageNumber ? pageNumber + 1 : 1,
-      //   100
-      // )
       dispatch({ type: ACCOUNTANT_CREATE_BANKSCHEDULE_RESET });
     }
+
     if (isOpen8 === true) {
       setIsOpen8(false);
     }
@@ -800,30 +809,23 @@ const Voucher = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
         auditorPreApproveVouchersLoading ||
         ceoPreApprovedVouchersLoading) && <LoadingSpinner toggle={toggle} />}
 
-      {(ceoApproveVoucherSuccess || ceoApproveVoucherAllSuccess) && (
+      {ceoApproveVoucherAllSuccess && (
         <Successful
-          isOpen7={ceoApproveVoucherSuccess || ceoApproveVoucherAllSuccess}
+          isOpen7={ceoApproveVoucherAllSuccess}
           popup7={popup8}
-          message="Vouchers Successfully Approved!"
+          message={
+            ceoApproveVoucherAllMessage || "Your request is being processed"
+          }
           toggle={toggle}
         />
       )}
-      {(auditorPreApprovedVoucherSuccess ||
-        auditorPreApprovedVoucherAllSuccess ||
-        ceoApproveVoucherAllSuccess ||
-        accountantCreateBankScheduleSuccess) && (
+      {auditorPreApprovedVoucherAllSuccess && (
         <Successful
-          isOpen7={
-            auditorPreApprovedVoucherSuccess ||
-            auditorPreApprovedVoucherAllSuccess ||
-            ceoApproveVoucherAllSuccess ||
-            accountantCreateBankScheduleSuccess
-          }
+          isOpen7={auditorPreApprovedVoucherAllSuccess}
           popup7={popup8}
           message={
             auditorPreApprovedVoucherAllMessage ||
-            ceoApproveVoucherAllMessage ||
-            "Your request is being processed!"
+            "Your request is being processed"
           }
           toggle={toggle}
         />
@@ -1229,7 +1231,7 @@ const Voucher = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
                               }
                             </td>
                             <td>
-                              NGN{" "}
+                              NGN
                               {voucher?.amount ? commafy(voucher?.amount) : 0}
                             </td>
                             {selectedOption === "Approved" ? (

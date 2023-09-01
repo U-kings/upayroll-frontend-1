@@ -247,19 +247,19 @@
 //                                   className="icons"
 //                                   onClick={(e) => onSelect(staffLevel?.id)}
 //                                 >
-//                                   {" "}
+//                                   
 //                                   <FontAwesomeIcon
 //                                     icon={["fas", "edit"]}
-//                                   />{" "}
+//                                   />
 //                                 </div>
 //                                 <div
 //                                   className="icons"
 //                                   onClick={(e) => popup4(staffLevel?.id)}
 //                                 >
-//                                   {" "}
+//                                   
 //                                   <FontAwesomeIcon
 //                                     icon={["fas", "trash-alt"]}
-//                                   />{" "}
+//                                   />
 //                                 </div>
 //                               </div>
 //                             </td>

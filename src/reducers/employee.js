@@ -57,6 +57,7 @@ import {
   ADMIN_DELETE_ALL_EMPLOYEES_SUCCESS,
   ADMIN_DELETE_ALL_EMPLOYEES_FAIL,
   ADMIN_DELETE_ALL_EMPLOYEES_RESET,
+  EMPLOYEE_GET_ALL_PAYSLIPS_RESET,
 } from "../types/employee";
 
 export const adminCreateEmployeeReducer = (state = {}, action) => {
@@ -513,6 +514,8 @@ export const employeeGetAllPayslipsReducer = (state = {}, action) => {
         isLoading: false,
         error: payload,
       };
+    case EMPLOYEE_GET_ALL_PAYSLIPS_RESET:
+      return {};
 
     default:
       return state;

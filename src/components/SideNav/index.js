@@ -9,7 +9,6 @@ import {
 } from "../../styles/SidenavElements";
 
 const SideNav = ({
-  isopen9,
   dash,
   emp,
   slp,
@@ -20,6 +19,8 @@ const SideNav = ({
   mph,
   vch,
   psl,
+  usersActive,
+  auditlog,
   loan,
   loanreq,
   bnkschd,
@@ -87,7 +88,7 @@ const SideNav = ({
                     className="icons"
                     icon={["fas", "money-check"]}
                   />
-                  <p>Payroll</p>{" "}
+                  <p>Payroll</p>
                 </li>
               </NavLink>
               <NavLink to="/pay-head">
@@ -96,7 +97,7 @@ const SideNav = ({
                     className="icons"
                     icon={["fas", "hand-holding-usd"]}
                   />
-                  <p>Pay Head</p>{" "}
+                  <p>Pay Head</p>
                 </li>
               </NavLink>
               <NavLink to="/monthly-payhead">
@@ -105,7 +106,7 @@ const SideNav = ({
                     className="icons"
                     icon={["fas", "money-bill-alt"]}
                   />
-                  <p>Monthly Pay Head</p>{" "}
+                  <p>Monthly Pay Head</p>
                 </li>
               </NavLink>
               <NavLink to="/department">
@@ -114,7 +115,7 @@ const SideNav = ({
                     className="icons"
                     icon={["fas", "house-user"]}
                   />
-                  <p>Department</p>{" "}
+                  <p>Department</p>
                 </li>
               </NavLink>
               <NavLink to="/position">
@@ -123,7 +124,7 @@ const SideNav = ({
                     className="icons"
                     icon={["fas", "user-tag"]}
                   />
-                  <p>Position</p>{" "}
+                  <p>Position</p>
                 </li>
               </NavLink>
               {/* <NavLink to="/loan">
@@ -132,7 +133,7 @@ const SideNav = ({
                     className="icons"
                     icon={["fas", "money-check-alt"]}
                   />
-                  <p>Loan</p>{" "}
+                  <p>Loan</p>
                 </li>
               </NavLink> */}
               <NavLink to="/pay-structure">
@@ -141,7 +142,7 @@ const SideNav = ({
                     className="icons"
                     icon={["fas", "layer-group"]}
                   />
-                  <p>Pay Structure</p>{" "}
+                  <p>Pay Structure</p>
                 </li>
               </NavLink>
               <NavLink to="/bank-schedule">
@@ -150,7 +151,7 @@ const SideNav = ({
                     className="icons"
                     icon={["fas", "clipboard-list"]}
                   />
-                  <p>Bank Schedule</p>{" "}
+                  <p>Bank Schedule</p>
                 </li>
               </NavLink>
             </>
@@ -160,29 +161,42 @@ const SideNav = ({
               <NavLink to="/dashboard">
                 <li className={dash}>
                   <FontAwesomeIcon className="icons" icon={["fas", "home"]} />
-                  <p>Dashboard</p>{" "}
+                  <p>Dashboard</p>
                 </li>
-              </NavLink>{" "}
+              </NavLink>
               <NavLink to="/payroll">
                 <li className={slp}>
                   <FontAwesomeIcon
                     className="icons"
                     icon={["fas", "money-check"]}
                   />
-                  <p>Payroll</p>{" "}
+                  <p>Payroll</p>
                 </li>
-              </NavLink>{" "}
+              </NavLink>
               <NavLink to="/voucher">
                 <li className={vch}>
                   <FontAwesomeIcon
                     className="icons"
                     icon={["fas", "file-invoice-dollar"]}
                   />
-                  <p>Voucher</p>{" "}
+                  <p>Voucher</p>
                 </li>
               </NavLink>
+
+              {userRole === "Internal Auditor" && (
+                <NavLink to="/bank-schedule">
+                  <li className={bnkschd}>
+                    <FontAwesomeIcon
+                      className="icons"
+                      icon={["fas", "clipboard-list"]}
+                    />
+                    <p>Bank Schedule</p>
+                  </li>
+                </NavLink>
+              )}
             </>
           )}
+
           {userRole === "CEO" && (
             <>
               <NavLink to="/bank-schedule">
@@ -191,7 +205,22 @@ const SideNav = ({
                     className="icons"
                     icon={["fas", "clipboard-list"]}
                   />
-                  <p>Bank Schedule</p>{" "}
+                  <p>Bank Schedule</p>
+                </li>
+              </NavLink>
+              <NavLink to="/users">
+                <li className={usersActive}>
+                  <FontAwesomeIcon className="icons" icon={["fas", "users"]} />
+                  <p>Users</p>
+                </li>
+              </NavLink>
+              <NavLink to="/auditlog">
+                <li className={auditlog}>
+                  <FontAwesomeIcon
+                    className="icons"
+                    icon={["fas", "list-alt"]}
+                  />
+                  <p>Audit Log</p>
                 </li>
               </NavLink>
             </>
@@ -201,25 +230,25 @@ const SideNav = ({
               <NavLink to="/dashboard">
                 <li className={dash}>
                   <FontAwesomeIcon className="icons" icon={["fas", "home"]} />
-                  <p>Dashboard</p>{" "}
+                  <p>Dashboard</p>
                 </li>
-              </NavLink>{" "}
+              </NavLink>
               <NavLink to="/payroll">
                 <li className={slp}>
                   <FontAwesomeIcon
                     className="icons"
                     icon={["fas", "money-check"]}
                   />
-                  <p>Payroll</p>{" "}
+                  <p>Payroll</p>
                 </li>
-              </NavLink>{" "}
+              </NavLink>
               <NavLink to="/voucher">
                 <li className={vch}>
                   <FontAwesomeIcon
                     className="icons"
                     icon={["fas", "file-invoice-dollar"]}
                   />
-                  <p>Voucher</p>{" "}
+                  <p>Voucher</p>
                 </li>
               </NavLink>
               <NavLink to="/bank-schedule">
@@ -228,13 +257,13 @@ const SideNav = ({
                     className="icons"
                     icon={["fas", "clipboard-list"]}
                   />
-                  <p>Bank Schedule</p>{" "}
+                  <p>Bank Schedule</p>
                 </li>
               </NavLink>
               <NavLink to="/bank">
                 <li className={bnklst}>
                   <FontAwesomeIcon className="icons" icon={["fas", "list"]} />
-                  <p>Bank Account Settings</p>{" "}
+                  <p>Bank Account Settings</p>
                 </li>
               </NavLink>
             </>
@@ -244,7 +273,7 @@ const SideNav = ({
               <NavLink to="/dashboard">
                 <li className={dash}>
                   <FontAwesomeIcon className="icons" icon={["fas", "home"]} />
-                  <p>Dashboard</p>{" "}
+                  <p>Dashboard</p>
                 </li>
               </NavLink>
               <NavLink to="/pay-slip">
@@ -253,15 +282,15 @@ const SideNav = ({
                     className="icons"
                     icon={["fas", "file-invoice-dollar"]}
                   />
-                  <p>Pay Slip</p>{" "}
+                  <p>Pay Slip</p>
                 </li>
               </NavLink>
-              <NavLink to="/loan-request">
+              {/* <NavLink to="/loan-request">
                 <li className={loanreq}>
                   <FontAwesomeIcon className="icons" icon={["fas", "list"]} />
-                  <p>Loan Request</p>{" "}
+                  <p>Loan Request</p>
                 </li>
-              </NavLink>
+              </NavLink> */}
             </>
           )}
         </NavList>

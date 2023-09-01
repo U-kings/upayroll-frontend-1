@@ -34,6 +34,7 @@ const Dashboard = ({
 
   // redux state
   const { adminInfo } = useSelector((state) => state.adminLoginStatus);
+  const { employeeInfo } = useSelector((state) => state.employeeLoginStatus);
   const { reports, isLoading } = useSelector(
     (state) => state.getDashboardReportsResult
   );
@@ -55,26 +56,26 @@ const Dashboard = ({
   const [userRoleName] = useState(adminInfo?.user?.name || "");
   const [profileImg] = useState(adminInfo?.user?.photo || "");
   const [changePassword, setChangePassword] = useState(false);
-
   useEffect(() => {
-    if (!adminInfo?.isAuthenticated && !adminInfo?.user?.name) {
-      history.push("/signin");
-    } else {
-      // setTimeout(() => {
+    if (
+      (adminInfo?.isAuthenticated && adminInfo?.user?.name) ||
+      employeeInfo?.user?.name
+    ) {
       dispatch(getDashboardReportSummaryFunc());
-      // }, 3000);
+    } else {
+      history.push("/signin");
     }
 
     const requiresPasswordChange = cookie.get("requiresPasswordChange");
     if (requiresPasswordChange) {
-      if (JSON.parse(requiresPasswordChange)) {
+      if (JSON?.parse(requiresPasswordChange)) {
         setChangePassword(true);
         setTimeout(() => {
           history.push("profile-settings");
         }, 3000);
       }
     }
-  }, [history, dispatch, adminInfo, userRole]);
+  }, [history, dispatch, employeeInfo, adminInfo, userRole]);
 
   const dash = "active";
   return (

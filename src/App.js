@@ -11,6 +11,7 @@ import { useSelector, useDispatch } from "react-redux";
 import { library } from "@fortawesome/fontawesome-svg-core";
 import { fab } from "@fortawesome/free-brands-svg-icons";
 import {
+  faListAlt,
   faUsers,
   faBars,
   faMoneyCheck,
@@ -68,13 +69,18 @@ import {
   CreateUserRoles,
   ComfirmPage,
   Home,
+  Users,
+  AuditLog,
+  SetPassword,
 } from "./pages";
 import { GlobalStyle } from "./styles/globalStyles";
 import MonthlyPayhead from "./pages/MonthlyPayhead";
 import { config } from "./util/config/config";
 import { CHECK_COOKIE_TOKEN_VALID_RESET } from "./types/auth";
 import { useIdleTimer } from "react-idle-timer";
+import { Redirect } from "react-router-dom/cjs/react-router-dom";
 library.add(
+  faListAlt,
   fab,
   faBars,
   faUsers,
@@ -115,7 +121,7 @@ function App() {
   const cookieValid = useSelector((state) => state.checkCookieTokenValid);
   const { adminInfo } = useSelector((state) => state.adminLoginStatus);
   const [remaining, setRemaining] = useState(0);
-  const [state, setState] = useState(false);
+  // const [state, setState] = useState(false);
   const [toggle, setToggle] = useState(false);
   const [mobileToggle, setMobileToggle] = useState(false);
 
@@ -186,24 +192,24 @@ function App() {
   // const idleTimer = useIdleTimer({ onPresenceChange });
 
   const {
-    start,
-    reset,
-    activate,
-    pause,
-    resume,
-    isIdle,
-    isPrompted,
-    isLeader,
-    isLastActiveTab,
-    getTabId,
+    // start,
+    // reset,
+    // activate,
+    // pause,
+    // resume,
+    // isIdle,
+    // isPrompted,
+    // isLeader,
+    // isLastActiveTab,
+    // getTabId,
     getRemainingTime,
-    getElapsedTime,
-    getLastIdleTime,
-    getLastActiveTime,
-    getIdleTime,
-    getTotalIdleTime,
-    getActiveTime,
-    getTotalActiveTime,
+    // getElapsedTime,
+    // getLastIdleTime,
+    // getLastActiveTime,
+    // getIdleTime,
+    // getTotalIdleTime,
+    // getActiveTime,
+    // getTotalActiveTime,
   } = useIdleTimer({
     onPresenceChange,
     // onPrompt,
@@ -252,12 +258,13 @@ function App() {
     }
   });
 
-  // useEffect(() => {
-  //   const sessionKey = sessionStorage.getItem("item_key");
-  //   if (sessionKey === null) {
-  //     dispatch(logoutAdmin("no token was passed"));
-  //   }
-  // }, [dispatch]);
+  useEffect(() => {
+    const sessionKey = sessionStorage.getItem("item_key");
+
+    if (sessionKey === null) {
+      dispatch(logoutAdmin("no token was passed"));
+    }
+  }, [dispatch]);
 
   return (
     // <Router basename="/upayroll.web">
@@ -277,6 +284,43 @@ function App() {
             // path="/confirm-email/:resetToken"
             render={() => <ComfirmPage />}
           />
+          <Route
+            exact
+            path="/forgot-password"
+            render={() => (
+              <ForgotPassword
+                toggle={toggle}
+                toggleMenu={toggleMenu}
+                mobileToggle={mobileToggle}
+                toggleMobileMenu={toggleMobileMenu}
+              />
+            )}
+          />
+          <Route
+            exact
+            path="/new-password"
+            render={() => (
+              <NewPassword
+                toggle={toggle}
+                toggleMenu={toggleMenu}
+                mobileToggle={mobileToggle}
+                toggleMobileMenu={toggleMobileMenu}
+              />
+            )}
+          />
+          <Route
+            exact
+            path="/set-password"
+            render={() => (
+              <SetPassword
+                toggle={toggle}
+                toggleMenu={toggleMenu}
+                mobileToggle={mobileToggle}
+                toggleMobileMenu={toggleMobileMenu}
+              />
+            )}
+          />
+
           <Route
             exact
             path="/create-user-roles"
@@ -304,6 +348,30 @@ function App() {
             path="/employee"
             render={() => (
               <Employee
+                toggle={toggle}
+                toggleMenu={toggleMenu}
+                mobileToggle={mobileToggle}
+                toggleMobileMenu={toggleMobileMenu}
+              />
+            )}
+          />
+          <Route
+            exact
+            path="/users"
+            render={() => (
+              <Users
+                toggle={toggle}
+                toggleMenu={toggleMenu}
+                mobileToggle={mobileToggle}
+                toggleMobileMenu={toggleMobileMenu}
+              />
+            )}
+          />
+          <Route
+            exact
+            path="/auditlog"
+            render={() => (
+              <AuditLog
                 toggle={toggle}
                 toggleMenu={toggleMenu}
                 mobileToggle={mobileToggle}
@@ -491,32 +559,10 @@ function App() {
               />
             )}
           />
-          <Route
-            exact
-            path="/forgot-password"
-            render={() => (
-              <ForgotPassword
-                toggle={toggle}
-                toggleMenu={toggleMenu}
-                mobileToggle={mobileToggle}
-                toggleMobileMenu={toggleMobileMenu}
-              />
-            )}
-          />
-          <Route
-            exact
-            path="/new-password"
-            render={() => (
-              <NewPassword
-                toggle={toggle}
-                toggleMenu={toggleMenu}
-                mobileToggle={mobileToggle}
-                toggleMobileMenu={toggleMobileMenu}
-              />
-            )}
-          />
-          {/* <Footer /> */}
           <PageNotFound />
+
+          {/* <PageNotFound /> */}
+          {/* <Footer /> */}
         </Switch>
       </ThemeProvider>
     </Router>

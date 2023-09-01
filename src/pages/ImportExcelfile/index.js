@@ -15,7 +15,8 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useHistory } from "react-router-dom";
 import {
   // downloadContractBulkEmployeeTemplateExcelFileFunc,
-  downloadCreateBulkEmployeeTemplateExcelFileFunc,
+  downloadEmployeeTemplateAsExcel,
+  downloadEmployeeWithNoGradeTemplateAsExcel,
 } from "../../actions/download";
 import { Spinner, Successful } from "../../modals";
 import { ErrorBox } from "../../components";
@@ -53,6 +54,7 @@ const ImportExcelfile = ({
 
   // useStates
   const [excelData, setExcelData] = useState([]);
+  const [excelData2, setExcelData2] = useState([]);
   const [bulkData, setBulkData] = useState([]);
   const [fileName, setFileName] = useState(null);
   const [file, setFile] = useState(null);
@@ -159,9 +161,15 @@ const ImportExcelfile = ({
         reader.onload = (e) => {
           const workbook = XLSL.read(e?.target?.result, { type: "buffer" });
           const worksheetName = workbook.SheetNames[0];
+          const worksheetName2 = workbook.SheetNames[1];
+
+          // console.log(workbook);
           const worksheet = workbook.Sheets[worksheetName];
+          const worksheet2 = workbook.Sheets[worksheetName2];
           const data = XLSL.utils.sheet_to_json(worksheet);
+          const data2 = XLSL.utils.sheet_to_json(worksheet2);
           setExcelData(data);
+          setExcelData2(data2);
         };
       } else {
         setShowError("Please select only specified file type");
@@ -203,8 +211,17 @@ const ImportExcelfile = ({
     hiddenFileInput.current.click();
   };
 
-  const downloadTemplate = () => {
-    dispatch(downloadCreateBulkEmployeeTemplateExcelFileFunc());
+  const downloadTemplate = (type) => () => {
+    switch (type) {
+      case "full-time":
+        dispatch(downloadEmployeeTemplateAsExcel());
+        break;
+      case "contract-with-no-grade":
+        dispatch(downloadEmployeeWithNoGradeTemplateAsExcel());
+        break;
+      default:
+        break;
+    }
   };
 
   // const downloadContractTemplate = () => {
@@ -240,10 +257,17 @@ const ImportExcelfile = ({
   //   // eslint-disable-next-line
   // }, [excelData]);
 
+  //check if file has salarylevel
+
+  // const checkforSalaryLevel = () => {
+  //   const check = excelData?.hasOwnProperty("salaryLevel");
+  //   return check ? true : false;
+  // };
+
   const onCreateBulk = (e) => {
     e.preventDefault();
     const { test, test2 } = checkEmail(excelData ? excelData : []);
-    // let newData;
+
     if (checkDate(excelData)) {
       setShowError(
         "Please enter correct format for both DateOfBirth and JoinDate"
@@ -263,6 +287,8 @@ const ImportExcelfile = ({
           //   dispatch(adminCreateBulkEmployeeAllFunc(currentmonthMethod("long")));
           // } else {
           // let newData = bulkData?.map((el) => {
+
+          // let newData;
           let newData = excelData?.map((el) => {
             return {
               name: el?.Name?.trim(),
@@ -316,6 +342,10 @@ const ImportExcelfile = ({
         }
       }
     }
+
+    // const formData = new FormData();
+    // formData.append("file", file);
+    // dispatch(adminCreateBulkEmployeeFileFunc(formData));
   };
 
   return (
@@ -380,7 +410,7 @@ const ImportExcelfile = ({
                 textAlign: "center",
               }}
             >
-              &#9888;{" "}
+              &#9888;
               <u
                 style={{
                   fontSize: "1.5rem",
@@ -439,20 +469,20 @@ const ImportExcelfile = ({
               Download Excel Template
             </p>
             <div className="button__row margin__top">
-              {/* <input
-                type="submit"
-                className="disabled__btn"
-                // className="save__btn"
-                onClick={downloadTemplate}
-                value="Non-Contract Staff"
-              /> */}
               <input
                 type="button"
+                // className="save__btn"
                 className="save__btn"
-                // className="save__btn margin__left"
-                onClick={downloadTemplate}
-                value="Download"
-                // value="Contract Staff"
+                onClick={downloadTemplate("full-time")}
+                // value="Download"
+                value="Full-Time Staff"
+              />
+              <input
+                type="button"
+                // className="disabled__btn"
+                className="save__btn margin__left"
+                onClick={downloadTemplate("contract-with-no-grade")}
+                value="Contract-With-No-Grade Staff"
               />
             </div>
           </form>
@@ -478,7 +508,9 @@ const ImportExcelfile = ({
             </div>
           </div>
         </div>
-        <div className="table__body">
+
+        <h1>Employee with Grade</h1>
+        <div className="table__body" style={{ marginBottom: "2rem" }}>
           <div className="table__overflow full__height">
             <table>
               <thead>
@@ -545,6 +577,93 @@ const ImportExcelfile = ({
                       <td>{Capitalize(employee?.EmployeeType)}</td>
                       <td>{excelDateToJSDate(employee?.DateOfBirth)}</td>
                       <td>{excelDateToJSDate(employee?.JoinDate)}</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+            {/* {noEmployees} */}
+          </div>
+        </div>
+
+        <h1>Employee with No Grade</h1>
+        <div className="table__body" style={{ marginBottom: "2rem" }}>
+          <div className="table__overflow full__height">
+            <table>
+              <thead>
+                <tr>
+                  <th> S/N</th>
+                  <th> Staff ID</th>
+                  <th>Full Name</th>
+                  <th>Email Address</th>
+                  <th>Account No.</th>
+                  <th>Amount</th>
+                  {/* <th>Account Name</th> */}
+                  {/* <th>Phone Number</th> */}
+                  {/* <th>Position</th> */}
+                  {/* <th>Employee Type</th> */}
+                  {/* <th>Date of Birth</th> */}
+                  {/* <th>Join Date</th> */}
+                </tr>
+              </thead>
+              <tbody>
+                {/* {bulkData?.map((employee, index) => { */}
+                {excelData2?.map((employee, index) => {
+                  return (
+                    <tr key={++index}>
+                      <td>{++index}</td>
+                      <td>{employee?.StaffId}</td>
+                      <td>{`${trancateWord(
+                        employee?.StaffName?.toString()
+                      )} `}</td>
+                      <td>
+                        {validateEmail(employee?.Email) ? (
+                          trancateWord(employee?.Email?.toString())
+                        ) : (
+                          <p className="red">
+                            &#x26A0; {trancateWord(employee?.Email?.toString())}
+                          </p>
+                        )}
+                      </td>
+                      <td>
+                        {checkAccNumber(employee?.BankAcctNumber) ? (
+                          employee?.BankAcctNumber
+                        ) : (
+                          <p className="red">
+                            &#9888; {employee?.BankAcctNumber}
+                          </p>
+                        )}
+                      </td>
+                      <td>
+                        {employee?.Amount ? (
+                          employee?.Amount?.toString()
+                        ) : (
+                          <p className="red">&#x26A0; {"Can't be blank"}</p>
+                        )}
+                      </td>
+
+                      {/* <td>
+                        {employee?.accountName ? (
+                          employee?.accountName
+                        ) : (
+                          <p className="red">
+                            &#9888; Invalid account name
+                          </p>
+                        )}
+                      </td> */}
+
+                      {/* <td>{employee?.dob?.substring(0, 10)}</td> */}
+                      {/* <td>
+                        {checkNumber(employee?.PhoneNumber) ? (
+                          employee?.PhoneNumber
+                        ) : (
+                          <p className="red">&#9888; {employee?.PhoneNumber}</p>
+                        )}
+                      </td> */}
+                      {/* <td>{trancateWord(employee?.Position?.toString())}</td> */}
+                      {/* <td>{Capitalize(employee?.EmployeeType)}</td> */}
+                      {/* <td>{excelDateToJSDate(employee?.DateOfBirth)}</td> */}
+                      {/* <td>{excelDateToJSDate(employee?.JoinDate)}</td> */}
                     </tr>
                   );
                 })}

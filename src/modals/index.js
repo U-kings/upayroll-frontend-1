@@ -6,6 +6,7 @@ export { default as LoadingSpinner } from "./LoadingSpinner/index";
 export { default as Spinner } from "./Spinner/index";
 export { default as SelectMonth } from "./SelectMonth/index";
 export { default as Successful } from "./Successful/index";
+export { default as EditUser } from "./EditUser/index";
 export { default as ViewEmployee } from "./ViewPayhead/index";
 export { default as ViewSalaryslip } from "./ViewSalaryslip/index";
 export { default as ViewBankSchedule } from "./ViewBankSchedule/index";

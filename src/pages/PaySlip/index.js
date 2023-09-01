@@ -2,7 +2,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useHistory } from "react-router-dom";
-import { Header, SideNav, SearchBar } from "../../components";
+import { Header, SideNav, SearchBar, ErrorBox } from "../../components";
 import {
   Container,
   DashboardContainer,
@@ -14,6 +14,13 @@ import { employeeGetAllPayslipsFunc } from "../../actions/employee";
 import { COLORS } from "../../values/colors";
 import ReactPaginate from "react-paginate";
 import { PaginationContainer } from "../../styles/pagination";
+import { LoadingSpinner, ViewSalaryslip } from "../../modals";
+import {
+  EMPLOYEE_GET_ALL_PAYSLIPS_REQUEST,
+  EMPLOYEE_GET_ALL_PAYSLIPS_RESET,
+  EMPLOYEE_GET_PERSONAL_DETAILS_SUCCESS,
+} from "../../types/employee";
+import { adminGetAllMonthlyPayheads } from "../../actions/monthlypayheads";
 
 const PaySlip = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
   // history init
@@ -23,36 +30,39 @@ const PaySlip = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
 
   // redux state
   const { adminInfo } = useSelector((state) => state.adminLoginStatus);
+  const { employeeInfo } = useSelector((state) => state.employeeLoginStatus);
   const {
     employeePayslips,
     error: employeeGetAllPayslipsError,
     isLoading: employeeGetAllPayslipsLoading,
   } = useSelector((state) => state.employeeGetAllPayslips);
 
+  const { monthlyPayheads } = useSelector(
+    (state) => state.adminGetAllMonthlyPayheads
+  );
+
   const [searchResult, setSearchResult] = useState([]);
+  const [currentSlip, setCurrentSlip] = useState(null);
+  const [isOpen8, setIsOpen8] = useState(false);
   const [pageNumber, setPageNumber] = useState(0);
   const [paySlip, setPaySlip] = useState([]);
   const [arrayIds, setArrayIds] = useState([]);
   const [usersPerpageCount, setUsersPerpageCount] = useState(0);
+  const [grossSalary, setGrossSalary] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
-  const [userRole] = useState(adminInfo?.user?.role || "");
-  const [companyId] = useState(adminInfo?.user?.companyId || "");
-  const [profileImg] = useState(adminInfo?.user?.photo || "");
+  const [userRole] = useState(employeeInfo?.user?.role || "");
+  const [userRoleName] = useState(employeeInfo?.user?.name || "");
+  // const [companyId] = useState(employeeInfo?.user?.companyId || "");
+  const [profileImg] = useState(employeeInfo?.user?.photo || "");
 
   useEffect(() => {
-    if (!adminInfo?.isAuthenticated && !adminInfo?.user?.name) {
+    if (!employeeInfo?.user?.name) {
       history.push("employee-signin");
     } else {
       if (pageNumber >= 0) {
         if (userRole === "Employee") {
           dispatch(
-            // adminGetAllGeneratedPayslips("August", selectedOption)
-            employeeGetAllPayslipsFunc(
-              companyId,
-              userRole
-              // pageNumber ? pageNumber + 1 : 1,
-              // 100
-            )
+            employeeGetAllPayslipsFunc(pageNumber ? pageNumber + 1 : 1, 100)
           );
         }
       }
@@ -61,17 +71,30 @@ const PaySlip = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
     if (
       userRole === "HR" ||
       userRole === "Internal Auditor" ||
-      userRole === "CEO"
+      userRole === "CEO" ||
+      userRole === "Accountant"
     ) {
       history.push("dashboard");
     }
-  }, [history, adminInfo, userRole]);
+  }, [history, dispatch, pageNumber, employeeInfo, userRole]);
 
   useEffect(() => {
-    if (paySlip && userRole === "HR") {
+    if (employeePayslips && userRole === "Employee") {
       setPaySlip(employeePayslips?.employeePayslips);
     }
-  }, [paySlip]);
+
+    if (searchTerm.length < 1) {
+      setSearchResult(paySlip);
+    }
+  }, [paySlip, searchTerm, userRole, employeePayslips]);
+
+  useEffect(() => {
+    if (employeeGetAllPayslipsError) {
+      setTimeout(() => {
+        dispatch({ type: EMPLOYEE_GET_ALL_PAYSLIPS_RESET });
+      }, 5000);
+    }
+  }, [employeeGetAllPayslipsError, dispatch]);
 
   // Invoke when user click to request another page.
   const usersPerpage = 100;
@@ -84,20 +107,20 @@ const PaySlip = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
   useEffect(() => {
     if (pageNumber > 0) {
       let usersPerpageNum;
-      if (paySlip?.resultLength / (pageNumber + 1) > 100) {
+      if (employeePayslips?.resultLength / (pageNumber + 1) > 100) {
         usersPerpageNum = (pageNumber + 1) * 100;
       } else {
-        usersPerpageNum = paySlip?.resultLength;
+        usersPerpageNum = employeePayslips?.resultLength;
       }
       setUsersPerpageCount(usersPerpageNum);
     } else {
-      if (paySlip?.resultLength < 100) {
-        setUsersPerpageCount(paySlip?.resultLength);
+      if (employeePayslips?.resultLength < 100) {
+        setUsersPerpageCount(employeePayslips?.resultLength);
       } else {
         setUsersPerpageCount(100);
       }
     }
-  }, [paySlip]);
+  }, [employeePayslips, pageNumber]);
 
   const searchHandler = (searchTerm) => {
     setSearchTerm(searchTerm);
@@ -163,10 +186,98 @@ const PaySlip = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
     });
   }, [searchResult]);
 
+  useEffect(() => {
+    if (!monthlyPayheads) {
+      dispatch(adminGetAllMonthlyPayheads());
+    }
+  }, [dispatch, monthlyPayheads]);
+
+  const onSelect = (slipId) => {
+    const findSlip = paySlip.find((el) => String(el.id) === String(slipId));
+    if (findSlip || !currentSlip) {
+      setCurrentSlip(findSlip);
+    }
+  };
+
+  const popup8 = (id) => {
+    setIsOpen8(!isOpen8);
+    onSelect(id);
+  };
+
+  useEffect(() => {
+    if (currentSlip?.employee?.employeeType !== "Contract-With-No-Grade") {
+      if (!currentSlip?.employee?.notch) {
+        setGrossSalary(
+          currentSlip?.employee?.salaryStep?.amount
+            ? currentSlip?.employee?.salaryStep?.amount
+            : 0
+        );
+      } else if (
+        currentSlip?.employee?.salaryStep?.notches?.length &&
+        currentSlip?.employee?.notch
+      ) {
+        const notchId = currentSlip?.employee?.notch?.notchId;
+        const stepId = currentSlip?.employee?.notch?.stepId;
+        const findNotchId = currentSlip?.employee?.salaryStep?.notches?.find(
+          (notch) => String(notch?.id) === String(notchId)
+        );
+        let findStepId;
+        if (String(currentSlip?.employee?.salaryStep?.id) === String(stepId)) {
+          findStepId = true;
+        } else {
+          findStepId = false;
+        }
+        if (findNotchId && findStepId) {
+          setGrossSalary(findNotchId?.amount ? findNotchId?.amount : 0);
+        }
+      }
+    } else {
+      setGrossSalary(currentSlip?.employee?.contractSalary);
+    }
+  }, [currentSlip, grossSalary]);
+
+  const checkStatus = (status, statusLevel = "") => {
+    let statusDisplay = "";
+    if (!status && !statusLevel) {
+      statusDisplay = "generated";
+    } else if (status === 0) {
+      statusDisplay = "not__approved";
+    } else if (status === 1) {
+      statusDisplay = "pre__approved";
+    } else if (status === 2) {
+      statusDisplay = "rejected";
+    } else if (status === 3) {
+      statusDisplay = "approved";
+    }
+
+    return statusDisplay;
+  };
+
+  // const popup4 = (id) => {
+  //   setIsOpen4(!isOpen4);
+  //   onSelect(id);
+  //   if (delBulkPayslip) {
+  //     setDelBulkPayslip(false);
+  //   }
+  // };
+
   const psl = "active";
+
   return (
     <>
       {/* <DashboardContainer onClick={closeOption}> */}
+      {employeeGetAllPayslipsLoading && <LoadingSpinner />}
+
+      {currentSlip && (
+        <ViewSalaryslip
+          isOpen8={isOpen8}
+          popup8={popup8}
+          setIsOpen8={setIsOpen8}
+          paySlip={currentSlip}
+          monthlypayheads={monthlyPayheads}
+          grossSalary={grossSalary}
+        />
+      )}
       <DashboardContainer>
         <DashboardContent>
           <SideNav
@@ -181,6 +292,7 @@ const PaySlip = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
             <Header
               text="Pay Slip"
               userRole={userRole}
+              userRoleName={userRoleName}
               profileimg={profileImg}
               toggle={toggle}
               toggleMenu={toggleMenu}
@@ -188,12 +300,15 @@ const PaySlip = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
               toggleMobileMenu={toggleMobileMenu}
             />
             <Container>
+              {employeeGetAllPayslipsError && (
+                <ErrorBox errorMessage={employeeGetAllPayslipsError} />
+              )}
               <EmpContainer>
                 <div className="row"></div>
                 <div className="row">
                   {userRole === "Employee" && (
                     <>
-                      <input
+                      {/* <input
                         type="button"
                         className="general__btn"
                         // className={
@@ -204,7 +319,7 @@ const PaySlip = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
                         // onClick={downloadSalaryslipAct}
                         // disabled={!paySlip.length}
                         value="Download As PDF File"
-                      />
+                      /> */}
 
                       <div className="search__container">
                         <SearchBar
@@ -224,7 +339,7 @@ const PaySlip = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
                   <table>
                     <thead>
                       <tr>
-                        {/* {userRole === "HR" && (
+                        {userRole === "Employee" && (
                           <th>
                             <input
                               type="checkbox"
@@ -240,7 +355,7 @@ const PaySlip = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
                               onChange={handleChange}
                             />
                           </th>
-                        )} */}
+                        )}
                         <th>Employee No</th>
                         <th>Salary Month</th>
                         <th>Earnings</th>
@@ -254,60 +369,72 @@ const PaySlip = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
                       </tr>
                     </thead>
                     <tbody>
-                      {/* {searchResult
-                        .slice(pagesVisited, pagesVisited + usersPerpage)
+                      {searchResult
                         ?.sort((a, b) => b - a)
                         ?.map((employee) => {
                           return (
                             <tr key={employee?.id}>
-                              {userRole === "HR" && (
+                              {userRole === "Employee" && (
                                 <td>
                                   <input
                                     type="checkbox"
                                     // value={item.name}
-                                    name={employee.id}
+                                    name={employee?.employee?.id}
                                     checked={employee?.isChecked || false}
                                     onChange={handleChange}
                                   />
                                 </td>
                               )}
                               <td>{employee?.id}</td>
-                              <td>{`${employee?.user.name} `}</td>
-                              <td>{employee?.user.email}</td>
-                              <td>{employee?.dob.substring(0, 10)}</td>
-                              <td>{`+234 ${employee.mobile}`}</td>
-                              <td>{employee?.position?.department?.name}</td>
-                              <td>{employee?.position?.name}</td>
-                              {userRole === "HR" && (
+                              <td>{`${employee?.month} `}</td>
+                              <td>
+                                {employee?.totalEarnings
+                                  ? employee?.totalEarnings
+                                  : 0}
+                              </td>
+                              <td>{employee?.deductionTotal}</td>
+                              <td>{employee?.netSalary}</td>
+                              <td>
+                                <span
+                                  className={checkStatus(
+                                    employee?.status,
+                                    employee?.statusLevel
+                                  )}
+                                >
+                                  {checkStatus(
+                                    employee?.status,
+                                    employee?.statusLevel
+                                  ) === "generated"
+                                    ? "is generated"
+                                    : `${employee?.statusLevel}`}
+                                </span>
+                              </td>
+                              {userRole === "Employee" && (
                                 <td>
                                   {employee.acn}
                                   <div className="action__icons">
                                     <div
                                       title="View Pay Slip"
                                       className="icons"
-                                      onClick={(e) => popup2(employee?.id)}
+                                      onClick={(e) => popup8(employee?.id)}
                                     >
-                                      {" "}
-                                      <FontAwesomeIcon
-                                        icon={["fas", "eye"]}
-                                      />{" "}
+                                      <FontAwesomeIcon icon={["fas", "eye"]} />
                                     </div>
-                                    <div
+                                    {/* <div
                                       title="Delete Employee"
                                       className="icons"
                                       onClick={(e) => popup4(employee?.id)}
                                     >
-                                      {" "}
                                       <FontAwesomeIcon
                                         icon={["fas", "trash-alt"]}
-                                      />{" "}
-                                    </div>
+                                      />
+                                    </div> */}
                                   </div>
                                 </td>
                               )}
                             </tr>
                           );
-                        })} */}
+                        })}
                     </tbody>
                   </table>
                 </div>
@@ -358,13 +485,13 @@ const PaySlip = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
                 >
                   <p style={{ fontSize: "1.3rem", fontWeight: "500" }}>
                     {`Showing : ${
-                      paySlip?.resultLength < 1
+                      employeePayslips?.resultLength < 1
                         ? 0
                         : `${
                             pageNumber > 0 ? pageNumber * 100 + 1 : 1
                           } - ${usersPerpageCount}`
                     }
-                    of ${paySlip?.resultLength}`}
+                    of ${employeePayslips?.resultLength}`}
                   </p>
                 </div>
               </div>

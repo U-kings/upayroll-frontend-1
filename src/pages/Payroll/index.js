@@ -30,17 +30,17 @@ import {
   adminDeleteBulkPayslips,
   adminDeleteGeneratedPayslip,
   hrSetToNotApprovedSalaryslips,
+  hrSetToNotApprovedSalaryslipsAll,
   auditorGetNotApprovedSalaryslipsFunc,
   auditorSetPreApprovedPayslipsFunc,
+  auditorRejectNotApprovedPayslipsFunc,
+  auditorSetPreApprovedPayslipsAllFunc,
+  auditorAndCeoRejectExcelPayslipsFunc,
   ceoGetPreApprovedSalaryslipsFunc,
   ceoSetApprovedSalaryslipsFunc,
-  accountantGetApprovedSalaryslispFunc,
-  auditorRejectNotApprovedPayslipsFunc,
   ceoRejectPreApprovedPayslipsFunc,
-  auditorAndCeoRejectExcelPayslipsFunc,
-  hrSetToNotApprovedSalaryslipsAll,
-  auditorSetPreApprovedPayslipsAllFunc,
   ceoSetApprovedSalaryslipsAllFunc,
+  accountantGetApprovedSalaryslispFunc,
 } from "../../actions/payslip";
 import {
   accountantCreateNotApprovedVouchersAllFunc,
@@ -49,12 +49,10 @@ import {
 import { adminGetAllMonthlyPayheads } from "../../actions/monthlypayheads";
 
 import {
-  ACCOUNTANT_GET_APPROVED_SALARYSLIPS_RESET,
   ADMIN_DELETE_BULK_PAYSLIPS_RESET,
   AUDITOR_GET_NOT_APPROVED_SALARYSLIPS_RESET,
   AUDITOR_SET_PRE_APPROVED_GENERATED_PAYSLIPS_ALL_RESET,
   AUDITOR_SET_PRE_APPROVED_GENERATED_PAYSLIPS_RESET,
-  CEO_GET_PRE_APPROVED_SALARYSLIPS_REQUEST,
   CEO_SET_APPROVED_GENERATED_PAYSLIPS_ALL_RESET,
   CEO_SET_APPROVED_GENERATED_PAYSLIPS_RESET,
   GET_ALL_GENERATED_PAYSLIP_RESET,
@@ -76,7 +74,10 @@ import {
   downloadPensionScheduleExcelFileFunc,
   downloadSalaryAndVoucherExcelFileFunc,
 } from "../../actions/download";
-import { ACCOUNTANT_CREATE_NOT_APPROVED_VOUCHERS_FROM_SALARYSLIPS_ALL_RESET } from "../../types/voucher";
+import {
+  ACCOUNTANT_CREATE_NOT_APPROVED_VOUCHERS_FROM_SALARYSLIPS_ALL_RESET,
+  ACCOUNTANT_CREATE_NOT_APPROVED_VOUCHERS_FROM_SALARYSLIPS_RESET,
+} from "../../types/voucher";
 
 const Payroll = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
   // dispatch init
@@ -110,15 +111,15 @@ const Payroll = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
   } = useSelector((state) => state.accountantGetApprovedSalaryslips);
 
   const {
-    success: accountantCreateNotApprovedSuccess,
-    error: accountantCreateNotApprovedError,
+    success: accountantCreateNotApprovedVouchersSuccess,
+    error: accountantCreateNotApprovedVouchersError,
   } = useSelector((state) => state.accountantCreateNotApprovedVouchers);
 
   const {
-    success: accountantCreateNotApprovedAllSuccess,
-    error: accountantCreateNotApprovedAllError,
-    message: accountantCreateNotApprovedAllMessage,
-    isLoading: accountantCreateNotApprovedAllLoading,
+    success: accountantCreateNotApprovedVouchersAllSuccess,
+    error: accountantCreateNotApprovedVouchersAllError,
+    message: accountantCreateNotApprovedVouchersAllMessage,
+    isLoading: accountantCreateNotApprovedVouchersAllLoading,
   } = useSelector((state) => state.accountantCreateNotApprovedVouchersAll);
 
   const {
@@ -141,6 +142,7 @@ const Payroll = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
 
   const {
     success: auditorSetPreApprovedSalaryslipsAllSuccess,
+    message: auditorSetPreApprovedSalaryslipsAllMessage,
     error: auditorSetPreApprovedSalaryslipsAllError,
     isLoading: auditorSetPreApprovedSalaryslipsAllLoading,
   } = useSelector((state) => state.auditorSetPreApprovedPayslipsAll);
@@ -327,8 +329,8 @@ const Payroll = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
     }
 
     if (
-      accountantCreateNotApprovedSuccess &&
-      !accountantCreateNotApprovedError
+      accountantCreateNotApprovedVouchersSuccess &&
+      !accountantCreateNotApprovedVouchersError
     ) {
       setSearchTerm("");
     }
@@ -353,8 +355,8 @@ const Payroll = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
     auditorSetPreApprovedSalaryslipsSuccess,
     ceoSetApprovedSalaryslipsError,
     ceoSetApprovedSalaryslipsSuccess,
-    accountantCreateNotApprovedError,
-    accountantCreateNotApprovedSuccess,
+    accountantCreateNotApprovedVouchersError,
+    accountantCreateNotApprovedVouchersSuccess,
     hrSetNotApprovedSalaryslipsSuccess,
     hrSetNotApprovedSalaryslipsError,
     deleteSalarySlipError,
@@ -639,8 +641,9 @@ const Payroll = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
     if (salarySlip.length) {
       const newSalaryslip = salarySlip.map((el) => {
         return {
-          id: el?.id,
+          employeeStaffId: el?.employeeId,
           employeeName: el?.employee?.user?.name,
+          employeeEmail: el?.employee?.user?.email,
           employeeBankName: el?.employee?.employeeBank,
           grossPay: el?.grossPay,
           pension: el?.pension,
@@ -942,9 +945,8 @@ const Payroll = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
     </p>
   );
 
-  let statusDisplay = "";
-
   const checkStatus = (status, statusLevel = "") => {
+    let statusDisplay = "";
     if (!status && !statusLevel) {
       statusDisplay = "generated";
     } else if (status === 0) {
@@ -966,7 +968,18 @@ const Payroll = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
     if (!adminInfo?.isAuthenticated && !adminInfo?.user?.name) {
       history.push("/signin");
     } else {
-      if (pageNumber >= 0) {
+      if (
+        pageNumber >= 0 ||
+        hrSetNotApprovedSalaryslipsSuccess ||
+        hrSetNotApprovedSalaryslipsAllSuccess ||
+        auditorSetPreApprovedSalaryslipsSuccess ||
+        auditorSetPreApprovedSalaryslipsAllSuccess ||
+        ceoSetApprovedSalaryslipsSuccess ||
+        ceoSetApprovedSalaryslipsAllSuccess ||
+        adminDeleteBulkPayslipSuccess ||
+        accountantCreateNotApprovedVouchersSuccess ||
+        accountantCreateNotApprovedVouchersAllSuccess
+      ) {
         if (userRole === "HR") {
           dispatch(
             // adminGetAllGeneratedPayslips("August", selectedOption)
@@ -1029,8 +1042,15 @@ const Payroll = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
     pageNumber,
     selectedOption10,
     userRole,
-    accountantCreateNotApprovedSuccess,
-    accountantCreateNotApprovedError,
+    hrSetNotApprovedSalaryslipsSuccess,
+    hrSetNotApprovedSalaryslipsAllSuccess,
+    auditorSetPreApprovedSalaryslipsSuccess,
+    auditorSetPreApprovedSalaryslipsAllSuccess,
+    ceoSetApprovedSalaryslipsSuccess,
+    ceoSetApprovedSalaryslipsAllSuccess,
+    accountantCreateNotApprovedVouchersSuccess,
+    accountantCreateNotApprovedVouchersAllSuccess,
+    adminDeleteBulkPayslipSuccess,
     // selectedOption6,
   ]);
 
@@ -1056,10 +1076,7 @@ const Payroll = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
   }, [dispatch, getSalaryslipsError, getNotApprovedSalaryslipsError, userRole]);
 
   useEffect(() => {
-    if (
-      currentSlip?.employee?.employeeType !== "Contract" &&
-      currentSlip?.employee?.employeeType !== "Intern"
-    ) {
+    if (currentSlip?.employee?.employeeType !== "Contract-With-No-Grade") {
       if (!currentSlip?.employee?.notch) {
         setGrossSalary(
           currentSlip?.employee?.salaryStep?.amount
@@ -1093,35 +1110,28 @@ const Payroll = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
   const popup7 = () => {
     if (
       hrSetNotApprovedSalaryslipsSuccess ||
-      auditorSetPreApprovedSalaryslipsSuccess ||
       hrSetNotApprovedSalaryslipsAllSuccess ||
+      auditorSetPreApprovedSalaryslipsSuccess ||
       auditorSetPreApprovedSalaryslipsAllSuccess ||
+      ceoSetApprovedSalaryslipsSuccess ||
       ceoSetApprovedSalaryslipsAllSuccess ||
       adminDeleteBulkPayslipSuccess ||
-      ceoSetApprovedSalaryslipsSuccess
+      accountantCreateNotApprovedVouchersSuccess ||
+      accountantCreateNotApprovedVouchersAllSuccess
     ) {
       dispatch({ type: HR_SET_NOT_APPROVED_GENERATED_PAYSLIPS_RESET });
       dispatch({ type: HR_SET_NOT_APPROVED_GENERATED_PAYSLIPS_ALL_RESET });
-      dispatch({ type: AUDITOR_SET_PRE_APPROVED_GENERATED_PAYSLIPS_ALL_RESET });
       dispatch({ type: AUDITOR_SET_PRE_APPROVED_GENERATED_PAYSLIPS_RESET });
-      dispatch({ type: CEO_SET_APPROVED_GENERATED_PAYSLIPS_ALL_RESET });
+      dispatch({ type: AUDITOR_SET_PRE_APPROVED_GENERATED_PAYSLIPS_ALL_RESET });
       dispatch({ type: CEO_SET_APPROVED_GENERATED_PAYSLIPS_RESET });
-      dispatch({ type: CEO_GET_PRE_APPROVED_SALARYSLIPS_REQUEST });
+      dispatch({ type: CEO_SET_APPROVED_GENERATED_PAYSLIPS_ALL_RESET });
       dispatch({ type: ADMIN_DELETE_BULK_PAYSLIPS_RESET });
       dispatch({
         type: ACCOUNTANT_CREATE_NOT_APPROVED_VOUCHERS_FROM_SALARYSLIPS_ALL_RESET,
       });
-      dispatch({ type: ACCOUNTANT_GET_APPROVED_SALARYSLIPS_RESET });
-    }
-
-    if (accountantCreateNotApprovedAllSuccess) {
-      dispatch(
-        accountantGetApprovedSalaryslispFunc(
-          currentmonthLong,
-          pageNumber ? pageNumber + 1 : 1,
-          100
-        )
-      );
+      dispatch({
+        type: ACCOUNTANT_CREATE_NOT_APPROVED_VOUCHERS_FROM_SALARYSLIPS_RESET,
+      });
     }
   };
 
@@ -1144,7 +1154,7 @@ const Payroll = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
         ceoSetApprovedSalaryslipsLoading ||
         auditorSetPreApprovedSalaryslipsAllLoading ||
         auditorSetPreApprovedSalaryslipsLoading ||
-        accountantCreateNotApprovedAllLoading) && (
+        accountantCreateNotApprovedVouchersAllLoading) && (
         <LoadingSpinner toggle={toggle} />
       )}
       {(getNotApprovedSalaryslipsLoading ||
@@ -1158,25 +1168,18 @@ const Payroll = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
 
       <Successful
         isOpen7={
-          hrSetNotApprovedSalaryslipsSuccess ||
-          auditorSetPreApprovedSalaryslipsSuccess ||
           hrSetNotApprovedSalaryslipsAllSuccess ||
           auditorSetPreApprovedSalaryslipsAllSuccess ||
           ceoSetApprovedSalaryslipsAllSuccess ||
-          adminDeleteBulkPayslipSuccess ||
-          accountantCreateNotApprovedAllSuccess ||
-          ceoSetApprovedSalaryslipsSuccess
+          accountantCreateNotApprovedVouchersAllSuccess
         }
         setIsOpen7={setIsOpen7}
         popup7={popup7}
         message={
-          hrSetNotApprovedSalaryslipsSuccess ||
-          auditorSetPreApprovedSalaryslipsSuccess ||
-          accountantCreateNotApprovedAllMessage ||
           hrSetNotApprovedSalaryslipsAllMessage ||
+          auditorSetPreApprovedSalaryslipsAllMessage ||
           ceoSetApprovedSalaryslipsAllMessage ||
-          accountantCreateNotApprovedAllMessage ||
-          (ceoSetApprovedSalaryslipsSuccess && "Generated Successfully")
+          accountantCreateNotApprovedVouchersAllMessage
         }
       />
 
@@ -1343,24 +1346,24 @@ const Payroll = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
                 !isLoading &&
                 !ceoGetPreAndApprovedSalaryslipsLoading &&
                 (getNotApprovedSalaryslipsError ||
-                  accountantCreateNotApprovedError) && (
+                  accountantCreateNotApprovedVouchersError) && (
                   <ErrorBox
                     errorMessage={
                       getNotApprovedSalaryslipsError ||
-                      accountantCreateNotApprovedError
+                      accountantCreateNotApprovedVouchersError
                     }
                   />
                 )}
               {!downloadStatusLoading && downloadStatusError && (
                 <ErrorBox errorMessage={downloadStatusError} />
               )}
-              {(accountantCreateNotApprovedAllError ||
+              {(accountantCreateNotApprovedVouchersAllError ||
                 hrSetNotApprovedSalaryslipsAllError ||
                 auditorSetPreApprovedSalaryslipsAllError ||
                 ceoSetApprovedSalaryslipsAllError) && (
                 <ErrorBox
                   errorMessage={
-                    accountantCreateNotApprovedAllError ||
+                    accountantCreateNotApprovedVouchersAllError ||
                     hrSetNotApprovedSalaryslipsAllError ||
                     auditorSetPreApprovedSalaryslipsAllError ||
                     ceoSetApprovedSalaryslipsAllError
@@ -1548,7 +1551,7 @@ const Payroll = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
                       }
                       onClick={downloadSalaryslipAct}
                       disabled={!salarySlip?.length}
-                      value="Download Payroll  As Excel"
+                      value="Download Payroll As Excel"
                     />
                   )}
 
