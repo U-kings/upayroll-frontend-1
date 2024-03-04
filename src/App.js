@@ -267,8 +267,8 @@ function App() {
   }, [dispatch]);
 
   return (
-    // <Router basename="/upayroll.web">
-    <Router basename={config.url.BASENAME}>
+    <Router>
+    {/* <Router basename={config.url.BASENAME}> */}
       <ThemeProvider theme={theme}>
         <GlobalStyle />
         <CssBaseline />
