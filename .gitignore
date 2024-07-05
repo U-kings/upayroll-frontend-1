@@ -14,6 +14,7 @@ node_modules/
 
 # production
 /build
+build.zip
 /frontend/build
 
 # folders
@@ -24,12 +25,12 @@ upayroll-frontend.zip
 UPayrollWeb.test2.zip
 
 # misc
-.env
+# .env
+# .env.development.local
+# .env.production.local
 .DS_Store
 .env.local
-.env.development.local
 .env.test.locals
-.env.production.local
 
 npm-debug.log*
 yarn-debug.log*

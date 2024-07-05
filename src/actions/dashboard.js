@@ -19,7 +19,7 @@ export const getDashboardReportSummaryFunc = () => async (dispatch) => {
   };
   try {
     dispatch({ type: GET_DASHBOARD_REPORTS_RESULT_REQUEST });
-    const { data } = await axios.get(`${urlConfig.proxyUrl.PROXYURL}api/dashboard`, config);
+    const { data } = await axios.get(`${urlConfig.url.PROXYURL}api/dashboard`, config);
     dispatch({
       type: GET_DASHBOARD_REPORTS_RESULT_SUCCESS,
       payload: data?.reports,

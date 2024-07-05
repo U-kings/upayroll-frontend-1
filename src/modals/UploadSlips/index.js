@@ -58,6 +58,21 @@ const UploadSlips = ({
     }
   };
 
+useEffect(() => {
+  let timeoutId;
+ 
+  if (showError !== "") {
+    timeoutId = setTimeout(() => {
+      setShowError("");
+    }, 6000);
+  }
+ 
+  return () => {
+    // Clear the timeout when the component unmounts or when showError changes
+    clearTimeout(timeoutId);
+  };
+}, [showError]);
+
   const handleSubmit = (e) => {
     e.preventDefault();
     onRejectShowConfirm(excelData);

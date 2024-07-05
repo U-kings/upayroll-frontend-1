@@ -37,14 +37,31 @@ const ErrorBox = ({ errorMessage, fixed }) => {
   const [error, setError] = useState(Errorbox);
 
   useEffect(() => {
-    setTimeout(() => {
-      if (error) {
+    let timeoutId;
+
+    if (error) {
+      timeoutId = setTimeout(() => {
         setError(null);
-      }
-    }, 5000);
+      }, 6000);
+    }
+
+    return () => {
+      // Clear the timeout when the component unmounts or when showError changes
+      clearTimeout(timeoutId);
+    };
     // eslint-disable-next-line
-  }, []);
-  return <>{error}</>;
+
+  }, [error]);
+  
+  return (
+    <div
+      style={{
+        display: errorMessage ? "block" : "none",
+      }}
+    >
+      {error}
+    </div>
+  );
 };
 
 export default ErrorBox;

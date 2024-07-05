@@ -72,6 +72,7 @@ import {
   Users,
   AuditLog,
   SetPassword,
+  CreateApprovalLevel,
 } from "./pages";
 import { GlobalStyle } from "./styles/globalStyles";
 import MonthlyPayhead from "./pages/MonthlyPayhead";
@@ -79,6 +80,7 @@ import { config } from "./util/config/config";
 import { CHECK_COOKIE_TOKEN_VALID_RESET } from "./types/auth";
 import { useIdleTimer } from "react-idle-timer";
 import { Redirect } from "react-router-dom/cjs/react-router-dom";
+import ProtectedRoute from "./ProtectedRoute";
 library.add(
   faListAlt,
   fab,
@@ -120,7 +122,7 @@ function App() {
   // redux state
   const cookieValid = useSelector((state) => state.checkCookieTokenValid);
   const { adminInfo } = useSelector((state) => state.adminLoginStatus);
-  const [remaining, setRemaining] = useState(0);
+  // const [remaining, setRemaining] = useState(0);
   // const [state, setState] = useState(false);
   const [toggle, setToggle] = useState(false);
   const [mobileToggle, setMobileToggle] = useState(false);
@@ -185,7 +187,9 @@ function App() {
     // setState(true);
 
     //logout user out after idle timeout
-    dispatch(logoutAdmin("no token was passed"));
+    if (adminInfo?.isAuthenticated && adminInfo?.user?.name) {
+      dispatch(logoutAdmin("no token was passed"));
+    }
     // dispatch(logoutAdmin());
   };
 
@@ -234,7 +238,8 @@ function App() {
     ],
     immediateEvents: [],
     debounce: 0,
-    throttle: 0,
+    // throttle: 0,
+    throttle: 500,
     eventsThrottle: 200,
     element: document,
     startOnMount: true,
@@ -246,36 +251,36 @@ function App() {
     leaderElection: false,
   });
 
-  useEffect(() => {
-    if (adminInfo?.isAuthenticated && adminInfo?.user?.name) {
-      const interval = setInterval(() => {
-        setRemaining(Math.ceil(getRemainingTime() / 1000));
-      }, 500);
+  // useEffect(() => {
+  //   if (adminInfo?.isAuthenticated && adminInfo?.user?.name) {
+  //     const interval = setInterval(() => {
+  //       setRemaining(Math.ceil(getRemainingTime() / 1000));
+  //     }, 500);
 
-      return () => {
-        clearInterval(interval);
-      };
-    }
-  });
+  //     return () => {
+  //       clearInterval(interval);
+  //     };
+  //   }
+  // });
 
-  useEffect(() => {
-    const sessionKey = sessionStorage.getItem("item_key");
+  // useEffect(() => {
+  //   const sessionKey = sessionStorage.getItem("item_key");
 
-    if (sessionKey === null) {
-      dispatch(logoutAdmin("no token was passed"));
-    }
-  }, [dispatch]);
+  //   if (sessionKey === null) {
+  //     dispatch(logoutAdmin("no token was passed"));
+  //   }
+  // }, [dispatch]);
 
   return (
-    <Router>
-    {/* <Router basename={config.url.BASENAME}> */}
+    // <Router>
+    <Router basename={config.url.BASENAME}>
       <ThemeProvider theme={theme}>
         <GlobalStyle />
         <CssBaseline />
         {/* <Redirect from="/" to="/signin" /> */}
         <Switch>
           <Route exact path="/" component={Main} />
-          <Route exact path="/home" component={() => <Home />} />
+          <Route exact path="/home" render={() => <Home />} />
           <Route exact path="/signin" render={() => <SignIn />} />
           <Route exact path="/signup" render={() => <SignUp />} />
           <Route
@@ -323,242 +328,264 @@ function App() {
 
           <Route
             exact
+            path="/create-approval-levels"
+            render={() => (
+              <CreateApprovalLevel
+                toggle={toggle}
+                toggleMenu={toggleMenu}
+                mobileToggle={mobileToggle}
+                toggleMobileMenu={toggleMobileMenu}
+              />
+            )}
+          />
+          <Route
+            exact
             path="/create-user-roles"
-            render={() => <CreateUserRoles />}
+            render={() => (
+              <CreateUserRoles
+                toggle={toggle}
+                toggleMenu={toggleMenu}
+                mobileToggle={mobileToggle}
+                toggleMobileMenu={toggleMobileMenu}
+              />
+            )}
           />
           <Route
             exact
             path="/employee-signin"
             render={() => <EmployeeSignIn />}
           />
-          <Route
-            exact
-            path="/dashboard"
-            render={() => (
-              <Dashboard
-                toggle={toggle}
-                toggleMenu={toggleMenu}
-                mobileToggle={mobileToggle}
-                toggleMobileMenu={toggleMobileMenu}
-              />
-            )}
-          />
-          <Route
-            exact
-            path="/employee"
-            render={() => (
-              <Employee
-                toggle={toggle}
-                toggleMenu={toggleMenu}
-                mobileToggle={mobileToggle}
-                toggleMobileMenu={toggleMobileMenu}
-              />
-            )}
-          />
-          <Route
-            exact
-            path="/users"
-            render={() => (
-              <Users
-                toggle={toggle}
-                toggleMenu={toggleMenu}
-                mobileToggle={mobileToggle}
-                toggleMobileMenu={toggleMobileMenu}
-              />
-            )}
-          />
-          <Route
-            exact
-            path="/auditlog"
-            render={() => (
-              <AuditLog
-                toggle={toggle}
-                toggleMenu={toggleMenu}
-                mobileToggle={mobileToggle}
-                toggleMobileMenu={toggleMobileMenu}
-              />
-            )}
-          />
-          <Route
-            exact
-            path="/profile-settings"
-            render={() => (
-              <ProfileSettings
-                toggle={toggle}
-                toggleMenu={toggleMenu}
-                mobileToggle={mobileToggle}
-                toggleMobileMenu={toggleMobileMenu}
-              />
-            )}
-          />
-          <Route
-            exact
-            path="/new-employee"
-            render={() => (
-              <AddEmployee
-                toggle={toggle}
-                toggleMenu={toggleMenu}
-                mobileToggle={mobileToggle}
-                toggleMobileMenu={toggleMobileMenu}
-              />
-            )}
-          />
-          <Route
-            exact
-            path="/pay-slip"
-            render={() => (
-              <PaySlip
-                toggle={toggle}
-                toggleMenu={toggleMenu}
-                mobileToggle={mobileToggle}
-                toggleMobileMenu={toggleMobileMenu}
-              />
-            )}
-          />
-          <Route
-            exact
-            path="/import-excel"
-            render={() => (
-              <ImportExcelfile
-                toggle={toggle}
-                toggleMenu={toggleMenu}
-                mobileToggle={mobileToggle}
-                toggleMobileMenu={toggleMobileMenu}
-              />
-            )}
-          />
-          <Route
-            exact
-            path="/department"
-            render={() => (
-              <Department
-                toggle={toggle}
-                toggleMenu={toggleMenu}
-                mobileToggle={mobileToggle}
-                toggleMobileMenu={toggleMobileMenu}
-              />
-            )}
-          />
-          <Route
-            exact
-            path="/pay-head"
-            render={() => (
-              <Payhead
-                toggle={toggle}
-                toggleMenu={toggleMenu}
-                mobileToggle={mobileToggle}
-                toggleMobileMenu={toggleMobileMenu}
-              />
-            )}
-          />
-          <Route
-            exact
-            path="/monthly-payhead"
-            render={() => (
-              <MonthlyPayhead
-                toggle={toggle}
-                toggleMenu={toggleMenu}
-                mobileToggle={mobileToggle}
-                toggleMobileMenu={toggleMobileMenu}
-              />
-            )}
-          />
-          <Route
-            exact
-            path="/position"
-            render={() => (
-              <Position
-                toggle={toggle}
-                toggleMenu={toggleMenu}
-                mobileToggle={mobileToggle}
-                toggleMobileMenu={toggleMobileMenu}
-              />
-            )}
-          />
-          <Route
-            exact
-            path="/pay-structure"
-            render={() => (
-              <PayStructure
-                toggle={toggle}
-                toggleMenu={toggleMenu}
-                mobileToggle={mobileToggle}
-                toggleMobileMenu={toggleMobileMenu}
-              />
-            )}
-          />
-          <Route
-            exact
-            path="/voucher"
-            render={() => (
-              <Voucher
-                toggle={toggle}
-                toggleMenu={toggleMenu}
-                mobileToggle={mobileToggle}
-                toggleMobileMenu={toggleMobileMenu}
-              />
-            )}
-          />
-          <Route
-            exact
-            path="/bank-schedule"
-            render={() => (
-              <BankSchedule
-                toggle={toggle}
-                toggleMenu={toggleMenu}
-                mobileToggle={mobileToggle}
-                toggleMobileMenu={toggleMobileMenu}
-              />
-            )}
-          />
-          <Route
-            exact
-            path="/payroll"
-            render={() => (
-              <Payroll
-                toggle={toggle}
-                toggleMenu={toggleMenu}
-                mobileToggle={mobileToggle}
-                toggleMobileMenu={toggleMobileMenu}
-              />
-            )}
-          />
-          <Route
-            exact
-            path="/loan"
-            render={() => (
-              <Loan
-                toggle={toggle}
-                toggleMenu={toggleMenu}
-                mobileToggle={mobileToggle}
-                toggleMobileMenu={toggleMobileMenu}
-              />
-            )}
-          />
-          <Route
-            exact
-            path="/loan-request"
-            render={() => (
-              <LoanRequest
-                toggle={toggle}
-                toggleMenu={toggleMenu}
-                mobileToggle={mobileToggle}
-                toggleMobileMenu={toggleMobileMenu}
-              />
-            )}
-          />
-          <Route
-            exact
-            path="/bank"
-            render={() => (
-              <Bank
-                toggle={toggle}
-                toggleMenu={toggleMenu}
-                mobileToggle={mobileToggle}
-                toggleMobileMenu={toggleMobileMenu}
-              />
-            )}
-          />
+
+          <ProtectedRoute>
+            <Route
+              exact
+              path="/dashboard"
+              render={() => (
+                <Dashboard
+                  toggle={toggle}
+                  toggleMenu={toggleMenu}
+                  mobileToggle={mobileToggle}
+                  toggleMobileMenu={toggleMobileMenu}
+                />
+              )}
+            />
+            <Route
+              exact
+              path="/employee"
+              render={() => (
+                <Employee
+                  toggle={toggle}
+                  toggleMenu={toggleMenu}
+                  mobileToggle={mobileToggle}
+                  toggleMobileMenu={toggleMobileMenu}
+                />
+              )}
+            />
+            <Route
+              exact
+              path="/users"
+              render={() => (
+                <Users
+                  toggle={toggle}
+                  toggleMenu={toggleMenu}
+                  mobileToggle={mobileToggle}
+                  toggleMobileMenu={toggleMobileMenu}
+                />
+              )}
+            />
+            <Route
+              exact
+              path="/auditlog"
+              render={() => (
+                <AuditLog
+                  toggle={toggle}
+                  toggleMenu={toggleMenu}
+                  mobileToggle={mobileToggle}
+                  toggleMobileMenu={toggleMobileMenu}
+                />
+              )}
+            />
+            <Route
+              exact
+              path="/profile-settings"
+              render={() => (
+                <ProfileSettings
+                  toggle={toggle}
+                  toggleMenu={toggleMenu}
+                  mobileToggle={mobileToggle}
+                  toggleMobileMenu={toggleMobileMenu}
+                />
+              )}
+            />
+            <Route
+              exact
+              path="/new-employee"
+              render={() => (
+                <AddEmployee
+                  toggle={toggle}
+                  toggleMenu={toggleMenu}
+                  mobileToggle={mobileToggle}
+                  toggleMobileMenu={toggleMobileMenu}
+                />
+              )}
+            />
+            <Route
+              exact
+              path="/pay-slip"
+              render={() => (
+                <PaySlip
+                  toggle={toggle}
+                  toggleMenu={toggleMenu}
+                  mobileToggle={mobileToggle}
+                  toggleMobileMenu={toggleMobileMenu}
+                />
+              )}
+            />
+            <Route
+              exact
+              path="/import-excel"
+              render={() => (
+                <ImportExcelfile
+                  toggle={toggle}
+                  toggleMenu={toggleMenu}
+                  mobileToggle={mobileToggle}
+                  toggleMobileMenu={toggleMobileMenu}
+                />
+              )}
+            />
+            <Route
+              exact
+              path="/department"
+              render={() => (
+                <Department
+                  toggle={toggle}
+                  toggleMenu={toggleMenu}
+                  mobileToggle={mobileToggle}
+                  toggleMobileMenu={toggleMobileMenu}
+                />
+              )}
+            />
+            <Route
+              exact
+              path="/pay-head"
+              render={() => (
+                <Payhead
+                  toggle={toggle}
+                  toggleMenu={toggleMenu}
+                  mobileToggle={mobileToggle}
+                  toggleMobileMenu={toggleMobileMenu}
+                />
+              )}
+            />
+            <Route
+              exact
+              path="/monthly-payhead"
+              render={() => (
+                <MonthlyPayhead
+                  toggle={toggle}
+                  toggleMenu={toggleMenu}
+                  mobileToggle={mobileToggle}
+                  toggleMobileMenu={toggleMobileMenu}
+                />
+              )}
+            />
+            <Route
+              exact
+              path="/position"
+              render={() => (
+                <Position
+                  toggle={toggle}
+                  toggleMenu={toggleMenu}
+                  mobileToggle={mobileToggle}
+                  toggleMobileMenu={toggleMobileMenu}
+                />
+              )}
+            />
+            <Route
+              exact
+              path="/pay-structure"
+              render={() => (
+                <PayStructure
+                  toggle={toggle}
+                  toggleMenu={toggleMenu}
+                  mobileToggle={mobileToggle}
+                  toggleMobileMenu={toggleMobileMenu}
+                />
+              )}
+            />
+            <Route
+              exact
+              path="/voucher"
+              render={() => (
+                <Voucher
+                  toggle={toggle}
+                  toggleMenu={toggleMenu}
+                  mobileToggle={mobileToggle}
+                  toggleMobileMenu={toggleMobileMenu}
+                />
+              )}
+            />
+            <Route
+              exact
+              path="/bank-schedule"
+              render={() => (
+                <BankSchedule
+                  toggle={toggle}
+                  toggleMenu={toggleMenu}
+                  mobileToggle={mobileToggle}
+                  toggleMobileMenu={toggleMobileMenu}
+                />
+              )}
+            />
+            <Route
+              exact
+              path="/payroll"
+              render={() => (
+                <Payroll
+                  toggle={toggle}
+                  toggleMenu={toggleMenu}
+                  mobileToggle={mobileToggle}
+                  toggleMobileMenu={toggleMobileMenu}
+                />
+              )}
+            />
+            <Route
+              exact
+              path="/loan"
+              render={() => (
+                <Loan
+                  toggle={toggle}
+                  toggleMenu={toggleMenu}
+                  mobileToggle={mobileToggle}
+                  toggleMobileMenu={toggleMobileMenu}
+                />
+              )}
+            />
+            <Route
+              exact
+              path="/loan-request"
+              render={() => (
+                <LoanRequest
+                  toggle={toggle}
+                  toggleMenu={toggleMenu}
+                  mobileToggle={mobileToggle}
+                  toggleMobileMenu={toggleMobileMenu}
+                />
+              )}
+            />
+            <Route
+              exact
+              path="/bank"
+              render={() => (
+                <Bank
+                  toggle={toggle}
+                  toggleMenu={toggleMenu}
+                  mobileToggle={mobileToggle}
+                  toggleMobileMenu={toggleMobileMenu}
+                />
+              )}
+            />
+          </ProtectedRoute>
           <PageNotFound />
 
           {/* <PageNotFound /> */}

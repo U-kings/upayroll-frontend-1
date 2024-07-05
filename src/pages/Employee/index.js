@@ -40,6 +40,7 @@ import {
 } from "../../actions/payslip";
 import {
   ADMIN_DELETE_ALL_EMPLOYEES_RESET,
+  ADMIN_DELETE_BULK_EMPLOYEES_BY_IDS_RESET,
   ADMIN_DELETE_EMPLOYEE_ALLOWANCE_BY_ID_RESET,
   ADMIN_DELETE_EMPLOYEE_BY_ID_RESET,
   ADMIN_DELETE_EMPLOYEE_DEDUCTION_BY_ID_RESET,
@@ -63,6 +64,7 @@ import { ADMIN_GET_MONTHLYPAYHEADS_RESET } from "../../types/monthlypayheads";
 import { COLORS } from "../../values/colors";
 import { trancateWord } from "../../hooks/functions";
 import { downloadEmployeeSummaryExcelFileFunc } from "../../actions/download";
+import { ADMIN_GENERATE_BULK_PAYSLIPS_ALL_RESET } from "../../types/payslip";
 
 const Employee = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
   // history init
@@ -200,7 +202,7 @@ const Employee = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
   };
 
   // months drop down
-  const onOptionClicked10 = (month) => () => {
+  const onOptionClicked10 = (month) => {
     setSelectedOption10(month);
     setIsOpen10(false);
   };
@@ -252,9 +254,9 @@ const Employee = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
       (generatePayslipSuccess && !generatePayslipError) ||
       generateAllBulkPayslipSuccess
     ) {
-      setIsGen(false);
-      setAllIsGen(false);
-      setIsOpen4(false);
+      // setIsGen(false);
+      // setAllIsGen(false);
+      // setIsOpen4(false);
     }
   }, [
     deleteEmployeeError,
@@ -331,10 +333,16 @@ const Employee = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
   ]);
 
   useEffect(() => {
+    let timeoutId;
     if (getEmployeeError) {
-      setTimeout(() => {
+      timeoutId = setTimeout(() => {
         dispatch({ type: ADMIN_GET_ALL_EMPLOYEE_RESET });
       }, 4000);
+
+      return () => {
+        // Clear the timeout when the component unmounts or when showError changes
+        clearTimeout(timeoutId);
+      };
     }
   }, [getEmployeeError, dispatch]);
 
@@ -355,6 +363,16 @@ const Employee = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
     if (isOpen10 === true) {
       setIsOpen10(false);
     }
+  };
+
+  const reloadEmployees = () => {
+    dispatch(
+      adminGetAllEmployee(
+        selectedOption10,
+        pageNumber ? pageNumber + 1 : 1,
+        100
+      )
+    );
   };
 
   const returnEmployeeGrossPay = (user) => {
@@ -504,6 +522,21 @@ const Employee = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
     }
   };
 
+  useEffect(() => {
+    let timeoutId;
+
+    if (showError !== "") {
+      timeoutId = setTimeout(() => {
+        setShowError("");
+      }, 6000);
+    }
+
+    return () => {
+      // Clear the timeout when the component unmounts or when showError changes
+      clearTimeout(timeoutId);
+    };
+  }, [showError]);
+
   const calculateAllPayslipByIds = () => {
     // if (!dropdown()) {
     //   setShowError('Please uncheck the "View All Employee" Checkbox');
@@ -538,7 +571,7 @@ const Employee = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
     } else if (arrayIds.length > 1) {
       if (employees?.resultLength > 100) {
         // delete all employees
-        dispatch(adminDeleteAllEmployees());
+        dispatch(adminDeleteAllEmployees(selectedOption10));
       } else {
         // delete all selected employees
         const newArray = arrayIds.map((user) => user.id);
@@ -690,15 +723,27 @@ const Employee = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
       dispatch({ type: ADMIN_UPDATE_EMPLOYEE_BY_ID_RESET });
     }
 
+    if (generateAllBulkPayslipSuccess) {
+      dispatch({ type: ADMIN_GENERATE_BULK_PAYSLIPS_ALL_RESET });
+    }
+
     if (
       (deleteEmployeeSuccess && !deleteEmployeeError) ||
       (deleteBulkEmployeeSuccess && !deleteBulkEmployeeError)
     ) {
       dispatch({ type: ADMIN_DELETE_EMPLOYEE_BY_ID_RESET });
+      dispatch({ type: ADMIN_DELETE_BULK_EMPLOYEES_BY_IDS_RESET });
     }
 
     if (deleteAllEmployeeSuccess && !deleteAllEmployeeError) {
       dispatch({ type: ADMIN_DELETE_ALL_EMPLOYEES_RESET });
+      dispatch(
+        adminGetAllEmployee(
+          selectedOption10,
+          pageNumber ? pageNumber + 1 : 1,
+          100
+        )
+      );
     }
 
     if (isOpen7 === true) {
@@ -948,9 +993,10 @@ const Employee = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
         }
         setIsOpen7={setIsOpen7}
         popup7={popup7}
-        message="All Employee's deleted successfully!"
+        message="Your request is being processed"
+        // message="All Employee's deleted successfully!"
       />
-      <Successful
+      {/* <Successful
         isOpen7={
           isOpen7 ||
           (!generateAllBulkPayslipLoading && generateAllBulkPayslipSuccess)
@@ -958,8 +1004,8 @@ const Employee = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
         setIsOpen7={setIsOpen7}
         popup7={popup7}
         message={generateAllBulkPayslipMessage}
-      />
-      <Successful
+      /> */}
+      {/* <Successful
         isOpen7={
           isOpen7 ||
           (generateBulkPayslipSuccess &&
@@ -969,7 +1015,7 @@ const Employee = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
         setIsOpen7={setIsOpen7}
         popup7={popup7}
         message="Payroll generated successfully!"
-      />
+      /> */}
       <DashboardContainer onClick={closeOption}>
         <DashboardContent>
           <SideNav
@@ -1098,6 +1144,13 @@ const Employee = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
                 </div>
                 {/* <div className="row"> */}
                 <div className="row top__btn">
+                  <input
+                    style={{ outline: "none", border: "none" }}
+                    type="button"
+                    onClick={reloadEmployees}
+                    className="general__btn save__btn"
+                    value="Reload"
+                  />
                   <div style={{ margin: "auto 1rem" }}>
                     <div style={{ display: "flex", margin: ".5rem 0" }}>
                       <input

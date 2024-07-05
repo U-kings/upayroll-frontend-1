@@ -61,7 +61,8 @@ export const accountGetApprovedVouchersFunc =
       try {
         dispatch({ type: ACCOUNTANT_GET_APPROVED_VOUCHERS_REQUEST });
         const { data } = await axios.get(
-          `${urlConfig.proxyUrl.PROXYURL}api/vouchers/approved?month=${month}&page=${page}&perPage=${perPage}`,
+          `${urlConfig.url.PROXYURL}api/vouchers/level-three?month=${month}&page=${page}&perPage=${perPage}`,
+          // `${urlConfig.url.PROXYURL}api/vouchers/approved?month=${month}&page=${page}&perPage=${perPage}`,
           config
         );
         dispatch({
@@ -93,7 +94,7 @@ export const accountantGetRejectedVouchers =
     try {
       dispatch({ type: ACCOUNTANT_GET_REJECTED_VOUCHERS_REQUEST });
       const { data } = await axios.get(
-        `${urlConfig.proxyUrl.PROXYURL}api/vouchers/rejected?month=${month}&statusLevel=not approved,pre approved&page=${page}&perPage=${perPage}`,
+        `${urlConfig.url.PROXYURL}api/vouchers/rejected?month=${month}&statusLevel=not approved,pre approved&page=${page}&perPage=${perPage}`,
         config
       );
       dispatch({
@@ -132,7 +133,8 @@ export const accountantCreateNotApprovedVouchersFunc =
         approvedSalaryslipsArr: approvedSalaryslips,
       });
       await axios.post(
-        `${urlConfig.proxyUrl.PROXYURL}api/vouchers/create/notapproved`,
+        `${urlConfig.url.PROXYURL}api/vouchers/create/level-one`,
+        // `${urlConfig.url.PROXYURL}api/vouchers/create/notapproved`,
         body,
         config
       );
@@ -167,7 +169,8 @@ export const accountantCreateNotApprovedVouchersAllFunc =
         // approvedSalaryslipsArr: approvedSalaryslips,
       });
       const { data } = await axios.post(
-        `${urlConfig.proxyUrl.PROXYURL}api/vouchers/create/notapproved/all?month=${month}`,
+        `${urlConfig.url.PROXYURL}api/vouchers/create/level-one/all?month=${month}`,
+        // `${urlConfig.url.PROXYURL}api/vouchers/create/notapproved/all?month=${month}`,
         body,
         config
       );
@@ -198,7 +201,8 @@ export const auditorGetnotApprovedVouchersFunc =
     try {
       dispatch({ type: AUDITOR_GET_NOT_APPROVED_VOUCHERS_REQUEST });
       const { data } = await axios.get(
-        `${urlConfig.proxyUrl.PROXYURL}api/vouchers/notapproved?month=${month}&page=${page}&perPage=${perPage}`,
+        `${urlConfig.url.PROXYURL}api/vouchers/level-one?month=${month}&page=${page}&perPage=${perPage}`,
+        // `${urlConfig.url.PROXYURL}api/vouchers/notapproved?month=${month}&page=${page}&perPage=${perPage}`,
         config
       );
       dispatch({
@@ -234,7 +238,8 @@ export const auditorPreApprovedVouchersFunc =
       });
 
       await axios.patch(
-        `${urlConfig.proxyUrl.PROXYURL}api/vouchers/create/preapproved`,
+        `${urlConfig.url.PROXYURL}api/vouchers/create/level-two`,
+        // `${urlConfig.url.PROXYURL}api/vouchers/create/preapproved`,
         body,
         config
       );
@@ -268,7 +273,7 @@ export const auditorPreApprovedVouchersAllFunc =
       });
 
       const { data } = await axios.patch(
-        `${urlConfig.proxyUrl.PROXYURL}api/vouchers/create/preapproved/all?month=${month}`,
+        `${urlConfig.url.PROXYURL}api/vouchers/create/level-two/all?month=${month}`,
         body,
         config
       );
@@ -300,7 +305,8 @@ export const ceoGetPreApprovedVouchersFunc =
     try {
       dispatch({ type: CEO_GET_PRE_APPROVED_VOUCHERS_REQUEST });
       const { data } = await axios.get(
-        `${urlConfig.proxyUrl.PROXYURL}api/vouchers/preapproved?month=${month}&page=${page}&perPage=${perPage}`,
+        `${urlConfig.url.PROXYURL}api/vouchers/level-two?month=${month}&page=${page}&perPage=${perPage}`,
+        // `${urlConfig.url.PROXYURL}api/vouchers/preapproved?month=${month}&page=${page}&perPage=${perPage}`,
         config
       );
       dispatch({
@@ -337,7 +343,8 @@ export const ceoApprovedVouchersFunc =
         preApprovedBankVouchersArrIds: vouchersArr,
       });
       await axios.patch(
-        `${urlConfig.proxyUrl.PROXYURL}api/vouchers/create/approved`,
+        `${urlConfig.url.PROXYURL}api/vouchers/create/level-three`,
+        // `${urlConfig.url.PROXYURL}api/vouchers/create/approved`,
         body,
         config
       );
@@ -369,7 +376,7 @@ export const ceoApprovedVouchersAllFunc = (month) => async (dispatch) => {
       // preApprovedBankVouchersArrIds: vouchersArr,
     });
     const { data } = await axios.patch(
-      `${urlConfig.proxyUrl.PROXYURL}api/vouchers/create/approved/all?month=${month}`,
+      `${urlConfig.url.PROXYURL}api/vouchers/create/level-three/all?month=${month}`,
       body,
       config
     );
@@ -390,7 +397,8 @@ export const ceoApprovedVouchersAllFunc = (month) => async (dispatch) => {
 };
 
 export const auditorRejectNotApprovedVouchersFunc =
-  (vouchersArrWithComment, month, companyId, userRole) => async (dispatch) => {
+  (vouchersArrWithComment, month, companyId, userRole, level) =>
+  async (dispatch) => {
     const token = cookie.get("token");
     const config = {
       headers: {
@@ -404,7 +412,8 @@ export const auditorRejectNotApprovedVouchersFunc =
         bankVouchersArr: vouchersArrWithComment,
       });
       await axios.patch(
-        `${urlConfig.proxyUrl.PROXYURL}api/vouchers/reject/notapproved?companyId=${companyId}&role=${userRole}`,
+        `${urlConfig.url.PROXYURL}api/vouchers/reject/levels?level=${level}`,
+        // `${urlConfig.url.PROXYURL}api/vouchers/reject/notapproved?companyId=${companyId}&role=${userRole}`,
         body,
         config
       );
@@ -422,7 +431,8 @@ export const auditorRejectNotApprovedVouchersFunc =
   };
 
 export const ceoRejectPreApprovedVouchersFunc =
-  (vouchersArrWithComment, month, companyId, userRole) => async (dispatch) => {
+  (vouchersArrWithComment, month, companyId, userRole, level) =>
+  async (dispatch) => {
     const token = cookie.get("token");
     const config = {
       headers: {
@@ -436,7 +446,8 @@ export const ceoRejectPreApprovedVouchersFunc =
         bankVouchersArr: vouchersArrWithComment,
       });
       await axios.patch(
-        `${urlConfig.proxyUrl.PROXYURL}api/vouchers/reject/preapproved?companyId=${companyId}&role=${userRole}`,
+        `${urlConfig.url.PROXYURL}api/vouchers/reject/levels?level=${level}`,
+        // `${urlConfig.url.PROXYURL}api/vouchers/reject/preapproved?companyId=${companyId}&role=${userRole}`,
         body,
         config
       );
@@ -465,7 +476,7 @@ export const accountantDeleteVoucherByIdFunc =
     try {
       dispatch({ type: ACCOUNTANT_DELETE_VOUCHER_BY_ID_REQUEST });
       await axios.delete(
-        `${urlConfig.proxyUrl.PROXYURL}api/vouchers/${voucherId}`,
+        `${urlConfig.url.PROXYURL}api/vouchers/${voucherId}`,
         config
       );
       dispatch({
@@ -500,7 +511,7 @@ export const accountantDeleteBulkVoucherFunc =
       });
 
       await axios.patch(
-        `${urlConfig.proxyUrl.PROXYURL}api/vouchers/delete-bulk`,
+        `${urlConfig.url.PROXYURL}api/vouchers/delete-bulk`,
         body,
         config
       );

@@ -246,33 +246,35 @@ const AddEmployee = ({
   }, [createEmployeeError, dispatch]);
 
   //   gender
-  const onOptionClicked = (gender) => () => {
+  const onOptionClicked = (gender) => {
     setSelectedOption(gender);
     setIsOpen(false);
   };
 
   //   employee type
-  const onOptionClicked2 = (employeeType) => () => {
+  const onOptionClicked2 = (employeeType) => {
     setSelectedOption2(employeeType);
     setIsOpen2(false);
   };
 
   //   departments
-  const onOptionClicked3 = (department) => () => {
+  const onOptionClicked3 = (department) => {
     setSelectedOption3(department);
-    dispatch(getPositionsByDepartment(department?.id));
+    if (department?.id) {
+      dispatch(getPositionsByDepartment(department?.id));
+    }
     setSelectedOption4(null);
 
     setIsOpen3(false);
   };
   //   positions
-  const onOptionClicked4 = (position) => () => {
+  const onOptionClicked4 = (position) => {
     setSelectedOption4(position);
     setIsOpen4(false);
   };
 
   // salary grade
-  const onOptionClickedSalaryGrade = (salaryGrade) => () => {
+  const onOptionClickedSalaryGrade = (salaryGrade) => {
     setSalaryGrade(salaryGrade);
     dispatch(hrGetSalaryLevelsFunc(salaryGrade?.id));
     setIsOpenSalaryGrade(false);
@@ -281,7 +283,7 @@ const AddEmployee = ({
   };
 
   // salary level
-  const onOptionClickedSalarylevel = (salaryLevel) => () => {
+  const onOptionClickedSalarylevel = (salaryLevel) => {
     setSalaryLevel(salaryLevel);
     dispatch(hrGetSalaryStepsFunc(salaryLevel?.id));
     setIsOpenSalaryLevel(false);
@@ -290,20 +292,20 @@ const AddEmployee = ({
   };
 
   // salary step
-  const onOptionClickedSalaryStep = (salaryStep) => () => {
+  const onOptionClickedSalaryStep = (salaryStep) => {
     setSalaryStep(salaryStep);
     setIsOpenSalaryStep(false);
     setNotch(null);
   };
 
   // salary step notch
-  const onOptionClickedNotch = (notch) => () => {
+  const onOptionClickedNotch = (notch) => {
     setNotch(notch);
     setIsOpenNotch(false);
   };
 
   //   bank name
-  const onOptionClicked5 = (bankname) => () => {
+  const onOptionClicked5 = (bankname) => {
     setSelectedOption5(bankname);
     setBankCode(bankname?.code);
     setIsOpen5(false);
@@ -398,22 +400,35 @@ const AddEmployee = ({
 
   useEffect(() => {
     const requiresPasswordChange = cookie.get("requiresPasswordChange");
+
+    let timeoutId;
+
     if (requiresPasswordChange) {
       if (JSON.parse(requiresPasswordChange)) {
         setChangePasword(true);
-        setTimeout(() => {
+        timeoutId = setTimeout(() => {
           history.push("profile-settings");
         }, 3000);
       }
     }
+    return () => {
+      // Clear the timeout when the component unmounts or when showError changes
+      clearTimeout(timeoutId);
+    };
   }, [history]);
 
   useEffect(() => {
+    let timeoutId;
     if (verifyAccountError) {
-      setTimeout(() => {
+      timeoutId = setTimeout(() => {
         dispatch({ type: VERIFY_ACCOUNT_NUMBER_RESET });
       }, 5000);
     }
+
+    return () => {
+      // Clear the timeout when the component unmounts or when showError changes
+      clearTimeout(timeoutId);
+    };
   }, [verifyAccountError, dispatch]);
 
   useEffect(() => {
@@ -486,7 +501,7 @@ const AddEmployee = ({
         </ImportExcelLink>
         {!createLoading && createEmployeeError && (
           <ErrorBox
-            fixed={true}
+            fixed
             errorMessage={
               createEmployeeError === "Request failed with status code 500"
                 ? "Please Check Your Internet Connection"
@@ -495,7 +510,7 @@ const AddEmployee = ({
           />
         )}
         {verifyAccountError && (
-          <ErrorBox fixed={true} errorMessage={verifyAccountError?.message} />
+          <ErrorBox fixed errorMessage={verifyAccountError?.message} />
         )}
         <form onSubmit={onSubmit}>
           <div className="input__row">

@@ -1,12 +1,99 @@
 import { Box, Container, Input, Typography, useTheme } from "@mui/material";
-import React from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import ButtonComp from "../common/ButtonComp";
+import axios from "axios";
+import { urlConfig } from "../../util/config/config";
+import cookie from "js-cookie";
+import ErrorBox from "../ErrorBox";
+import { Spinner, Successful } from "../../modals";
 
 const Footer = () => {
   const theme = useTheme();
 
+  const [email, setEmail] = useState("");
+
+  const [isLoading, setIsLoading] = useState(false);
+  const [showSucess, setShowSuccess] = useState("");
+  const [showError, setShowError] = useState("");
+
+  const token = cookie.get("token");
+  const config = useMemo(() => {
+    return {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    };
+  }, [token]);
+
+  const sendEmail = async () => {
+    // if()
+
+    setIsLoading(true);
+    const body = { email: email };
+    try {
+      const { data } = await axios.post(
+        `${urlConfig.url.PROXYURL}api/email/get-started`,
+        body,
+        config
+      );
+
+      if (data) {
+        setShowSuccess("Email Successfully");
+      }
+    } catch (error) {
+      // setShowError(error);
+      setIsLoading(false);
+      setShowError(
+        error?.response &&
+          (error?.response?.data?.detail || error?.response?.data?.errors)
+          ? error?.response?.data?.detail ||
+              error?.response?.data?.errors?.map((el) => el?.msg)?.join(" ")
+          : error?.message
+      );
+    }
+  };
+
+  useEffect(() => {
+    let timeoutId;
+
+    if (showError !== "") {
+      timeoutId = setTimeout(() => {
+        setShowError("");
+      }, 6000);
+    }
+
+    return () => {
+      // Clear the timeout when the component unmounts or when showError changes
+      clearTimeout(timeoutId);
+    };
+  }, [showError]);
+
+  const popup7 = () => {
+    if (showSucess) {
+      setIsLoading(false);
+      setShowSuccess("");
+      setEmail("");
+    }
+  };
+
+  const successMessage = (
+    <p>
+      Hello, 🖐
+      <br /> you have successfully subscribed for the Upayroll newsletter.
+    </p>
+  );
+
   return (
     <>
+      {showError && <ErrorBox fixed errorMessage={showError} />}
+      {isLoading && <Spinner />}
+      <Successful
+        isOpen7={showSucess && !showError && !isLoading}
+        popup7={popup7}
+        message={successMessage}
+        // message="Email sent Successfully!"
+      />
       <Box
         sx={{
           bgcolor: theme.palette.neutral[500],
@@ -85,8 +172,14 @@ const Footer = () => {
             >
               <Box sx={{ bgcolor: theme.palette.secondary[500] }}>
                 <Box display="flex" justifyContent="space-between">
-                  <Input disableUnderline={true} placeholder="Email Address" />
+                  <Input
+                    disableUnderline={true}
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="Email Address"
+                  />
                   <ButtonComp
+                    onClick={sendEmail}
                     variant="contained"
                     size="small"
                     sx={{

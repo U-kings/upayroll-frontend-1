@@ -219,7 +219,7 @@ const Users = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
   };
 
   // months drop down
-  const onOptionClicked10 = (month) => () => {
+  const onOptionClicked10 = (month) => {
     setSelectedOption10(month);
     setIsOpen10(false);
   };
@@ -356,11 +356,17 @@ const Users = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
   }, [history, userRole, selectedOption10, dispatch, pageNumber]);
 
   useEffect(() => {
+    let timeoutId;
     if (getUsersError) {
-      setTimeout(() => {
+      timeoutId = setTimeout(() => {
         dispatch({ type: ADMIN_GET_ALL_EMPLOYEE_RESET });
       }, 4000);
     }
+
+    return () => {
+      // Clear the timeout when the component unmounts or when showError changes
+      clearTimeout(timeoutId);
+    };
   }, [getUsersError, dispatch]);
 
   useEffect(() => {
@@ -554,6 +560,21 @@ const Users = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
       // }
     }
   };
+
+  useEffect(() => {
+    let timeoutId;
+
+    if (showError !== "") {
+      timeoutId = setTimeout(() => {
+        setShowError("");
+      }, 6000);
+    }
+
+    return () => {
+      // Clear the timeout when the component unmounts or when showError changes
+      clearTimeout(timeoutId);
+    };
+  }, [showError]);
 
   const calculateAllPayslipByIds = () => {
     // if (!dropdown()) {

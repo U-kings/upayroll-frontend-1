@@ -67,14 +67,20 @@ const Dashboard = ({
     }
 
     const requiresPasswordChange = cookie.get("requiresPasswordChange");
+    let timeoutId;
     if (requiresPasswordChange) {
       if (JSON?.parse(requiresPasswordChange)) {
         setChangePassword(true);
-        setTimeout(() => {
+
+        timeoutId = setTimeout(() => {
           history.push("profile-settings");
         }, 3000);
       }
     }
+    return () => {
+      // Clear the timeout when the component unmounts or when showError changes
+      clearTimeout(timeoutId);
+    };
   }, [history, dispatch, employeeInfo, adminInfo, userRole]);
 
   const dash = "active";
@@ -124,7 +130,7 @@ const Dashboard = ({
                       </div>
                     </Box>
                     <Box className="b2">
-                      <p>Payroll</p>
+                      <p>Payrolls</p>
                       <div className="row2 margin__top">
                         <FontAwesomeIcon
                           className="icons2"
@@ -150,13 +156,13 @@ const Dashboard = ({
                           className="icons2"
                           icon={["fas", "clipboard-list"]}
                         />
-                        <p>{commafy(0)}</p>
+                        <p>{commafy(reports?.vouchers)}</p>
                       </div>
                     </Box>
                   </div>
                   <div className="row2 margin__top">
                     <Box className="b4">
-                      <p>Department</p>
+                      <p>Departments</p>
                       <div className="row2 margin__top">
                         <FontAwesomeIcon
                           className="icons2"
@@ -166,13 +172,13 @@ const Dashboard = ({
                       </div>
                     </Box>
                     <Box style={{ flex: "1" }} className="b5">
-                      <p>Position</p>
+                      <p>Positions</p>
                       <div className="row2 margin__top">
                         <FontAwesomeIcon
                           className="icons2"
                           icon={["fas", "user-tag"]}
                         />
-                        <p>{reports?.positions}</p>
+                        <p>{commafy(reports?.positions)}</p>
                       </div>
                     </Box>
                     <Box style={{ flex: "1" }} className="b6">

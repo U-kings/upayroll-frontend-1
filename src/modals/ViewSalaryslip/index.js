@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useMemo } from "react";
 import cookie from "js-cookie";
 import { commafy } from "../../hooks/calculations/paySlip";
 // import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -12,6 +12,10 @@ import uridiumLogo from "../../resources/uridium.png";
 import productLogo from "../../resources/productLogo.PNG";
 import { useState } from "react";
 import { useSelector } from "react-redux";
+import axios from "axios";
+import { urlConfig } from "../../util/config/config";
+import { ErrorBox } from "../../components";
+import { fileName } from "../../actions/download";
 
 const ViewSalaryslip = ({ isOpen8, popup8, paySlip, monthlypayheads }) => {
   // redux state
@@ -20,14 +24,145 @@ const ViewSalaryslip = ({ isOpen8, popup8, paySlip, monthlypayheads }) => {
   // const [companyLogo] = useState(cookie.get("companyLogo"));
 
   const [companyLogo] = useState(adminInfo?.user?.company?.logo || "");
+  const [showError, setShowError] = useState("");
+  const [isLoading, setIsloading] = useState(false);
 
   const printSlip = () => {
     window.print();
   };
 
+  const checkMonthlyPayhead = (payheadName) => {
+    monthlypayheads
+      ?.filter((data) => data?.payType === "GROSS SALARY")
+      .map(({ name, percentage }, indexes) => {
+        return (
+          name.toLowerCase() === payheadName.toLowerCase() &&
+          commafy(
+            Number(
+              Math.round((percentage / 100) * paySlip?.grossPay + "e" + 2) +
+                "e-" +
+                2
+            )
+          )
+        );
+
+        // return (
+        //   <div
+        //     className="row3"
+        //     style={{ backgroundColor: `${COLORS.white4}` }}
+        //     key={++indexes}
+        //   >
+        //     <p style={{ width: "100%", fontWeight: "400" }}>{name} :</p>
+        //     <p style={{ fontWeight: "400" }}>{`${
+        //       paySlip?.grossPay &&
+        //       commafy(
+        //         Number(
+        //           Number(
+        //             Math.round(
+        //               (percentage / 100) * paySlip?.grossPay + "e" + 2
+        //             ) +
+        //               "e-" +
+        //               2
+        //           )
+        //         )
+        //       )
+        //     }`}</p>
+        //   </div>
+        // );
+      });
+  };
+
+  const token = cookie.get("token");
+  const config = useMemo(() => {
+    return {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      responseType: "blob",
+    };
+  }, [token]);
+
+  const downloadPayslip = async () => {
+    setIsloading(true);
+    const body = {
+      staffId: paySlip?.employee?.staffId,
+      fullName: paySlip?.employee?.user?.name,
+      month: paySlip?.month,
+      year: paySlip?.year,
+      transport: checkMonthlyPayhead("transport"),
+      basic: checkMonthlyPayhead("basic"),
+      housing: checkMonthlyPayhead("housing"),
+      dressing: checkMonthlyPayhead("dressing"),
+      meal: checkMonthlyPayhead("meal"),
+      utility: checkMonthlyPayhead("utility"),
+      grossPay: commafy(paySlip?.grossPay),
+      totalAdditions: commafy(paySlip?.allowanceTotal),
+      totalDeductions: commafy(paySlip?.deductionTotal),
+      pension: commafy(paySlip?.pension),
+      paye: commafy(paySlip?.paye),
+      netPay: commafy(paySlip?.netPay),
+    };
+
+    try {
+      const response = await axios.post(
+        `${urlConfig.url.PROXYURL}api/storage/create-pdf-file/single-payslip`,
+        body,
+        config
+      );
+
+      // Create blob object
+      const blob = new Blob([response.data], { type: "application/pdf" });
+
+      // Create a blob URL for the downloaded file
+      const url = window.URL.createObjectURL(blob);
+      console.log(url);
+
+      // Create a temporary <a> element to trigger the download
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", fileName(response));
+
+      document.body.appendChild(link);
+      link.click();
+
+      // Clean up
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(link);
+
+      setIsloading(false);
+    } catch (error) {
+      setIsloading(false);
+      setShowError(
+        error?.response &&
+          (error?.response?.data?.detail || error?.response?.data?.errors)
+          ? error?.response?.data?.detail ||
+              error?.response?.data?.errors?.map((el) => el?.msg)?.join(" ")
+          : error?.message
+      );
+    }
+  };
+
+useEffect(() => {
+  let timeoutId;
+ 
+  if (showError !== "") {
+    timeoutId = setTimeout(() => {
+      setShowError("");
+    }, 6000);
+  }
+ 
+  return () => {
+    // Clear the timeout when the component unmounts or when showError changes
+    clearTimeout(timeoutId);
+  };
+}, [showError]);
+
   return (
     <>
       <ModalBackground isOpen8={isOpen8} onClick={popup8} />
+
+      {showError && <ErrorBox errorMessage={showError} />}
       <ModalContainer className="view__slip" isOpen8={isOpen8}>
         <ViewSalaryContainer>
           <div className="row3 justify__btw">
@@ -259,10 +394,18 @@ const ViewSalaryslip = ({ isOpen8, popup8, paySlip, monthlypayheads }) => {
               <input
                 className="btn__padding margin__top save__btn"
                 type="button"
+                value={isLoading ? "Downloading..." : "Download"}
+                onClick={downloadPayslip}
+              />
+            </div>
+            {/* <div>
+              <input
+                className="btn__padding margin__top save__btn"
+                type="button"
                 value="Print"
                 onClick={printSlip}
               />
-            </div>
+            </div> */}
             <div className="aligntext__right">
               <img
                 className="margin__top"

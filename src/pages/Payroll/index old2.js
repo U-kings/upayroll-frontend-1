@@ -5,7 +5,7 @@ import {
   Header,
   SearchBar,
   SideNav,
-} from "../../components";
+} from "../../components/index.js";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   DashboardContainer,
@@ -13,59 +13,72 @@ import {
   Mainbody,
   EmpContainer,
   Container,
-} from "../../styles/library";
-import { commafy } from "../../hooks/calculations/paySlip";
+} from "../../styles/library.js";
+import { commafy } from "../../hooks/calculations/paySlip.js";
 
 import {
   Comfirm,
   ViewSalaryslip,
   LoadingSpinner,
   Comment,
+  Successful,
   UploadSlips,
-} from "../../modals";
+} from "../../modals/index.js";
 import { useDispatch, useSelector } from "react-redux";
 import {
   adminGetAllGeneratedPayslips,
   adminDeleteBulkPayslips,
   adminDeleteGeneratedPayslip,
   hrSetToNotApprovedSalaryslips,
+  hrSetToNotApprovedSalaryslipsAll,
   auditorGetNotApprovedSalaryslipsFunc,
   auditorSetPreApprovedPayslipsFunc,
+  auditorRejectNotApprovedPayslipsFunc,
+  auditorSetPreApprovedPayslipsAllFunc,
+  auditorAndCeoRejectExcelPayslipsFunc,
   ceoGetPreApprovedSalaryslipsFunc,
   ceoSetApprovedSalaryslipsFunc,
-  accountantGetApprovedSalaryslispFunc,
-  auditorRejectNotApprovedPayslipsFunc,
   ceoRejectPreApprovedPayslipsFunc,
-  auditorAndCeoRejectExcelPayslipsFunc,
-  hrSetToNotApprovedSalaryslipsAll,
-  auditorSetPreApprovedPayslipsAllFunc,
   ceoSetApprovedSalaryslipsAllFunc,
-} from "../../actions/payslip";
+  accountantGetApprovedSalaryslispFunc,
+} from "../../actions/payslip.js";
 import {
   accountantCreateNotApprovedVouchersAllFunc,
   accountantCreateNotApprovedVouchersFunc,
-} from "../../actions/voucher";
-import { adminGetAllMonthlyPayheads } from "../../actions/monthlypayheads";
+} from "../../actions/voucher.js";
+import { adminGetAllMonthlyPayheads } from "../../actions/monthlypayheads.js";
 
 import {
+  ADMIN_DELETE_BULK_PAYSLIPS_RESET,
   AUDITOR_GET_NOT_APPROVED_SALARYSLIPS_RESET,
+  AUDITOR_SET_PRE_APPROVED_GENERATED_PAYSLIPS_ALL_RESET,
+  AUDITOR_SET_PRE_APPROVED_GENERATED_PAYSLIPS_RESET,
+  CEO_SET_APPROVED_GENERATED_PAYSLIPS_ALL_RESET,
+  CEO_SET_APPROVED_GENERATED_PAYSLIPS_RESET,
   GET_ALL_GENERATED_PAYSLIP_RESET,
   HR_GET_REJECTED_PAYSLIPS_RESET,
+  HR_SET_NOT_APPROVED_GENERATED_PAYSLIPS_ALL_RESET,
+  HR_SET_NOT_APPROVED_GENERATED_PAYSLIPS_RESET,
 } from "../../types/payslip.js";
 
 import { useHistory } from "react-router";
-import { COLORS } from "../../values/colors";
-import { PaginationContainer } from "../../styles/pagination";
+import { COLORS } from "../../values/colors.js";
+import { PaginationContainer } from "../../styles/pagination.js";
 import ReactPaginate from "react-paginate";
-import { logoutAdmin } from "../../actions/auth";
-import { currentmonthMethod } from "../../hooks/months/listMonths";
+import { logoutAdmin } from "../../actions/auth.js";
+import { currentmonthMethod } from "../../hooks/months/listMonths.js";
 import {
   downloadPayePdfFileFunc,
   downloadPayeScheduleExcelFileFunc,
   downloadPensionPdfFileFunc,
   downloadPensionScheduleExcelFileFunc,
   downloadSalaryAndVoucherExcelFileFunc,
-} from "../../actions/download";
+} from "../../actions/download.js";
+import {
+  ACCOUNTANT_CREATE_NOT_APPROVED_VOUCHERS_FROM_SALARYSLIPS_ALL_RESET,
+  ACCOUNTANT_CREATE_NOT_APPROVED_VOUCHERS_FROM_SALARYSLIPS_RESET,
+} from "../../types/voucher.js";
+import cookie from "js-cookie";
 
 const Payroll = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
   // dispatch init
@@ -99,13 +112,15 @@ const Payroll = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
   } = useSelector((state) => state.accountantGetApprovedSalaryslips);
 
   const {
-    success: accountantCreateNotApprovedSuccess,
-    error: accountantCreateNotApprovedError,
+    success: accountantCreateNotApprovedVouchersSuccess,
+    error: accountantCreateNotApprovedVouchersError,
   } = useSelector((state) => state.accountantCreateNotApprovedVouchers);
 
   const {
-    success: accountantCreateNotApprovedAllSuccess,
-    error: accountantCreateNotApprovedAllError,
+    success: accountantCreateNotApprovedVouchersAllSuccess,
+    error: accountantCreateNotApprovedVouchersAllError,
+    message: accountantCreateNotApprovedVouchersAllMessage,
+    isLoading: accountantCreateNotApprovedVouchersAllLoading,
   } = useSelector((state) => state.accountantCreateNotApprovedVouchersAll);
 
   const {
@@ -116,26 +131,34 @@ const Payroll = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
   const {
     success: hrSetNotApprovedSalaryslipsAllSuccess,
     error: hrSetNotApprovedSalaryslipsAllError,
+    message: hrSetNotApprovedSalaryslipsAllMessage,
+    isLoading: hrSetNotApprovedSalaryslipsAllLoading,
   } = useSelector((state) => state.hrSetNotApprovedPayslipsAll);
 
   const {
     success: auditorSetPreApprovedSalaryslipsSuccess,
     error: auditorSetPreApprovedSalaryslipsError,
+    isLoading: auditorSetPreApprovedSalaryslipsLoading,
   } = useSelector((state) => state.auditorSetPreApprovedPayslips);
 
   const {
     success: auditorSetPreApprovedSalaryslipsAllSuccess,
+    message: auditorSetPreApprovedSalaryslipsAllMessage,
     error: auditorSetPreApprovedSalaryslipsAllError,
+    isLoading: auditorSetPreApprovedSalaryslipsAllLoading,
   } = useSelector((state) => state.auditorSetPreApprovedPayslipsAll);
 
   const {
     success: ceoSetApprovedSalaryslipsSuccess,
     error: ceoSetApprovedSalaryslipsError,
+    isLoading: ceoSetApprovedSalaryslipsLoading,
   } = useSelector((state) => state.ceoSetApprovedPayslips);
 
   const {
     success: ceoSetApprovedSalaryslipsAllSuccess,
     error: ceoSetApprovedSalaryslipsAllError,
+    message: ceoSetApprovedSalaryslipsAllMessage,
+    isLoading: ceoSetApprovedSalaryslipsAllLoading,
   } = useSelector((state) => state.ceoSetApprovedPayslipsAll);
 
   const { success: deleteSalarySlipSuccess, error: deleteSalarySlipError } =
@@ -154,6 +177,7 @@ const Payroll = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
   const [isOpen3, setIsOpen3] = useState(false);
   const [isOpen4, setIsOpen4] = useState(false);
   const [isOpen5, setIsOpen5] = useState(false);
+  const [isOpen7, setIsOpen7] = useState(false);
   const [isOpen6, setIsOpen6] = useState(false);
   const [isOpen8, setIsOpen8] = useState(false);
   const [isopen9, setisopen9] = useState(false);
@@ -188,8 +212,13 @@ const Payroll = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
   // );
   // const [selectedOption6, setSelectedOption6] = useState(null);
   const [userRole] = useState(adminInfo?.user?.role || "");
+  const [companyId] = useState(adminInfo?.user?.companyId || "");
   const [userRoleName] = useState(adminInfo?.user?.name || "");
   const [profileImg] = useState(adminInfo?.user?.photo || "");
+  const [approvalLevel] = useState(cookie.get("approvalLevel"));
+  const [totalApprovalLevel] = useState(
+    Number(cookie.get("totalApprovalLevel"))
+  );
   const [selectedOption, setSelectedOption] = useState("");
   const [grossSalary, setGrossSalary] = useState("");
 
@@ -235,9 +264,15 @@ const Payroll = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
 
   useEffect(() => {
     if (paySlips && userRole === "HR") {
-      setSalarySlip(paySlips?.paySlips);
+      if (selectedOption === "Rejected") {
+        setSalarySlip(paySlips?.rejectedPaySlips);
+      } else {
+        setSalarySlip(paySlips?.paySlips);
+      }
     } else if (notApprovedSalaryslips && userRole === "Internal Auditor") {
-      setSalarySlip(notApprovedSalaryslips);
+      // setSalarySlip(notApprovedSalaryslips);
+      setSalarySlip(notApprovedSalaryslips?.notapproved);
+      //TODO: check later
     } else if (ceoPayslips && userRole === "CEO") {
       if (selectedOption === "Pre-approved") {
         setSalarySlip(ceoPayslips?.preapproved);
@@ -245,7 +280,8 @@ const Payroll = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
         setSalarySlip(ceoPayslips?.approvedSalaryslips);
       }
     } else if (accountantPayslips && userRole === "Accountant") {
-      setSalarySlip(accountantPayslips?.accountantPayslips);
+      setSalarySlip(accountantPayslips?.approvedSalaryslips);
+      // setSalarySlip(accountantPayslips?.accountantPayslips);
     } else {
       <LoadingSpinner toggle={toggle} />;
     }
@@ -298,8 +334,8 @@ const Payroll = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
     }
 
     if (
-      accountantCreateNotApprovedSuccess &&
-      !accountantCreateNotApprovedError
+      accountantCreateNotApprovedVouchersSuccess &&
+      !accountantCreateNotApprovedVouchersError
     ) {
       setSearchTerm("");
     }
@@ -324,8 +360,8 @@ const Payroll = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
     auditorSetPreApprovedSalaryslipsSuccess,
     ceoSetApprovedSalaryslipsError,
     ceoSetApprovedSalaryslipsSuccess,
-    accountantCreateNotApprovedError,
-    accountantCreateNotApprovedSuccess,
+    accountantCreateNotApprovedVouchersError,
+    accountantCreateNotApprovedVouchersSuccess,
     hrSetNotApprovedSalaryslipsSuccess,
     hrSetNotApprovedSalaryslipsError,
     deleteSalarySlipError,
@@ -383,10 +419,11 @@ const Payroll = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
     let isTrue = false;
     // pageData?.forEach((data) => {
     searchResult?.forEach((data) => {
-      if (data.isChecked === true) {
+      if (data?.isChecked === true) {
         isTrue = data.isChecked;
       }
     });
+
     return isTrue;
   };
 
@@ -395,56 +432,34 @@ const Payroll = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
     let isTrue = false;
     // pageData?.forEach((data) => {
     searchResult?.forEach((data) => {
-      if (data.status === 3) {
+      if (data?.status === 3) {
         isTrue = true;
       }
     });
     return isTrue;
   };
 
-  useEffect(() => {
-    if (pageNumber?.length > 0) {
-      const startNum = pageNumber * 40;
-      setStartCheck(startNum);
-
-      const endNum = usersPerpageCount;
-      setEndCheck(endNum);
-    } else {
-      setStartCheck(0);
-      setEndCheck(usersPerpageCount);
-    }
-  }, [usersPerpageCount, pageNumber]);
-
-  useEffect(() => {
-    let tempData2 = searchResult?.slice(startCheck, endCheck)?.map((user) => {
-      return user;
-    });
-
-    setPageData(tempData2);
-  }, [startCheck, endCheck, searchResult]);
-
   // for checkbox onchange handler
   const handleChange = (e) => {
     const { name, checked } = e.target;
     if (name === "checkAll") {
-      // let tempData = searchResult
-      //   ?.slice(startCheck, endCheck)
       let tempData = searchResult?.map((payslip) => {
         return { ...payslip, isChecked: checked };
       });
       let notChecked = searchResult?.filter((el) => {
         return !tempData?.find((tmp) => tmp?.employee.id === el?.employee.id);
       });
-      let dataJoined = [...tempData, ...notChecked].sort((a, b) => {
-        var dateA = new Date(a.createdAt),
-          dateB = new Date(b.createdAt);
-        return dateA - dateB;
-      });
-
-      setSearchResult(dataJoined);
+      if (tempData?.length) {
+        let dataJoined = [...tempData, ...notChecked].sort((a, b) => {
+          var dateA = new Date(a.createdAt),
+            dateB = new Date(b.createdAt);
+          return dateA - dateB;
+        });
+        setSearchResult(dataJoined);
+      }
     } else {
       let tempUsers = searchResult.map((payslip) =>
-        payslip.employee.id === name
+        payslip.employee.id?.toString() === name?.toString()
           ? { ...payslip, isChecked: checked }
           : payslip
       );
@@ -468,7 +483,10 @@ const Payroll = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
 
   const setNotApprovedSalaryslips = () => {
     const salaryIds = arrayIds.map((el) => el.id);
-    if (paySlips?.resultLength > 100) {
+    if (
+      (paySlips || ceoPayslips || accountantPayslips || notApprovedSalaryslips)
+        ?.resultLength > 100
+    ) {
       dispatch(hrSetToNotApprovedSalaryslipsAll(selectedOption10));
     } else {
       dispatch(hrSetToNotApprovedSalaryslips(salaryIds, selectedOption10));
@@ -477,7 +495,10 @@ const Payroll = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
 
   const setPreApprovedSalaryslips = () => {
     const salaryIds = arrayIds.map((el) => el.id);
-    if (paySlips?.resultLength > 100) {
+    if (
+      (paySlips || ceoPayslips || accountantPayslips || notApprovedSalaryslips)
+        ?.resultLength > 100
+    ) {
       dispatch(auditorSetPreApprovedPayslipsAllFunc(selectedOption10));
     } else {
       dispatch(auditorSetPreApprovedPayslipsFunc(salaryIds, selectedOption10));
@@ -487,7 +508,10 @@ const Payroll = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
   const setApprovedSalaryslips = () => {
     const salaryIds = arrayIds.map((el) => el?.id);
 
-    if (paySlips?.resultLength > 100) {
+    if (
+      (paySlips || ceoPayslips || accountantPayslips || notApprovedSalaryslips)
+        ?.resultLength > 100
+    ) {
       dispatch(ceoSetApprovedSalaryslipsAllFunc(selectedOption10));
     } else {
       dispatch(ceoSetApprovedSalaryslipsFunc(salaryIds, selectedOption10));
@@ -512,7 +536,7 @@ const Payroll = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
 
   //download option
   const downloadPensionPDF = () => {
-    if (salarySlip.length) {
+    if (salarySlip?.length) {
       const newData = salarySlip.map((el, index) => {
         return {
           sn: ++index,
@@ -622,8 +646,9 @@ const Payroll = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
     if (salarySlip.length) {
       const newSalaryslip = salarySlip.map((el) => {
         return {
-          id: el?.id,
+          employeeStaffId: el?.employeeId,
           employeeName: el?.employee?.user?.name,
+          employeeEmail: el?.employee?.user?.email,
           employeeBankName: el?.employee?.employeeBank,
           grossPay: el?.grossPay,
           pension: el?.pension,
@@ -695,10 +720,11 @@ const Payroll = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
 
   const onCreateVouchersByAccountant = () => {
     const salaryIds = arrayIds.map((el) => el.id);
-    if (paySlips?.resultLength > 100) {
-      dispatch(
-        accountantCreateNotApprovedVouchersAllFunc(currentmonthLong("long"))
-      );
+    if (
+      (paySlips || ceoPayslips || accountantPayslips || notApprovedSalaryslips)
+        ?.resultLength > 100
+    ) {
+      dispatch(accountantCreateNotApprovedVouchersAllFunc(currentmonthLong));
     } else {
       dispatch(accountantCreateNotApprovedVouchersFunc(salaryIds));
     }
@@ -732,7 +758,12 @@ const Payroll = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
 
     if (userRole === "CEO") {
       dispatch(
-        ceoRejectPreApprovedPayslipsFunc(salaryIdsWithComment, selectedOption10)
+        ceoRejectPreApprovedPayslipsFunc(
+          salaryIdsWithComment,
+          selectedOption10,
+          companyId,
+          userRole
+        )
       );
     }
 
@@ -740,7 +771,9 @@ const Payroll = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
       dispatch(
         auditorRejectNotApprovedPayslipsFunc(
           salaryIdsWithComment,
-          selectedOption10
+          selectedOption10,
+          companyId,
+          userRole
         )
       );
     }
@@ -784,28 +817,67 @@ const Payroll = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
   // Invoke when user click to request another page.
   const usersPerpage = 40;
   const pagesVisited = pageNumber * usersPerpage;
-  const pageCount = Math.ceil(paySlips?.resultLength / usersPerpage);
+  const pageCount = Math.ceil(
+    Number(
+      (paySlips || ceoPayslips || accountantPayslips || notApprovedSalaryslips)
+        ?.resultLength
+    ) / usersPerpage
+  );
   const handlePageClick = ({ selected }) => {
     setPageNumber(selected);
   };
 
   useEffect(() => {
-    if (pageNumber?.length > 0) {
+    if (pageNumber > 0) {
       let usersPerpageNum;
-      if (paySlips?.resultLength / (pageNumber + 1) > 40) {
+      if (
+        (
+          paySlips ||
+          ceoPayslips ||
+          accountantPayslips ||
+          notApprovedSalaryslips
+        )?.resultLength /
+          (pageNumber + 1) >
+        100
+      ) {
         usersPerpageNum = (pageNumber + 1) * 100;
       } else {
-        usersPerpageNum = paySlips?.resultLength;
+        usersPerpageNum = (
+          paySlips ||
+          ceoPayslips ||
+          accountantPayslips ||
+          notApprovedSalaryslips
+        )?.resultLength;
       }
       setUsersPerpageCount(usersPerpageNum);
     } else {
-      if (paySlips?.resultLength < 100) {
-        setUsersPerpageCount(paySlips?.resultLength);
+      if (
+        (
+          paySlips ||
+          ceoPayslips ||
+          accountantPayslips ||
+          notApprovedSalaryslips
+        )?.resultLength < 100
+      ) {
+        setUsersPerpageCount(
+          (
+            paySlips ||
+            ceoPayslips ||
+            accountantPayslips ||
+            notApprovedSalaryslips
+          )?.resultLength
+        );
       } else {
         setUsersPerpageCount(100);
       }
     }
-  }, [paySlips, pageNumber]);
+  }, [
+    paySlips,
+    pageNumber,
+    ceoPayslips,
+    notApprovedSalaryslips,
+    accountantPayslips,
+  ]);
 
   const searchHandler = (searchTerm) => {
     setSearchTerm(searchTerm);
@@ -878,9 +950,8 @@ const Payroll = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
     </p>
   );
 
-  let statusDisplay = "";
-
   const checkStatus = (status, statusLevel = "") => {
+    let statusDisplay = "";
     if (!status && !statusLevel) {
       statusDisplay = "generated";
     } else if (status === 0) {
@@ -902,35 +973,96 @@ const Payroll = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
     if (!adminInfo?.isAuthenticated && !adminInfo?.user?.name) {
       history.push("/signin");
     } else {
-      if (userRole === "HR") {
-        dispatch(
-          adminGetAllGeneratedPayslips(selectedOption10, selectedOption)
-        );
-      } else if (userRole === "Internal Auditor") {
-        dispatch(auditorGetNotApprovedSalaryslipsFunc(selectedOption10));
-      } else if (userRole === "CEO") {
-        dispatch(
-          ceoGetPreApprovedSalaryslipsFunc(selectedOption10, selectedOption)
-        );
-      } else if (userRole === "Accountant") {
-        dispatch(
-          accountantGetApprovedSalaryslispFunc(
-            selectedOption10
-            // selectedOption6?.name
-          )
-        );
-        // dispatch(adminGetAllBanksFunc());
+      if (
+        pageNumber >= 0 ||
+        hrSetNotApprovedSalaryslipsSuccess ||
+        hrSetNotApprovedSalaryslipsAllSuccess ||
+        auditorSetPreApprovedSalaryslipsSuccess ||
+        auditorSetPreApprovedSalaryslipsAllSuccess ||
+        ceoSetApprovedSalaryslipsSuccess ||
+        ceoSetApprovedSalaryslipsAllSuccess ||
+        adminDeleteBulkPayslipSuccess ||
+        accountantCreateNotApprovedVouchersSuccess ||
+        accountantCreateNotApprovedVouchersAllSuccess
+      ) {
+        if (userRole === "HR") {
+          dispatch(
+            // adminGetAllGeneratedPayslips("August", selectedOption)
+            adminGetAllGeneratedPayslips(
+              selectedOption10,
+              selectedOption,
+              pageNumber ? pageNumber + 1 : 1,
+              100
+            )
+          );
+        } else if (
+          userRole === "Internal Auditor" ||
+          totalApprovalLevel === 3
+        ) {
+          dispatch(
+            auditorGetNotApprovedSalaryslipsFunc(
+              selectedOption10,
+              pageNumber ? pageNumber + 1 : 1,
+              100
+            )
+          );
+        } else if (userRole === "CEO" || totalApprovalLevel === 3) {
+          if (selectedOption === "Pre-approved") {
+            dispatch(
+              ceoGetPreApprovedSalaryslipsFunc(
+                selectedOption10,
+                selectedOption,
+                pageNumber ? pageNumber + 1 : 1,
+                100
+              )
+            );
+          } else {
+            dispatch(
+              ceoGetPreApprovedSalaryslipsFunc(
+                selectedOption10,
+                selectedOption,
+                pageNumber ? pageNumber + 1 : 1,
+                100
+              )
+            );
+          }
+        } else if (
+          (userRole === "Accountant" ||
+            userRole === "CEO" ||
+            totalApprovalLevel === 3 ||
+            totalApprovalLevel === 2) &&
+          selectedOption === "Approved"
+        ) {
+          dispatch(
+            accountantGetApprovedSalaryslispFunc(
+              selectedOption10,
+              pageNumber ? pageNumber + 1 : 1,
+              100
+              // selectedOption6?.name
+            )
+          );
+          // dispatch(adminGetAllBanksFunc());
+        }
       }
     }
   }, [
     dispatch,
+    totalApprovalLevel,
     history,
     selectedOption,
     adminInfo,
+    pageNumber,
     selectedOption10,
     userRole,
-    accountantCreateNotApprovedSuccess,
-    accountantCreateNotApprovedError,
+    hrSetNotApprovedSalaryslipsSuccess,
+    hrSetNotApprovedSalaryslipsAllSuccess,
+    auditorSetPreApprovedSalaryslipsSuccess,
+    auditorSetPreApprovedSalaryslipsAllSuccess,
+    ceoSetApprovedSalaryslipsSuccess,
+    ceoSetApprovedSalaryslipsAllSuccess,
+    accountantCreateNotApprovedVouchersSuccess,
+    accountantCreateNotApprovedVouchersAllSuccess,
+    adminDeleteBulkPayslipSuccess,
     // selectedOption6,
   ]);
 
@@ -987,16 +1119,54 @@ const Payroll = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
     }
   }, [currentSlip, grossSalary]);
 
+  const popup7 = () => {
+    if (
+      hrSetNotApprovedSalaryslipsSuccess ||
+      hrSetNotApprovedSalaryslipsAllSuccess ||
+      auditorSetPreApprovedSalaryslipsSuccess ||
+      auditorSetPreApprovedSalaryslipsAllSuccess ||
+      ceoSetApprovedSalaryslipsSuccess ||
+      ceoSetApprovedSalaryslipsAllSuccess ||
+      adminDeleteBulkPayslipSuccess ||
+      accountantCreateNotApprovedVouchersSuccess ||
+      accountantCreateNotApprovedVouchersAllSuccess
+    ) {
+      dispatch({ type: HR_SET_NOT_APPROVED_GENERATED_PAYSLIPS_RESET });
+      dispatch({ type: HR_SET_NOT_APPROVED_GENERATED_PAYSLIPS_ALL_RESET });
+      dispatch({ type: AUDITOR_SET_PRE_APPROVED_GENERATED_PAYSLIPS_RESET });
+      dispatch({ type: AUDITOR_SET_PRE_APPROVED_GENERATED_PAYSLIPS_ALL_RESET });
+      dispatch({ type: CEO_SET_APPROVED_GENERATED_PAYSLIPS_RESET });
+      dispatch({ type: CEO_SET_APPROVED_GENERATED_PAYSLIPS_ALL_RESET });
+      dispatch({ type: ADMIN_DELETE_BULK_PAYSLIPS_RESET });
+      dispatch({
+        type: ACCOUNTANT_CREATE_NOT_APPROVED_VOUCHERS_FROM_SALARYSLIPS_ALL_RESET,
+      });
+      dispatch({
+        type: ACCOUNTANT_CREATE_NOT_APPROVED_VOUCHERS_FROM_SALARYSLIPS_RESET,
+      });
+    }
+  };
+
   const checkForUWallet = () => {
-    const check = searchResult?.map((el) => {
+    // const check = searchResult?.map((el) => {
+    const check = searchResult?.forEach((el) => {
       if (el?.uWallet) return true;
     });
+
     return check ? true : false;
   };
 
   return (
     <>
       {isLoading && !delBulkPayslip && !notApprovedBulk && (
+        <LoadingSpinner toggle={toggle} />
+      )}
+      {(hrSetNotApprovedSalaryslipsAllLoading ||
+        ceoSetApprovedSalaryslipsAllLoading ||
+        ceoSetApprovedSalaryslipsLoading ||
+        auditorSetPreApprovedSalaryslipsAllLoading ||
+        auditorSetPreApprovedSalaryslipsLoading ||
+        accountantCreateNotApprovedVouchersAllLoading) && (
         <LoadingSpinner toggle={toggle} />
       )}
       {(getNotApprovedSalaryslipsLoading ||
@@ -1007,6 +1177,23 @@ const Payroll = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
       {downloadStatusLoading && !downloadStatusError && (
         <LoadingSpinner toggle={toggle} />
       )}
+
+      <Successful
+        isOpen7={
+          hrSetNotApprovedSalaryslipsAllSuccess ||
+          auditorSetPreApprovedSalaryslipsAllSuccess ||
+          ceoSetApprovedSalaryslipsAllSuccess ||
+          accountantCreateNotApprovedVouchersAllSuccess
+        }
+        setIsOpen7={setIsOpen7}
+        popup7={popup7}
+        message={
+          hrSetNotApprovedSalaryslipsAllMessage ||
+          auditorSetPreApprovedSalaryslipsAllMessage ||
+          ceoSetApprovedSalaryslipsAllMessage ||
+          accountantCreateNotApprovedVouchersAllMessage
+        }
+      />
 
       <UploadSlips
         isOpen5={isOpen5}
@@ -1171,16 +1358,29 @@ const Payroll = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
                 !isLoading &&
                 !ceoGetPreAndApprovedSalaryslipsLoading &&
                 (getNotApprovedSalaryslipsError ||
-                  accountantCreateNotApprovedError) && (
+                  accountantCreateNotApprovedVouchersError) && (
                   <ErrorBox
                     errorMessage={
                       getNotApprovedSalaryslipsError ||
-                      accountantCreateNotApprovedError
+                      accountantCreateNotApprovedVouchersError
                     }
                   />
                 )}
               {!downloadStatusLoading && downloadStatusError && (
                 <ErrorBox errorMessage={downloadStatusError} />
+              )}
+              {(accountantCreateNotApprovedVouchersAllError ||
+                hrSetNotApprovedSalaryslipsAllError ||
+                auditorSetPreApprovedSalaryslipsAllError ||
+                ceoSetApprovedSalaryslipsAllError) && (
+                <ErrorBox
+                  errorMessage={
+                    accountantCreateNotApprovedVouchersAllError ||
+                    hrSetNotApprovedSalaryslipsAllError ||
+                    auditorSetPreApprovedSalaryslipsAllError ||
+                    ceoSetApprovedSalaryslipsAllError
+                  }
+                />
               )}
               <EmpContainer>
                 <div className="row top__btn">
@@ -1203,7 +1403,7 @@ const Payroll = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
                     />
                   )}
 
-                  {userRole === "Accountant" ? (
+                  {totalApprovalLevel === 3 || totalApprovalLevel === 2 ? (
                     <>
                       <input
                         type="button"
@@ -1280,17 +1480,32 @@ const Payroll = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
                             className={
                               disableButton() && selectedOption !== "Approved"
                                 ? `general__btn ${
-                                    userRole === "CEO" ? "" : "margin__left2"
+                                    userRole === "CEO" ||
+                                    totalApprovalLevel === 3
+                                      ? ""
+                                      : "margin__left2"
                                   } mobile__margin__top save__btn`
                                 : `general__btn ${
-                                    userRole === "CEO" ? "" : "margin__left2"
+                                    userRole === "CEO" ||
+                                    totalApprovalLevel === 3
+                                      ? ""
+                                      : "margin__left2"
                                   } mobile__margin__top  disabled__btn`
                             }
                             onClick={() => {
-                              if (userRole === "Internal Auditor") {
+                              if (
+                                // userRole === "Internal Auditor" ||
+                                approvalLevel === "Level-1" &&
+                                totalApprovalLevel === 3
+                              ) {
                                 setIsOpen4(true);
                                 setPreApprovedBulk(true);
-                              } else if (userRole === "CEO") {
+                              } else if (
+                                // userRole === "CEO" ||
+                                approvalLevel === "Level-1" ||
+                                totalApprovalLevel === 2
+                                // approvalLevel === "Level-2"
+                              ) {
                                 setIsOpen4(true);
                                 setApprovedBulk(true);
                               }
@@ -1300,7 +1515,10 @@ const Payroll = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
                               !disableButton() || selectedOption === "Approved"
                             }
                             value={
-                              userRole === "CEO" ? "Approve" : "Pre-Approve"
+                              // userRole === "CEO" ? "Approve" : "Pre-Approve"
+                              totalApprovalLevel === 2
+                                ? "Approve"
+                                : "Pre-Approve"
                             }
                           />
                           <input
@@ -1320,7 +1538,10 @@ const Payroll = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
                       )}
                     </>
                   )}
-                  {(userRole === "HR" || userRole === "CEO") && (
+                  {(userRole === "HR" ||
+                    userRole === "CEO" ||
+                    totalApprovalLevel === 1 ||
+                    totalApprovalLevel === 2) && (
                     <div className="emp__control">
                       <DropdownList
                         // list={true}
@@ -1363,7 +1584,7 @@ const Payroll = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
                       }
                       onClick={downloadSalaryslipAct}
                       disabled={!salarySlip?.length}
-                      value="Download Payroll  As Excel"
+                      value="Download Payroll As Excel"
                     />
                   )}
 
@@ -1493,7 +1714,7 @@ const Payroll = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
                         <th>Salary Month</th>
                         <th>Total Additions</th>
                         <th>Total Deductions</th>
-                        {!checkForUWallet ? <th>U-wallet</th> : ""}
+                        {checkForUWallet() ? <th>U-wallet</th> : ""}
                         <th>Net Pay</th>
                         <th>Status</th>
                         {/* {userRole === "HR" ||
@@ -1508,6 +1729,7 @@ const Payroll = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
                     <tbody>
                       {searchResult
                         // .slice(pagesVisited, pagesVisited + usersPerpage)
+                        ?.sort((a, b) => b.createdAt - a.createdAt)
                         ?.map((slip) => (
                           <tr key={slip?.id}>
                             {(userRole === "Accountant" ||
@@ -1530,9 +1752,12 @@ const Payroll = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
                               {slip?.month} {slip?.year}
                             </td>
                             <td>
-                              {slip?.totalEarnings
-                                ? commafy(slip?.totalEarnings)
+                              {slip?.allowanceTotal
+                                ? commafy(slip?.allowanceTotal)
                                 : "0"}
+                              {/* {slip?.totalEarnings
+                                ? commafy(slip?.totalEarnings)
+                                : "0"} */}
                             </td>
                             <td>{commafy(slip?.deductionTotal)}</td>
                             {/* <td>{slip?.uWallet && commafy(slip?.uWallet)}</td> */}
@@ -1653,13 +1878,26 @@ const Payroll = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
                 >
                   <p style={{ fontSize: "1.3rem", fontWeight: "500" }}>
                     {`Showing : ${
-                      searchResult?.length < 1
+                      (
+                        paySlips ||
+                        ceoPayslips ||
+                        notApprovedSalaryslips ||
+                        accountantPayslips
+                      )?.resultLength < 1
                         ? 0
                         : `${
-                            pageNumber?.length > 0 ? pageNumber * 100 + 1 : 1
+                            pageNumber > 0 ? pageNumber * 100 + 1 : 1
                           } - ${usersPerpageCount}`
                     }
-                    of ${paySlips?.resultLength}`}
+                    of ${
+                      // (paySlips?.length && paySlips) ||
+                      (
+                        paySlips ||
+                        ceoPayslips ||
+                        notApprovedSalaryslips ||
+                        accountantPayslips
+                      )?.resultLength
+                    }`}
                   </p>
                 </div>
               </div>

@@ -81,7 +81,7 @@ const MonthlyPayheadTable = ({ toggle }) => {
   };
 
   // monthly payhead type
-  const onOptionClicked = (payHeadType) => () => {
+  const onOptionClicked = (payHeadType) => {
     setSelectedOption(payHeadType);
     setIsOpen(false);
   };
@@ -146,11 +146,16 @@ const MonthlyPayheadTable = ({ toggle }) => {
       dispatch(adminGetAllMonthlyPayheads());
     }
 
+    let timeoutId;
     if (createMonthlyPayheadError) {
-      setTimeout(() => {
+      timeoutId = setTimeout(() => {
         dispatch({ type: ADMIN_CREATE_MONTHLYPAYHEADS_RESET });
       }, 4000);
     }
+    return () => {
+      // Clear the timeout when the component unmounts or when showError changes
+      clearTimeout(timeoutId);
+    };
   }, [dispatch, createMonthlyPayheadSuccess, createMonthlyPayheadError]);
 
   return (
@@ -289,14 +294,12 @@ const MonthlyPayheadTable = ({ toggle }) => {
                             className="icons"
                             onClick={(e) => onSelect(mthPayhead?.id)}
                           >
-                            
                             <FontAwesomeIcon icon={["fas", "edit"]} />
                           </div>
                           <div
                             className="icons"
                             onClick={(e) => popup4(mthPayhead?.id)}
                           >
-                            
                             <FontAwesomeIcon icon={["fas", "trash-alt"]} />
                           </div>
                         </div>

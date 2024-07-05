@@ -20,6 +20,7 @@ import { getAllBankNamesFunc } from "../../actions/banklist";
 import { VERIFY_ACCOUNT_NUMBER_RESET } from "../../types/auth";
 import { verifyAccountNumberFunc } from "../../actions/auth";
 import { ADMIN_UPDATE_EMPLOYEE_BY_ID_RESET } from "../../types/employee";
+import Successful from "../Successful";
 const EditEmployee = ({
   isOpen3,
   popup3,
@@ -175,7 +176,9 @@ const EditEmployee = ({
   useEffect(() => {
     dispatch(getAllDepartment());
     dispatch(getAllBankNamesFunc());
-    dispatch(getPositionsByDepartment(employee?.department?.id));
+    if (employee?.department?.id) {
+      dispatch(getPositionsByDepartment(employee?.department?.id));
+    }
     // dispatch(adminGetAllBanksFunc());
     dispatch(hrGetAllStaffGradesFunc());
     dispatch(hrGetSalaryLevelsFunc(employee?.salaryLevel?.salaryGrade?.id));
@@ -219,12 +222,18 @@ const EditEmployee = ({
 
   // verify account error
   useEffect(() => {
+    let timeoutId;
     if (verifyAccountError || updateError) {
-      setTimeout(() => {
+      timeoutId = setTimeout(() => {
         dispatch({ type: VERIFY_ACCOUNT_NUMBER_RESET });
         dispatch({ type: ADMIN_UPDATE_EMPLOYEE_BY_ID_RESET });
       }, 5000);
     }
+
+    return () => {
+      // Clear the timeout when the component unmounts or when showError changes
+      clearTimeout(timeoutId);
+    };
   }, [verifyAccountError, updateError, dispatch]);
 
   //   onChange Handler
@@ -246,19 +255,19 @@ const EditEmployee = ({
   const togglingNotch = () => setIsOpenNotch(!isOpenNotch);
 
   // gender
-  const onOptionClicked = (value) => () => {
+  const onOptionClicked = (value) => {
     setSelectedOption(value);
     setIsOpen(false);
   };
 
   // employee type
-  const onOptionClicked2 = (value) => () => {
+  const onOptionClicked2 = (value) => {
     setSelectedOption2(value);
     setIsOpen2(false);
   };
 
   // department
-  const onOptionClicked4 = (department) => () => {
+  const onOptionClicked4 = (department) => {
     setSelectedOption4(department);
     setIsOpen4(false);
     dispatch(getPositionsByDepartment(department?.id));
@@ -266,13 +275,13 @@ const EditEmployee = ({
   };
 
   // positions
-  const onOptionClicked5 = (value) => () => {
+  const onOptionClicked5 = (value) => {
     setSelectedOption5(value);
     setIsOpen5(false);
   };
 
   // salary grade
-  const onOptionClickedSalaryGrade = (salaryGrade) => () => {
+  const onOptionClickedSalaryGrade = (salaryGrade) => {
     setSalaryGrade(salaryGrade);
     dispatch(hrGetSalaryLevelsFunc(salaryGrade?.id));
     setIsOpenSalaryGrade(false);
@@ -282,7 +291,7 @@ const EditEmployee = ({
   };
 
   // salary level
-  const onOptionClickedSalarylevel = (salaryLevel) => () => {
+  const onOptionClickedSalarylevel = (salaryLevel) => {
     setSalaryLevel(salaryLevel);
     dispatch(hrGetSalaryStepsFunc(salaryLevel?.id));
     setIsOpenSalaryLevel(false);
@@ -291,20 +300,20 @@ const EditEmployee = ({
   };
 
   // salary step
-  const onOptionClickedSalaryStep = (salaryStep) => () => {
+  const onOptionClickedSalaryStep = (salaryStep) => {
     setSalaryStep(salaryStep);
     setIsOpenSalaryStep(false);
     setNotch(null);
   };
 
   // salary step notch
-  const onOptionClickedNotch = (notch) => () => {
+  const onOptionClickedNotch = (notch) => {
     setNotch(notch);
     setIsOpenNotch(false);
   };
 
   // bank
-  const onOptionClicked6 = (bank) => () => {
+  const onOptionClicked6 = (bank) => {
     setSelectedOption6({ name: bank?.name });
     setBankCode(bank?.code);
     setIsOpen6(false);
@@ -336,6 +345,10 @@ const EditEmployee = ({
     }
   };
 
+  const popup7 = () => {
+    dispatch({ type: ADMIN_UPDATE_EMPLOYEE_BY_ID_RESET });
+  };
+
   const onSubmit = (e) => {
     e.preventDefault();
     const gender = selectedOption;
@@ -355,8 +368,8 @@ const EditEmployee = ({
           gender,
           employeeType: selectedOption2,
           employeeBank: selectedOption6.name,
-          department: departId,
-          position: postId,
+          // department: departId,
+          // position: postId,
           noGradeSalary:
             selectedOption2 === "Contract-With-No-Grade" ? noGradeSalary : null,
           salaryLevelId: salaryStep?.salaryLevelId
@@ -399,11 +412,16 @@ const EditEmployee = ({
       {(updateLoading || verifyAccountLoading) && (
         <LoadingSpinner toggle={toggle} />
       )}
+      <Successful
+        isOpen7={updateSuccess}
+        popup7={popup7}
+        message="Updated Successfully!"
+      />
 
       <ModalBackground isOpen3={isOpen3} onClick={popup3} />
       <ModalContainer className="edit__emp" isOpen3={isOpen3}>
         <NewEmp className="edit__emp" onClick={closeOption}>
-          {updateError && <ErrorBox errorMessage={updateError} fixed={true} />}
+          {updateError && <ErrorBox errorMessage={updateError} fixed />}
           <h1>Edit Employee</h1>
           <form onSubmit={onSubmit}>
             <div className="input__row">
@@ -775,7 +793,7 @@ const EditEmployee = ({
                 // !salaryStep
                 (selectedOption2 !== "Contract-With-No-Grade"
                   ? !salaryGrade || !salaryLevel || !salaryStep
-                  : !noGradeSalary  || noGradeSalary < 0)
+                  : !noGradeSalary || noGradeSalary < 0)
                   ? //  ||
                     // !isObjectEmpty(employeeDataValidation(employeeFormData))
                     "disabled__btn margin__top"

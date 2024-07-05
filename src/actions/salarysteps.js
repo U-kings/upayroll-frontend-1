@@ -32,7 +32,7 @@ export const hrGetSalaryStepsFunc =
     } else {
       try {
         dispatch({ type: HR_GET_STEPS_REQUEST });
-        const { data } = await axios.get(`${urlConfig.proxyUrl.PROXYURL}api/salarystep`, config);
+        const { data } = await axios.get(`${urlConfig.url.PROXYURL}api/salarystep`, config);
         dispatch({ type: HR_GET_STEPS_SUCCESS, payload: data });
       } catch (error) {
         dispatch({
@@ -57,7 +57,7 @@ export const hrGetSalaryStepBySalaryLevelFunc =
     try {
       dispatch({ type: HR_GET_STEPS_BY_SALARYLEVEL_REQUEST });
       const { data } = await axios.get(
-        `${urlConfig.proxyUrl.PROXYURL}api/salarystep/${salaryLevelId}`,
+        `${urlConfig.url.PROXYURL}api/salarystep/${salaryLevelId}`,
         config
       );
       dispatch({ type: HR_GET_STEPS_BY_SALARYLEVEL_SUCCESS, payload: data });
@@ -86,7 +86,7 @@ export const hrCreateSalaryStepFunc =
       dispatch({ type: HR_CREATE_STEPS_REQUEST });
       const body = JSON.stringify(formData);
       await axios.post(
-        `${urlConfig.proxyUrl.PROXYURL}api/salarystep/${salaryLevelId}/${salaryGradeId}`,
+        `${urlConfig.url.PROXYURL}api/salarystep/${salaryLevelId}/${salaryGradeId}`,
         body,
         config
       );
@@ -112,7 +112,7 @@ export const hrDeleteSalaryStepFunc = (salaryStepId) => async (dispatch) => {
   };
   try {
     dispatch({ type: HR_DELETE_STEPS_BY_ID_REQUEST });
-    await axios.delete(`${urlConfig.proxyUrl.PROXYURL}api/salarystep/${salaryStepId}`, config);
+    await axios.delete(`${urlConfig.url.PROXYURL}api/salarystep/${salaryStepId}`, config);
     dispatch({ type: HR_DELETE_STEPS_BY_ID_SUCCESS });
     dispatch(hrGetSalaryStepsFunc());
   } catch (error) {

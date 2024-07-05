@@ -15,6 +15,7 @@ import { commafy, decimalFormat } from "../../hooks/calculations/paySlip";
 import {
   downloadBankScheduleExcelFileFunc,
   downloadBankSchedulePdfFileFunc,
+  downloadBankScheduleSterlingProExcelFileFunc,
 } from "../../actions/download";
 import {
   DropdownList,
@@ -45,6 +46,7 @@ import ReactPaginate from "react-paginate";
 import { currentmonthMethod } from "../../hooks/months/listMonths";
 import { CEO_APPROVE_BANKSCHEDULES_RESET } from "../../types/bankschedules";
 import { DOWNLOADING_ON_PROCESS_ERROR } from "../../types/download";
+import cookie from "js-cookie";
 
 function BankSchedule({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) {
   // history init
@@ -103,6 +105,7 @@ function BankSchedule({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) {
   const [userRole] = useState(adminInfo?.user?.role || "");
   const [userRoleName] = useState(adminInfo?.user?.name || "");
   const [profileImg] = useState(adminInfo?.user?.photo || "");
+  const [approvalLevel] = useState(cookie.get("approvalLevel"));
 
   useEffect(() => {
     if (userRole === "Employee") {
@@ -117,7 +120,7 @@ function BankSchedule({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) {
         userRole === "Internal Auditor"
       ) {
         setBankScheduleData(bankSchedules?.bankSchedules);
-      } else if (userRole === "CEO") {
+      } else if (userRole === "CEO" || approvalLevel === "Level-2") {
         setBankScheduleData(notApprovedBankSchedules?.notApprovedBankSchedules);
       }
     }
@@ -133,14 +136,21 @@ function BankSchedule({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) {
     bankSchedules,
     searchTerm,
     bankScheduleData,
+    approvalLevel,
   ]);
 
   useEffect(() => {
+    let timeoutId;
     if (downloadStatusError) {
-      setTimeout(() => {
+      timeoutId = setTimeout(() => {
         dispatch({ type: DOWNLOADING_ON_PROCESS_ERROR });
       }, 5000);
     }
+
+    return () => {
+      // Clear the timeout when the component unmounts or when showError changes
+      clearTimeout(timeoutId);
+    };
   }, [dispatch, downloadStatusError]);
 
   useEffect(() => {
@@ -148,17 +158,23 @@ function BankSchedule({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) {
       setSearchTerm("");
     }
 
+    let timeoutId;
     if (ceoApprovedBankScheduleError) {
-      setTimeout(() => {
+      timeoutId = setTimeout(() => {
         dispatch({ type: CEO_APPROVE_BANKSCHEDULES_RESET });
       }, 4000);
     }
+
+    return () => {
+      // Clear the timeout when the component unmounts or when showError changes
+      clearTimeout(timeoutId);
+    };
   }, [ceoApprovedBankScheduleSuccess, ceoApprovedBankScheduleError, dispatch]);
 
   const toggling = () => setIsOpen2(!isOpen2);
 
   // bank filter drop down
-  const onOptionClicked = (filter) => () => {
+  const onOptionClicked = (filter) => {
     setSelectedOption6(filter);
     setIsOpen2(false);
   };
@@ -212,54 +228,100 @@ function BankSchedule({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) {
   };
 
   const onDownloadFileFunc = (fileType) => {
-    let newData;
-    newData = approvedScheduleVouchers?.filter(
-      (el) => String(el.bankScheduleId) === String(bankSchedule?.id)
-    );
+    // let newData;
+    // newData = approvedScheduleVouchers?.filter(
+    //   (el) => String(el.bankScheduleId) === String(bankSchedule?.id)
+    // );
     if (fileType === "excel") {
-      newData = newData?.map((el, indexes) => {
-        return {
-          sn: ++indexes,
-          staffName: el?.paySlip?.employee?.user?.name,
-          remark: el?.remark,
-          employeeBank: el?.paySlip?.employee?.employeeBank,
-          amount: el?.amount,
-          employeeBankNumber: el?.paySlip?.employee?.employeeBankAcctNumber,
-          accountName: String(
-            el?.paySlip?.employee?.accountName
-              ? el?.paySlip?.employee?.accountName
-              : ""
-          ),
-        };
-      });
+      // newData = newData?.map((el, indexes) => {
+      //   return {
+      //     sn: ++indexes,
+      //     staffName: el?.paySlip?.employee?.user?.name,
+      //     remark: el?.remark,
+      //     employeeBank: el?.paySlip?.employee?.employeeBank,
+      //     employeeBankCode: el?.paySlip?.employee?.employeeBankCode,
+      //     amount: el?.amount,
+      //     employeeBankNumber: el?.paySlip?.employee?.employeeBankAcctNumber,
+      //     accountName: String(
+      //       el?.paySlip?.employee?.accountName
+      //         ? el?.paySlip?.employee?.accountName
+      //         : ""
+      //     ),
+      //   };
+      // });
 
       dispatch(
         downloadBankScheduleExcelFileFunc(
-          selectedOption6?.name.split(" ").join(""),
+          selectedOption6?.name?.split(" ").join(""),
           `bankSchedule-${bankSchedule?.paymentType}`,
           bankSchedule?.month,
-          newData
+          // newData,
+          bankSchedule?.id
+        )
+      );
+    } else if (fileType === "sterling-pro-excel") {
+      // newData = newData?.map((el, indexes) => {
+      //   return {
+      //     sn: ++indexes,
+      //     accountName: String(
+      //       el?.paySlip?.employee?.accountName
+      //         ? el?.paySlip?.employee?.accountName
+      //         : ""
+      //     ),
+      //     accountNumber: String(
+      //       el?.paySlip?.employee?.employeeBankAcctNumber
+      //         ? el?.paySlip?.employee?.employeeBankAcctNumber
+      //         : ""
+      //     ),
+      //     // accountNumber: el?.paySlip?.employee?.employeeBankAcctNumber,
+      //     traAmount: el?.amount,
+      //     remarks: el?.remark,
+      //     bankCode: el?.paySlip?.employee?.employeeBankCode,
+
+      //     // sn: ++indexes,
+      //     // staffName: el?.paySlip?.employee?.user?.name,
+      //     // remark: el?.remark,
+      //     // employeeBank: el?.paySlip?.employee?.employeeBank,
+      //     // employeeBankCode: el?.paySlip?.employee?.employeeBankCode,
+      //     // amount: el?.amount,
+      //     // employeeBankNumber: el?.paySlip?.employee?.employeeBankAcctNumber,
+      //     // accountName: String(
+      //     //   el?.paySlip?.employee?.accountName
+      //     //     ? el?.paySlip?.employee?.accountName
+      //     //     : ""
+      //     // ),
+      //   };
+      // });
+
+      dispatch(
+        downloadBankScheduleSterlingProExcelFileFunc(
+          selectedOption6?.name?.split(" ").join(""),
+          `bankSchedule-${bankSchedule?.paymentType}`,
+          bankSchedule?.month,
+          // newData,
+          bankSchedule?.id
         )
       );
     } else {
-      newData = newData?.map((el) => {
-        return {
-          staffName: el?.paySlip?.employee?.user?.name,
-          remark: el?.remark,
-          employeeBank: el?.paySlip?.employee?.employeeBank,
-          amount: commafy(el?.amount),
-          employeeBankNumber: String(
-            el?.paySlip?.employee?.employeeBankAcctNumber
-              ? el?.paySlip?.employee?.employeeBankAcctNumber
-              : ""
-          ),
-          accountName: String(
-            el?.paySlip?.employee?.accountName
-              ? el?.paySlip?.employee?.accountName
-              : ""
-          ),
-        };
-      });
+      // newData = newData?.map((el) => {
+      //   return {
+      //     staffName: el?.paySlip?.employee?.user?.name,
+      //     remark: el?.remark,
+      //     employeeBank: el?.paySlip?.employee?.employeeBank,
+      //     employeeBankCode: el?.paySlip?.employee?.employeeBankCode,
+      //     amount: commafy(el?.amount),
+      //     employeeBankNumber: String(
+      //       el?.paySlip?.employee?.employeeBankAcctNumber
+      //         ? el?.paySlip?.employee?.employeeBankAcctNumber
+      //         : ""
+      //     ),
+      //     accountName: String(
+      //       el?.paySlip?.employee?.accountName
+      //         ? el?.paySlip?.employee?.accountName
+      //         : ""
+      //     ),
+      //   };
+      // });
       dispatch(
         downloadBankSchedulePdfFileFunc(
           selectedOption6,
@@ -269,8 +331,9 @@ function BankSchedule({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) {
           `bankschedule-${bankSchedule?.paymentType?.split(" ").join("")}`,
           bankSchedule?.month,
           bankSchedule.ceoSignature,
-          newData,
-          commafy(decimalFormat(bankSchedule?.subTotal))
+          // newData,
+          // commafy(decimalFormat(bankSchedule?.subTotal)),
+          bankSchedule?.id
         )
       );
     }
@@ -301,10 +364,11 @@ function BankSchedule({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) {
           userRole === "Accountant" ||
           // userRole === "CEO" ||
           userRole === "HR" ||
-          userRole === "Internal Auditor"
+          userRole === "Internal Auditor" ||
+          approvalLevel === "Level-1"
         ) {
           dispatch(adminGetAllBanksFunc());
-          dispatch(accountantGetApprovedScheduleVouchersFunc());
+          // dispatch(accountantGetApprovedScheduleVouchersFunc());
           // dispatch(accountantGetMonthlyBankschedulesFunc());
           dispatch(
             accountantGetMonthlyBankschedulesFunc(
@@ -315,7 +379,7 @@ function BankSchedule({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) {
           );
         }
 
-        if (userRole === "CEO") {
+        if (userRole === "CEO" || approvalLevel === "Level-2") {
           dispatch(adminGetAllBanksFunc());
           // dispatch(accountantGetMonthlyBankschedulesFunc());
           dispatch(accountantGetApprovedScheduleVouchersFunc());
@@ -345,6 +409,7 @@ function BankSchedule({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) {
     selectedOption6,
     selectedOption10,
     ceoApprovedBankScheduleSuccess,
+    approvalLevel,
   ]);
 
   // useEffect(() => {
@@ -489,6 +554,8 @@ function BankSchedule({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) {
     }
   };
 
+  // console.log(downloadStatusError);
+
   const bnkschd = "active";
 
   return (
@@ -534,6 +601,7 @@ function BankSchedule({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) {
         isOpen3={isOpen3}
         popup3={popup3}
         userRole={userRole}
+        approvalLevel={approvalLevel}
         onDownloadFileFunc={onDownloadFileFunc}
       />
       <DashboardContainer onClick={close}>
@@ -566,14 +634,15 @@ function BankSchedule({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) {
                 ceoGetApprovedBankVouchersLoading) && (
                 <LoadingSpinner toggle={toggle} />
               )}
-              {(downloadStatusError && !downloadStatusLoading) ||
-                (ceoApprovedBankScheduleError && (
-                  <ErrorBox
-                    errorMessage={
-                      downloadStatusError || ceoApprovedBankScheduleError
-                    }
-                  />
-                ))}
+              {((downloadStatusError && !downloadStatusLoading) ||
+                ceoApprovedBankScheduleError) && (
+                <ErrorBox
+                  fixed
+                  errorMessage={
+                    downloadStatusError || ceoApprovedBankScheduleError
+                  }
+                />
+              )}
               <EmpContainer>
                 <div className="row  top__btn">
                   {userRole === "CEO" && (
@@ -703,6 +772,7 @@ function BankSchedule({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) {
                                   </div>
                                 )}
                                 <div
+                                  style={{ display: "none" }}
                                   title="View"
                                   className="icons"
                                   onClick={() => onClickViewBankSchedule(el)}
@@ -711,7 +781,8 @@ function BankSchedule({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) {
                                   <FontAwesomeIcon icon={["fas", "eye"]} />
                                 </div>
                                 {(userRole === "Accountant" ||
-                                  userRole === "CEO") && (
+                                  userRole === "CEO" ||
+                                  approvalLevel === "Level-2") && (
                                   <div
                                     title="Delete"
                                     className="icons"

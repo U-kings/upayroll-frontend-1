@@ -6,13 +6,13 @@ export const trancateWord = (string) => {
 
 export const removeExtraSpace = (str) => {
   if (str) {
-    return str.trim().split(/ +/).join(" ");
+    return str.trim()?.split(/ +/).join(" ");
   }
 };
 
 export const formatDate = (date) => {
   if (date !== "" && date) {
-    return new Date(date)?.toISOString().split("T")[0];
+    return new Date(date)?.toISOString()?.split("T")[0];
   }
   // if (date !== "") {
   //   return new Date(date).toISOString();
@@ -34,7 +34,8 @@ export const Capitalize = (str) => {
 export function excelDateToJSDate(excelDate) {
   if (typeof excelDate === "string") {
     //reverse string from 7/1/1994 to 1994/1/7
-    const date = excelDate.split("/").reverse().join("-");
+    // const date = excelDate.split("/").reverse().join("-");
+    const date = excelDate?.split("/").reverse().join("/");
     // const date = excelDate;
     return date;
     // return new Date(converted_date).toISOString().split('T')[0].replaceAll('-', '/');
@@ -43,7 +44,7 @@ export function excelDateToJSDate(excelDate) {
     let converted_date = date.toLocaleString();
 
     // return new Date(converted_date);
-    return new Date(converted_date).toISOString().split("T")[0];
+    return new Date(converted_date).toISOString()?.split("T")[0];
   }
 }
 
@@ -55,7 +56,7 @@ export const checkEmail = (arrData) => {
     return data?.Email;
   });
   let duplicateItems = arrEmail?.filter(
-    (item, index) => arrEmail?.indexOf(item) != index
+    (item, index) => arrEmail?.indexOf(item) !== index
   );
 
   const arrEmail2 = arrData?.some((data) => {
@@ -107,7 +108,7 @@ export const checkDuplicateAccountNumber = (arrData) => {
     return data?.EmployeeBankAcctNumber;
   });
   let duplicateItems = arrAccountNumbers?.filter(
-    (item, index) => arrAccountNumbers?.indexOf(item) != index
+    (item, index) => arrAccountNumbers?.indexOf(item) !== index
   );
 
   return duplicateItems?.length >= 1;

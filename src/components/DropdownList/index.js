@@ -1,5 +1,5 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import React from "react";
+import React, { useCallback, useState } from "react";
 import {
   DropDownContainer,
   DropDownListContainer,
@@ -7,11 +7,13 @@ import {
   ListItem,
   DropDownList,
 } from "../../styles/library";
+import SearchBar from "../SearchBar";
+import { COLORS } from "../../values/colors";
 
 const DropdownList = ({
   list,
-  isOpen,
-  toggling,
+  // isOpen,
+  // toggling,
   selectedOption,
   dataSet,
   onOptionClicked,
@@ -21,10 +23,56 @@ const DropdownList = ({
   cssClass3,
   payheadDropdown,
   maxHeight,
+  disable,
 }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const [searchResult, setSearchResult] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+
+  const keyUphandler = () => {};
+
+  const toggling = () => {
+    setIsOpen(!isOpen);
+  };
+
+  const filteredData = useCallback(
+    (value) => {
+      if (value !== "") {
+        const filteredList = dataSet?.filter((data) => {
+          return Object.values(data?.name)
+            .join("")
+            .toLowerCase()
+            .includes(value?.toLowerCase());
+        });
+        setSearchResult(filteredList);
+      } else {
+        setSearchResult(dataSet);
+      }
+    },
+    [dataSet]
+  );
+
+  const searchHandler = useCallback(
+    (searchTerm) => {
+      setSearchTerm(searchTerm);
+      filteredData(searchTerm);
+    },
+    [filteredData]
+  );
+
+  const onOptionClickedFunc = (data) => {
+    onOptionClicked(data);
+    setSearchTerm("");
+    toggling();
+  };
+
   return list ? (
     <DropDownContainer className={cssClass3}>
-      <DropDownHeader onClick={toggling} className={cssClass2}>
+      <DropDownHeader
+        onClick={disable ? () => {} : toggling}
+        className={cssClass2}
+      >
         {selectedOption?.name || text}
         <span className="dropdown__icon">
           {isOpen ? (
@@ -35,27 +83,54 @@ const DropdownList = ({
         </span>
       </DropDownHeader>
       {isOpen && (
-        <DropDownListContainer>
-          <DropDownList style={{ height: maxHeight ? maxHeight : "auto" }}>
-            {dataSet?.map((data) => (
-              <ListItem
-                onClick={
-                  payheadDropdown
-                    ? (e) => onOptionClicked(data)
-                    : onOptionClicked(data)
-                }
-                key={data?.id}
-              >
-                {data?.name}
-              </ListItem>
-            ))}
-          </DropDownList>
-        </DropDownListContainer>
+        <>
+          {/* <input
+            type="text"
+            placeholder="search..."
+            value={searchText}
+            onChange={(e) => setSearchText(e.target.value)}
+            onKeyUp={keyUphandler}
+          /> */}
+          <DropDownListContainer>
+            <DropDownList style={{ height: maxHeight ? maxHeight : "auto" }}>
+              {isOpen && (
+                <div
+                  style={{
+                    padding: ".3rem .5rem",
+                    backgroundColor: COLORS?.white3,
+                  }}
+                  onClick={() => setIsOpen(true)}
+                >
+                  <SearchBar term={searchTerm} searchKeyWord={searchHandler} />
+                </div>
+              )}
+              {(searchTerm ? searchResult : dataSet)?.map(
+                // {(searchResult?.length > 0 ? searchResult : dataSet)?.map(
+                (data) => (
+                  <ListItem
+                    onClick={
+                      () => onOptionClickedFunc(data)
+                      // payheadDropdown
+                      //   ? () => onOptionClickedFunc(data)
+                      //   : () => onOptionClickedFunc2(data)
+                    }
+                    key={data?.id}
+                  >
+                    {data?.name}
+                  </ListItem>
+                )
+              )}
+            </DropDownList>
+          </DropDownListContainer>
+        </>
       )}
     </DropDownContainer>
   ) : (
     <DropDownContainer className={cssClass3}>
-      <DropDownHeader onClick={toggling} className={cssClass2}>
+      <DropDownHeader
+        onClick={disable ? () => {} : toggling}
+        className={cssClass2}
+      >
         {selectedOption || text}
         <span className="dropdown__icon">
           {isOpen ? (
@@ -70,7 +145,7 @@ const DropdownList = ({
           <DropDownList>
             {dataSet?.map((data, indexes) => (
               <ListItem
-                onClick={onOptionClicked(data)}
+                onClick={() => onOptionClickedFunc(data)}
                 key={++indexes}
                 className={!cssClass ? "" : cssClass(data)}
               >

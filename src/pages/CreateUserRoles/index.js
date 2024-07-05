@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import cookie from "js-cookie";
 // import { Visibility, VisibilityOff } from "@mui/icons-material";
 import {
@@ -20,15 +20,25 @@ import {
   // getNotCreatedRolesFunc,
   registerCompanyAdminFunc,
 } from "../../actions/auth";
-import { ErrorBox } from "../../components";
-import { Spinner, Successful } from "../../modals";
-import bgImg from "../../resources/signinBg.jpg";
+import { ErrorBox, Header, SideNav } from "../../components";
+import { LoadingSpinner, Successful } from "../../modals";
 import {
   CHECK_COOKIE_TOKEN_VALID_RESET,
   REGISTER_COMPANY_ADMIN_RESET,
 } from "../../types/auth";
+import {
+  Container,
+  DashboardContainer,
+  DashboardContent,
+  Mainbody,
+} from "../../styles/library";
 
-const Createroles = () => {
+const CreateUserRoles = ({
+  toggle,
+  toggleMenu,
+  mobileToggle,
+  toggleMobileMenu,
+}) => {
   const theme = useTheme();
 
   const dispatch = useDispatch();
@@ -47,6 +57,8 @@ const Createroles = () => {
   const history = useHistory();
 
   const [userRole] = useState(adminInfo?.user?.role || "");
+  const [userRoleName] = useState(adminInfo?.user?.name || "");
+  const [profileImg] = useState(adminInfo?.user?.photo || "");
   const [showPassword, setShowPassword] = React.useState(false);
   const [page, setPage] = useState(1);
 
@@ -77,10 +89,42 @@ const Createroles = () => {
 
   // console.log(notCreatedRoles);
 
+  const clearFields = useCallback(() => {
+    if (page === 1) {
+      setFormData1({
+        name: "",
+        email: "",
+        role: "HR",
+        // password: "",
+      });
+    } else if (page === 2) {
+      setFormData2({
+        name: "",
+        email: "",
+        role: "Internal Auditor",
+        // password: "",
+      });
+    } else if (page === 3) {
+      setFormData3({
+        name: "",
+        email: "",
+        role: "CEO",
+        // password: "",
+      });
+    } else if (page === 4) {
+      setFormData4({
+        name: "",
+        email: "",
+        role: "Accountant",
+        // password: "",
+      });
+    }
+  }, [page]);
+
   useEffect(() => {
     // dispatch(getNotCreatedRolesFunc());
     if (!adminInfo?.isAuthenticated && !adminInfo?.user?.name) {
-      history.push("/");
+      history.push("/signin");
     }
 
     if (userRole === "Internal Auditor" || userRole === "Accountant") {
@@ -90,37 +134,18 @@ const Createroles = () => {
     }
 
     if (!registerCompanyAdmin?.isLoading && !registerCompanyAdmin?.error) {
-      if (page === 1) {
-        setFormData1({
-          name: "",
-          email: "",
-          role: "HR",
-          // password: "",
-        });
-      } else if (page === 2) {
-        setFormData2({
-          name: "",
-          email: "",
-          role: "Internal Auditor",
-          // password: "",
-        });
-      } else if (page === 3) {
-        setFormData3({
-          name: "",
-          email: "",
-          role: "CEO",
-          // password: "",
-        });
-      } else if (page === 4) {
-        setFormData4({
-          name: "",
-          email: "",
-          role: "Accountant",
-          // password: "",
-        });
-      }
+      clearFields();
     }
-  }, [registerCompanyAdmin, history, adminInfo, userRole, dispatch, page]);
+  }, [
+    registerCompanyAdmin,
+    history,
+    adminInfo,
+    userRole,
+    dispatch,
+    page,
+    clearFields,
+  ]);
+
   const popup7 = () => {
     if (registerCompanyAdmin?.success) {
       dispatch({ type: REGISTER_COMPANY_ADMIN_RESET });
@@ -130,6 +155,22 @@ const Createroles = () => {
       }
     }
   };
+
+  useEffect(() => {
+    let timeoutId;
+    if (registerCompanyAdmin?.error) {
+      timeoutId = setTimeout(() => {
+        // clearFields();
+        dispatch({ type: REGISTER_COMPANY_ADMIN_RESET });
+      }, 6000);
+    }
+
+    return () => {
+      // Clear the timeout when the component unmounts or when showError changes
+      clearTimeout(timeoutId);
+    };
+    // eslint-disable-next-line
+  }, [dispatch, clearFields, registerCompanyAdmin?.error]);
 
   useEffect(() => {
     if (userRole === "HR") {
@@ -202,130 +243,143 @@ const Createroles = () => {
 
   return (
     <>
-      {registerCompanyAdmin?.isLoading && <Spinner />}
+      {registerCompanyAdmin?.isLoading && <LoadingSpinner toggle={toggle} />}
 
       <Successful
         popup7={popup7}
         isOpen7={registerCompanyAdmin?.success && !registerCompanyAdmin?.error}
         message="Created Successfully"
       />
-      <Box>
-        <Box
-          sx={{
-            display: "flex",
-            position: "fixed",
-            height: "100%",
-            bgcolor: theme.palette.secondary[500],
-            width: "100%",
-          }}
-        >
-          <Box
-            sx={{
-              display: { xs: "none", lg: "flex" },
-              width: "50%",
-              // mr: "4rem",
-              height: "100vh",
-              overflow: "hidden",
-              "& img": {
-                width: "100%",
-              },
+      <DashboardContainer>
+        <DashboardContent>
+          <SideNav
+            userRole={userRole}
+            // dpt={dpt}
+            toggle={toggle}
+            toggleMenu={toggleMenu}
+            mobileToggle={mobileToggle}
+            toggleMobileMenu={toggleMobileMenu}
+          />
+          <Mainbody toggle={toggle}>
+            <Header
+              text="Create User Roles"
+              // text="Departments"
+              userRole={userRole}
+              userRoleName={userRoleName}
+              profileimg={profileImg}
+              toggle={toggle}
+              toggleMenu={toggleMenu}
+              mobileToggle={mobileToggle}
+              toggleMobileMenu={toggleMobileMenu}
+            />
 
-              backgroundImage: `url(${bgImg})`,
-              backgroundRepeat: "no-repeat",
-              backgroundSize: "cover",
-            }}
-          ></Box>
-          <Box sx={{ width: { xs: "100%", lg: "50%" } }}>
-            <Box display="flex" sx={{ m: "auto" }} height="100%">
-              <Box sx={{ m: "auto", width: { xs: "100%", lg: "40rem" } }}>
-                {!registerCompanyAdmin?.isLoading &&
-                  registerCompanyAdmin?.error && (
-                    <ErrorBox
-                      errorMessage={
-                        registerCompanyAdmin?.error ===
-                        "Request failed with status code 500"
-                          ? "Please Check Your Internet Connection"
-                          : registerCompanyAdmin?.error
-                      }
-                    />
-                  )}
-                {page === 1 && (
-                  // {}
-                  <Box sx={{ display: "flex" }}>
-                    <Box
-                      sx={{
-                        m: "auto",
-                        width: "100%",
-                      }}
-                    >
-                      <Typography
-                        variant="h1"
-                        sx={{ fontWeight: "500" }}
-                        color={theme.palette.secondary[1000]}
-                      >
-                        Create HR Profile
-                      </Typography>
+            <Container>
+              <Box
+                sx={{
+                  display: "flex",
+                  flexDirection: "column",
+                  // position: "fixed",
+                  height: "100%",
+                  bgcolor: theme.palette.secondary[500],
+                  width: "100%",
+                  marginY: "4rem",
+                }}
+              >
+                <Box
+                  sx={{
+                    m: "auto",
+                    width: { xs: "100%", lg: "40rem" },
+                    margin: "auto",
+                  }}
+                >
+                  {!registerCompanyAdmin?.isLoading &&
+                    registerCompanyAdmin?.error && (
+                      <ErrorBox
+                        errorMessage={
+                          registerCompanyAdmin?.error ===
+                          "Request failed with status code 500"
+                            ? "Please Check Your Internet Connection"
+                            : registerCompanyAdmin?.error
+                        }
+                      />
+                    )}
+                  {page === 1 && (
+                    // {}
+                    <Box sx={{ display: "flex" }}>
                       <Box
                         sx={{
-                          color: theme.palette.secondary[1000],
-                          "& .MuiTextField-root, .MuiFormControl-root": {
-                            m: "1.3rem 0",
-                            width: "100%",
-                            borderBottom: "none !important",
-                          },
-                          "& .MuiFormLabel-root": {
-                            color: theme.palette.grey[700],
-                          },
-                          "& .MuiFormLabel-root.Mui-focused": {
-                            color: theme.palette.grey[800],
-                          },
-                          "& .MuiInput-root:before": {
-                            borderBottom: `1px solid ${theme.palette.grey[900]}`,
-                          },
-                          "& .MuiInput-root:after": {
-                            borderBottom: `1px solid ${theme.palette.grey[600]}`,
-                          },
-                          "& input:focus": {
-                            outline: "none !important",
-                            border: "none !important",
-                          },
+                          m: "auto",
+                          width: "100%",
                         }}
-                        onSubmit={handleSubmit("form1")}
-                        component="form"
-                        noValidate
                       >
-                        <Stack direction="column">
-                          <TextField
-                            variant="standard"
-                            label="Name"
-                            name="name"
-                            type="text"
-                            required
-                            inputProps={{
-                              autoComplete: "new-password",
-                              form: {
-                                autoComplete: "off",
-                              },
-                            }}
-                            value={formData1?.name}
-                            onChange={handleChange("form1")}
-                          />
-                          <TextField
-                            variant="standard"
-                            type="email"
-                            name="email"
-                            required
-                            inputProps={{
-                              autoComplete: "new-password",
-                              form: {
-                                autoComplete: "off",
-                              },
-                            }}
-                            label="Email Address"
-                            value={formData1?.email}
-                            onChange={handleChange("form1")}
-                          />
-                          {/* <FormControl
+                        <Typography
+                          variant="h1"
+                          sx={{ fontWeight: "500" }}
+                          color={theme.palette.secondary[1000]}
+                        >
+                          Create HR Profile
+                        </Typography>
+                        <Box
+                          sx={{
+                            color: theme.palette.secondary[1000],
+                            "& .MuiTextField-root, .MuiFormControl-root": {
+                              m: "1.3rem 0",
+                              width: "100%",
+                              borderBottom: "none !important",
+                            },
+                            "& .MuiFormLabel-root": {
+                              color: theme.palette.grey[700],
+                            },
+                            "& .MuiFormLabel-root.Mui-focused": {
+                              color: theme.palette.grey[800],
+                            },
+                            "& .MuiInput-root:before": {
+                              borderBottom: `1px solid ${theme.palette.grey[900]}`,
+                            },
+                            "& .MuiInput-root:after": {
+                              borderBottom: `1px solid ${theme.palette.grey[600]}`,
+                            },
+                            "& input:focus": {
+                              outline: "none !important",
+                              border: "none !important",
+                            },
+                          }}
+                          onSubmit={handleSubmit("form1")}
+                          component="form"
+                          noValidate
+                        >
+                          <Stack direction="column">
+                            <TextField
+                              variant="standard"
+                              label="Name"
+                              name="name"
+                              type="text"
+                              required
+                              inputProps={{
+                                autoComplete: "new-password",
+                                form: {
+                                  autoComplete: "off",
+                                },
+                              }}
+                              value={formData1?.name}
+                              onChange={handleChange("form1")}
+                            />
+                            <TextField
+                              variant="standard"
+                              type="email"
+                              name="email"
+                              required
+                              inputProps={{
+                                autoComplete: "new-password",
+                                form: {
+                                  autoComplete: "off",
+                                },
+                              }}
+                              label="Email Address"
+                              value={formData1?.email}
+                              onChange={handleChange("form1")}
+                            />
+                            {/* <FormControl
                             sx={{ width: "100%" }}
                             variant="standard"
                           >
@@ -364,111 +418,111 @@ const Createroles = () => {
                               }
                             />
                           </FormControl> */}
-                        </Stack>
-                        <Button
-                          variant="contained"
-                          type="submit"
-                          disabled={
-                            formData1?.name === "" ||
-                            formData1?.email === "" ||
-                            formData1?.password === ""
-                          }
-                          sx={{
-                            m: "4rem auto",
-                            p: "1.5rem 6rem",
-                            borderRadius: "0",
-                            width: "100%",
-                            bgcolor: theme.palette.grey[900],
-                            color: theme.palette.secondary[100],
-                            "&:hover": {
+                          </Stack>
+                          <Button
+                            variant="contained"
+                            type="submit"
+                            disabled={
+                              formData1?.name === "" ||
+                              formData1?.email === "" ||
+                              formData1?.password === ""
+                            }
+                            sx={{
+                              m: "4rem auto",
+                              p: "1.5rem 6rem",
+                              borderRadius: "0",
+                              width: "100%",
                               bgcolor: theme.palette.grey[900],
                               color: theme.palette.secondary[100],
-                            },
-                          }}
-                          size="large"
-                        >
-                          Create
-                        </Button>
+                              "&:hover": {
+                                bgcolor: theme.palette.grey[900],
+                                color: theme.palette.secondary[100],
+                              },
+                            }}
+                            size="large"
+                          >
+                            Create
+                          </Button>
+                        </Box>
                       </Box>
                     </Box>
-                  </Box>
-                )}
-                {page === 2 && (
-                  <Box sx={{ display: "flex" }}>
-                    <Box
-                      sx={{
-                        m: "auto",
-                        width: "100%",
-                      }}
-                    >
-                      <Typography
-                        variant="h1"
-                        sx={{ fontWeight: "500" }}
-                        color={theme.palette.secondary[1000]}
-                      >
-                        Create Internal Auditor Profile
-                      </Typography>
+                  )}
+                  {page === 2 && (
+                    <Box sx={{ display: "flex" }}>
                       <Box
                         sx={{
-                          color: theme.palette.secondary[1000],
-                          "& .MuiTextField-root, .MuiFormControl-root": {
-                            m: "1.3rem 0",
-                            width: "100%",
-                            borderBottom: "none !important",
-                          },
-                          "& .MuiFormLabel-root": {
-                            color: theme.palette.grey[700],
-                          },
-                          "& .MuiFormLabel-root.Mui-focused": {
-                            color: theme.palette.grey[800],
-                          },
-                          "& .MuiInput-root:before": {
-                            borderBottom: `1px solid ${theme.palette.grey[900]}`,
-                          },
-                          "& .MuiInput-root:after": {
-                            borderBottom: `1px solid ${theme.palette.grey[600]}`,
-                          },
-                          "& input:focus": {
-                            outline: "none !important",
-                            border: "none !important",
-                          },
+                          m: "auto",
+                          width: "100%",
                         }}
-                        onSubmit={handleSubmit("form2")}
-                        component="form"
-                        noValidate
                       >
-                        <Stack direction="column">
-                          <TextField
-                            variant="standard"
-                            label="Name"
-                            name="name"
-                            type="text"
-                            required
-                            inputProps={{
-                              autoComplete: "new-password",
-                              form: {
-                                autoComplete: "off",
-                              },
-                            }}
-                            value={formData2?.name}
-                            onChange={handleChange("form2")}
-                          />
-                          <TextField
-                            variant="standard"
-                            label="Email Address"
-                            type="email"
-                            name="email"
-                            required
-                            inputProps={{
-                              autoComplete: "new-password",
-                              form: {
-                                autoComplete: "off",
-                              },
-                            }}
-                            value={formData2?.email}
-                            onChange={handleChange("form2")}
-                          />
-                          {/* <FormControl
+                        <Typography
+                          variant="h1"
+                          sx={{ fontWeight: "500" }}
+                          color={theme.palette.secondary[1000]}
+                        >
+                          Create Internal Auditor Profile
+                        </Typography>
+                        <Box
+                          sx={{
+                            color: theme.palette.secondary[1000],
+                            "& .MuiTextField-root, .MuiFormControl-root": {
+                              m: "1.3rem 0",
+                              width: "100%",
+                              borderBottom: "none !important",
+                            },
+                            "& .MuiFormLabel-root": {
+                              color: theme.palette.grey[700],
+                            },
+                            "& .MuiFormLabel-root.Mui-focused": {
+                              color: theme.palette.grey[800],
+                            },
+                            "& .MuiInput-root:before": {
+                              borderBottom: `1px solid ${theme.palette.grey[900]}`,
+                            },
+                            "& .MuiInput-root:after": {
+                              borderBottom: `1px solid ${theme.palette.grey[600]}`,
+                            },
+                            "& input:focus": {
+                              outline: "none !important",
+                              border: "none !important",
+                            },
+                          }}
+                          onSubmit={handleSubmit("form2")}
+                          component="form"
+                          noValidate
+                        >
+                          <Stack direction="column">
+                            <TextField
+                              variant="standard"
+                              label="Name"
+                              name="name"
+                              type="text"
+                              required
+                              inputProps={{
+                                autoComplete: "new-password",
+                                form: {
+                                  autoComplete: "off",
+                                },
+                              }}
+                              value={formData2?.name}
+                              onChange={handleChange("form2")}
+                            />
+                            <TextField
+                              variant="standard"
+                              label="Email Address"
+                              type="email"
+                              name="email"
+                              required
+                              inputProps={{
+                                autoComplete: "new-password",
+                                form: {
+                                  autoComplete: "off",
+                                },
+                              }}
+                              value={formData2?.email}
+                              onChange={handleChange("form2")}
+                            />
+                            {/* <FormControl
                             sx={{ width: "100%" }}
                             variant="standard"
                           >
@@ -507,111 +561,111 @@ const Createroles = () => {
                               }
                             />
                           </FormControl> */}
-                        </Stack>
-                        <Button
-                          variant="contained"
-                          type="submit"
-                          disabled={
-                            formData2?.name === "" ||
-                            formData2?.email === "" ||
-                            formData2?.password === ""
-                          }
-                          sx={{
-                            m: "4rem auto",
-                            p: "1.5rem 6rem",
-                            borderRadius: "0",
-                            width: "100%",
-                            bgcolor: theme.palette.grey[900],
-                            color: theme.palette.secondary[100],
-                            "&:hover": {
+                          </Stack>
+                          <Button
+                            variant="contained"
+                            type="submit"
+                            disabled={
+                              formData2?.name === "" ||
+                              formData2?.email === "" ||
+                              formData2?.password === ""
+                            }
+                            sx={{
+                              m: "4rem auto",
+                              p: "1.5rem 6rem",
+                              borderRadius: "0",
+                              width: "100%",
                               bgcolor: theme.palette.grey[900],
                               color: theme.palette.secondary[100],
-                            },
-                          }}
-                          size="large"
-                        >
-                          Create
-                        </Button>
+                              "&:hover": {
+                                bgcolor: theme.palette.grey[900],
+                                color: theme.palette.secondary[100],
+                              },
+                            }}
+                            size="large"
+                          >
+                            Create
+                          </Button>
+                        </Box>
                       </Box>
                     </Box>
-                  </Box>
-                )}
-                {page === 3 && (
-                  <Box sx={{ display: "flex" }}>
-                    <Box
-                      sx={{
-                        m: "auto",
-                        width: "100%",
-                      }}
-                    >
-                      <Typography
-                        variant="h1"
-                        sx={{ fontWeight: "500" }}
-                        color={theme.palette.secondary[1000]}
-                      >
-                        Create CEO Profile
-                      </Typography>
+                  )}
+                  {page === 3 && (
+                    <Box sx={{ display: "flex" }}>
                       <Box
                         sx={{
-                          color: theme.palette.secondary[1000],
-                          "& .MuiTextField-root, .MuiFormControl-root": {
-                            m: "1.3rem 0",
-                            width: "100%",
-                            borderBottom: "none !important",
-                          },
-                          "& .MuiFormLabel-root": {
-                            color: theme.palette.grey[700],
-                          },
-                          "& .MuiFormLabel-root.Mui-focused": {
-                            color: theme.palette.grey[800],
-                          },
-                          "& .MuiInput-root:before": {
-                            borderBottom: `1px solid ${theme.palette.grey[900]}`,
-                          },
-                          "& .MuiInput-root:after": {
-                            borderBottom: `1px solid ${theme.palette.grey[600]}`,
-                          },
-                          "& input:focus": {
-                            outline: "none !important",
-                            border: "none !important",
-                          },
+                          m: "auto",
+                          width: "100%",
                         }}
-                        onSubmit={handleSubmit("form3")}
-                        component="form"
-                        noValidate
                       >
-                        <Stack direction="column">
-                          <TextField
-                            variant="standard"
-                            label="Name"
-                            name="name"
-                            type="text"
-                            required
-                            inputProps={{
-                              autoComplete: "new-password",
-                              form: {
-                                autoComplete: "off",
-                              },
-                            }}
-                            value={formData3?.name}
-                            onChange={handleChange("form3")}
-                          />
-                          <TextField
-                            variant="standard"
-                            type="email"
-                            name="email"
-                            required
-                            inputProps={{
-                              autoComplete: "new-password",
-                              form: {
-                                autoComplete: "off",
-                              },
-                            }}
-                            label="Email Address"
-                            value={formData3?.email}
-                            onChange={handleChange("form3")}
-                          />
-                          {/* <FormControl
+                        <Typography
+                          variant="h1"
+                          sx={{ fontWeight: "500" }}
+                          color={theme.palette.secondary[1000]}
+                        >
+                          Create CEO Profile
+                        </Typography>
+                        <Box
+                          sx={{
+                            color: theme.palette.secondary[1000],
+                            "& .MuiTextField-root, .MuiFormControl-root": {
+                              m: "1.3rem 0",
+                              width: "100%",
+                              borderBottom: "none !important",
+                            },
+                            "& .MuiFormLabel-root": {
+                              color: theme.palette.grey[700],
+                            },
+                            "& .MuiFormLabel-root.Mui-focused": {
+                              color: theme.palette.grey[800],
+                            },
+                            "& .MuiInput-root:before": {
+                              borderBottom: `1px solid ${theme.palette.grey[900]}`,
+                            },
+                            "& .MuiInput-root:after": {
+                              borderBottom: `1px solid ${theme.palette.grey[600]}`,
+                            },
+                            "& input:focus": {
+                              outline: "none !important",
+                              border: "none !important",
+                            },
+                          }}
+                          onSubmit={handleSubmit("form3")}
+                          component="form"
+                          noValidate
+                        >
+                          <Stack direction="column">
+                            <TextField
+                              variant="standard"
+                              label="Name"
+                              name="name"
+                              type="text"
+                              required
+                              inputProps={{
+                                autoComplete: "new-password",
+                                form: {
+                                  autoComplete: "off",
+                                },
+                              }}
+                              value={formData3?.name}
+                              onChange={handleChange("form3")}
+                            />
+                            <TextField
+                              variant="standard"
+                              type="email"
+                              name="email"
+                              required
+                              inputProps={{
+                                autoComplete: "new-password",
+                                form: {
+                                  autoComplete: "off",
+                                },
+                              }}
+                              label="Email Address"
+                              value={formData3?.email}
+                              onChange={handleChange("form3")}
+                            />
+                            {/* <FormControl
                             sx={{ width: "100%" }}
                             variant="standard"
                           >
@@ -650,111 +704,111 @@ const Createroles = () => {
                               }
                             />
                           </FormControl> */}
-                        </Stack>
-                        <Button
-                          variant="contained"
-                          disabled={
-                            formData3?.name === "" ||
-                            formData3?.email === "" ||
-                            formData3?.password === ""
-                          }
-                          type="submit"
-                          sx={{
-                            m: "4rem auto",
-                            p: "1.5rem 6rem",
-                            borderRadius: "0",
-                            width: "100%",
-                            bgcolor: theme.palette.grey[900],
-                            color: theme.palette.secondary[100],
-                            "&:hover": {
+                          </Stack>
+                          <Button
+                            variant="contained"
+                            disabled={
+                              formData3?.name === "" ||
+                              formData3?.email === "" ||
+                              formData3?.password === ""
+                            }
+                            type="submit"
+                            sx={{
+                              m: "4rem auto",
+                              p: "1.5rem 6rem",
+                              borderRadius: "0",
+                              width: "100%",
                               bgcolor: theme.palette.grey[900],
                               color: theme.palette.secondary[100],
-                            },
-                          }}
-                          size="large"
-                        >
-                          Create
-                        </Button>
+                              "&:hover": {
+                                bgcolor: theme.palette.grey[900],
+                                color: theme.palette.secondary[100],
+                              },
+                            }}
+                            size="large"
+                          >
+                            Create
+                          </Button>
+                        </Box>
                       </Box>
                     </Box>
-                  </Box>
-                )}
-                {page === 4 && (
-                  <Box sx={{ display: "flex" }}>
-                    <Box
-                      sx={{
-                        m: "auto",
-                        width: "100%",
-                      }}
-                    >
-                      <Typography
-                        variant="h1"
-                        sx={{ fontWeight: "500" }}
-                        color={theme.palette.secondary[1000]}
-                      >
-                        Create Accountant Profile
-                      </Typography>
+                  )}
+                  {page === 4 && (
+                    <Box sx={{ display: "flex" }}>
                       <Box
                         sx={{
-                          color: theme.palette.secondary[1000],
-                          "& .MuiTextField-root, .MuiFormControl-root": {
-                            m: "1.3rem 0",
-                            width: "100%",
-                            borderBottom: "none !important",
-                          },
-                          "& .MuiFormLabel-root": {
-                            color: theme.palette.grey[700],
-                          },
-                          "& .MuiFormLabel-root.Mui-focused": {
-                            color: theme.palette.grey[800],
-                          },
-                          "& .MuiInput-root:before": {
-                            borderBottom: `1px solid ${theme.palette.grey[900]}`,
-                          },
-                          "& .MuiInput-root:after": {
-                            borderBottom: `1px solid ${theme.palette.grey[600]}`,
-                          },
-                          "& input:focus": {
-                            outline: "none !important",
-                            border: "none !important",
-                          },
+                          m: "auto",
+                          width: "100%",
                         }}
-                        onSubmit={handleSubmit("form4")}
-                        component="form"
-                        noValidate
                       >
-                        <Stack direction="column">
-                          <TextField
-                            variant="standard"
-                            label="Name"
-                            name="name"
-                            type="text"
-                            value={formData4?.name}
-                            required
-                            inputProps={{
-                              autoComplete: "new-password",
-                              form: {
-                                autoComplete: "off",
-                              },
-                            }}
-                            onChange={handleChange("form4")}
-                          />
-                          <TextField
-                            variant="standard"
-                            type="email"
-                            name="email"
-                            value={formData4?.email}
-                            required
-                            inputProps={{
-                              autoComplete: "new-password",
-                              form: {
-                                autoComplete: "off",
-                              },
-                            }}
-                            label="Email Address"
-                            onChange={handleChange("form4")}
-                          />
-                          {/* <FormControl
+                        <Typography
+                          variant="h1"
+                          sx={{ fontWeight: "500" }}
+                          color={theme.palette.secondary[1000]}
+                        >
+                          Create Accountant Profile
+                        </Typography>
+                        <Box
+                          sx={{
+                            color: theme.palette.secondary[1000],
+                            "& .MuiTextField-root, .MuiFormControl-root": {
+                              m: "1.3rem 0",
+                              width: "100%",
+                              borderBottom: "none !important",
+                            },
+                            "& .MuiFormLabel-root": {
+                              color: theme.palette.grey[700],
+                            },
+                            "& .MuiFormLabel-root.Mui-focused": {
+                              color: theme.palette.grey[800],
+                            },
+                            "& .MuiInput-root:before": {
+                              borderBottom: `1px solid ${theme.palette.grey[900]}`,
+                            },
+                            "& .MuiInput-root:after": {
+                              borderBottom: `1px solid ${theme.palette.grey[600]}`,
+                            },
+                            "& input:focus": {
+                              outline: "none !important",
+                              border: "none !important",
+                            },
+                          }}
+                          onSubmit={handleSubmit("form4")}
+                          component="form"
+                          noValidate
+                        >
+                          <Stack direction="column">
+                            <TextField
+                              variant="standard"
+                              label="Name"
+                              name="name"
+                              type="text"
+                              value={formData4?.name}
+                              required
+                              inputProps={{
+                                autoComplete: "new-password",
+                                form: {
+                                  autoComplete: "off",
+                                },
+                              }}
+                              onChange={handleChange("form4")}
+                            />
+                            <TextField
+                              variant="standard"
+                              type="email"
+                              name="email"
+                              value={formData4?.email}
+                              required
+                              inputProps={{
+                                autoComplete: "new-password",
+                                form: {
+                                  autoComplete: "off",
+                                },
+                              }}
+                              label="Email Address"
+                              onChange={handleChange("form4")}
+                            />
+                            {/* <FormControl
                             sx={{ width: "100%" }}
                             variant="standard"
                           >
@@ -793,103 +847,106 @@ const Createroles = () => {
                               }
                             />
                           </FormControl> */}
-                        </Stack>
-                        <Button
-                          variant="contained"
-                          disabled={
-                            formData4?.name === "" ||
-                            formData4?.email === "" ||
-                            formData4?.password === ""
-                          }
-                          type="submit"
-                          sx={{
-                            m: "4rem auto",
-                            p: "1.5rem 6rem",
-                            borderRadius: "0",
-                            width: "100%",
-                            bgcolor: theme.palette.grey[900],
-                            color: theme.palette.secondary[100],
-                            "&:hover": {
+                          </Stack>
+                          <Button
+                            variant="contained"
+                            disabled={
+                              formData4?.name === "" ||
+                              formData4?.email === "" ||
+                              formData4?.password === ""
+                            }
+                            type="submit"
+                            sx={{
+                              m: "4rem auto",
+                              p: "1.5rem 6rem",
+                              borderRadius: "0",
+                              width: "100%",
                               bgcolor: theme.palette.grey[900],
                               color: theme.palette.secondary[100],
-                            },
-                          }}
-                          size="large"
-                        >
-                          Create
-                        </Button>
+                              "&:hover": {
+                                bgcolor: theme.palette.grey[900],
+                                color: theme.palette.secondary[100],
+                              },
+                            }}
+                            size="large"
+                          >
+                            Create
+                          </Button>
+                        </Box>
                       </Box>
                     </Box>
-                  </Box>
-                )}
+                  )}
 
-                <Box
-                  sx={{
-                    display: { xs: "block", lg: "flex" },
-                  }}
-                >
                   <Box
                     sx={{
-                      display: { xs: "flex", lg: "flex" },
-                      width: "100%",
-                      m: "auto",
+                      display: { xs: "block", lg: "flex" },
                     }}
                   >
-                    <Button
+                    <Box
                       sx={{
-                        m: "2rem 2rem auto auto",
-                        p: "1.5rem 6rem",
-                        borderRadius: "0",
-                        width: "50%",
-                        bgcolor: theme.palette.grey[900],
-                        color: theme.palette.secondary[100],
-                        "&:hover": {
-                          bgcolor: theme.palette.grey[900],
-                          color: theme.palette.secondary[100],
-                        },
+                        display: { xs: "flex", lg: "flex" },
+                        width: "100%",
+                        m: "auto",
                       }}
-                      variant="contained"
-                      size="large"
-                      disabled={page === 1 || (userRole === "HR" && page === 2)}
-                      onClick={() => setPage(page - 1)}
                     >
-                      Previous
-                    </Button>
-                    <Button
-                      sx={{
-                        m: "2rem auto",
-                        p: "1.5rem 6rem",
-                        borderRadius: "0",
-                        width: "50%",
-                        bgcolor: theme.palette.grey[900],
-                        color: theme.palette.secondary[100],
-                        "&:hover": {
+                      <Button
+                        sx={{
+                          m: "2rem 2rem auto auto",
+                          p: "1.5rem 6rem",
+                          borderRadius: "0",
+                          width: "50%",
                           bgcolor: theme.palette.grey[900],
                           color: theme.palette.secondary[100],
-                        },
-                      }}
-                      variant="contained"
-                      size="large"
-                      disabled={page === 4}
-                      onClick={() => {
-                        if (userRole === "CEO" && page === 3) {
-                          setPage(4);
-                        } else {
-                          setPage(page + 1);
+                          "&:hover": {
+                            bgcolor: theme.palette.grey[900],
+                            color: theme.palette.secondary[100],
+                          },
+                        }}
+                        variant="contained"
+                        size="large"
+                        disabled={
+                          page === 1 || (userRole === "HR" && page === 2)
                         }
-                      }}
-                    >
-                      Next
-                    </Button>
+                        onClick={() => setPage(page - 1)}
+                      >
+                        Previous
+                      </Button>
+                      <Button
+                        sx={{
+                          m: "2rem auto",
+                          p: "1.5rem 6rem",
+                          borderRadius: "0",
+                          width: "50%",
+                          bgcolor: theme.palette.grey[900],
+                          color: theme.palette.secondary[100],
+                          "&:hover": {
+                            bgcolor: theme.palette.grey[900],
+                            color: theme.palette.secondary[100],
+                          },
+                        }}
+                        variant="contained"
+                        size="large"
+                        disabled={page === 4}
+                        onClick={() => {
+                          if (userRole === "CEO" && page === 3) {
+                            setPage(4);
+                          } else {
+                            setPage(page + 1);
+                          }
+                        }}
+                      >
+                        Next
+                      </Button>
+                    </Box>
                   </Box>
                 </Box>
               </Box>
-            </Box>
-          </Box>
-        </Box>
-      </Box>
+            </Container>
+          </Mainbody>
+        </DashboardContent>
+      </DashboardContainer>
     </>
   );
 };
 
-export default Createroles;
+export default CreateUserRoles;

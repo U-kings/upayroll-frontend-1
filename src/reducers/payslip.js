@@ -73,6 +73,12 @@ import {
   AUDITOR_SET_PRE_APPROVED_GENERATED_PAYSLIPS_ALL_FAIL,
   AUDITOR_SET_PRE_APPROVED_GENERATED_PAYSLIPS_ALL_RESET,
   ACCOUNTANT_GET_APPROVED_SALARYSLIPS_RESET,
+  CEO_GET_APPROVED_SALARYSLIPS_RESET,
+  CEO_GET_PRE_APPROVED_SALARYSLIPS_RESET,
+  CEO_SET_APPROVED_GENERATED_PAYSLIPS_ALL_REQUEST,
+  CEO_SET_APPROVED_GENERATED_PAYSLIPS_ALL_SUCCESS,
+  CEO_SET_APPROVED_GENERATED_PAYSLIPS_ALL_FAIL,
+  CEO_SET_APPROVED_GENERATED_PAYSLIPS_ALL_RESET,
 } from "../types/payslip";
 
 export const getAllGeneratedPayslipReducer = (state = {}, action) => {
@@ -274,6 +280,9 @@ export const ceoGetPreApprovedAndApprovedPayslipsReducer = (
         isLoading: false,
         error: payload,
       };
+    case CEO_GET_PRE_APPROVED_SALARYSLIPS_RESET:
+    case CEO_GET_APPROVED_SALARYSLIPS_RESET:
+      return {};
 
     default:
       return state;
@@ -317,13 +326,13 @@ export const ceoSetApprovedPayslipsAllReducer = (state = {}, action) => {
   const { type, payload } = action;
 
   switch (type) {
-    case CEO_SET_APPROVED_GENERATED_PAYSLIPS_REQUEST:
+    case CEO_SET_APPROVED_GENERATED_PAYSLIPS_ALL_REQUEST:
       return {
         ...state,
         isLoading: true,
       };
 
-    case CEO_SET_APPROVED_GENERATED_PAYSLIPS_SUCCESS:
+    case CEO_SET_APPROVED_GENERATED_PAYSLIPS_ALL_SUCCESS:
       return {
         ...state,
         isLoading: false,
@@ -331,14 +340,14 @@ export const ceoSetApprovedPayslipsAllReducer = (state = {}, action) => {
         error: null,
       };
 
-    case CEO_SET_APPROVED_GENERATED_PAYSLIPS_FAIL:
+    case CEO_SET_APPROVED_GENERATED_PAYSLIPS_ALL_FAIL:
       return {
         ...state,
         isLoading: false,
         error: payload,
       };
 
-    case CEO_SET_APPROVED_GENERATED_PAYSLIPS_RESET:
+    case CEO_SET_APPROVED_GENERATED_PAYSLIPS_ALL_RESET:
       return {};
 
     default:

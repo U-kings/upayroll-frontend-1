@@ -1,7 +1,13 @@
 import React from "react";
 import { ModalBackground, ModalContainer } from "../../styles/library";
 
-const DownloadOption = ({ isOpen3, popup3, onDownloadFileFunc, userRole }) => {
+const DownloadOption = ({
+  isOpen3,
+  popup3,
+  onDownloadFileFunc,
+  userRole,
+  approvalLevel,
+}) => {
   return (
     <>
       <ModalBackground isOpen3={isOpen3} onClick={popup3} />
@@ -11,7 +17,7 @@ const DownloadOption = ({ isOpen3, popup3, onDownloadFileFunc, userRole }) => {
             <h1>
               {userRole !== "HR" && userRole !== "Internal Auditor"
                 ? "Download Option"
-                : "Download"}
+                : "Download Option"}
             </h1>
             <div className="button__row margin__top">
               <input
@@ -21,7 +27,8 @@ const DownloadOption = ({ isOpen3, popup3, onDownloadFileFunc, userRole }) => {
                 onClick={(e) => onDownloadFileFunc("pdf")}
                 //   onChange={onChange}
               />
-              {(userRole !== "HR" && userRole !== "Internal Auditor") && (
+              {((userRole === "HR" && userRole !== "Internal Auditor") ||
+                approvalLevel !== "Level-1") && (
                 <input
                   type="button"
                   className="save__btn margin__left"
@@ -32,6 +39,19 @@ const DownloadOption = ({ isOpen3, popup3, onDownloadFileFunc, userRole }) => {
                   //   onChange={onChange}
                 />
               )}
+              {userRole !== "HR" &&
+                userRole !== "Internal Auditor" &&
+                approvalLevel !== "Level-1" && (
+                  <input
+                    type="button"
+                    className="save__btn margin__left"
+                    value="Download As Sterling Pro Excel"
+                    onClick={() => {
+                      onDownloadFileFunc("sterling-pro-excel");
+                    }}
+                    //   onChange={onChange}
+                  />
+                )}
             </div>
           </form>
         </div>

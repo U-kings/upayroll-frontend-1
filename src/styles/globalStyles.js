@@ -11,6 +11,8 @@ export const GlobalStyle = createGlobalStyle`
         box-sizing: border-box;
         font-family: "Outfit";
         scroll-behavior: smooth;
+        // overflow-x: hidden;
+        // overflow-y: hidden;
     }
     
     body{
@@ -384,7 +386,8 @@ export const GlobalStyle = createGlobalStyle`
         }
         & .general__btn {
             // width: 100%;
-            padding: .5rem .8rem;
+            height: fit-content;
+            padding: .7rem .8rem;
             color: ${COLORS.white};
             border-radius: 0.3rem;
         }
@@ -698,15 +701,15 @@ export const GlobalStyle = createGlobalStyle`
             }
         }
         & .error__msg2{
-            // width: 100%;
+            // width: auto;
             padding: 1rem;
             // margin: .5rem 0 2rem 0;
-            display: flex;
+            // display: flex;
             position: fixed;
-            z-index: 99;
-            // left:0;
-            right:2rem;
-            bottom: 4rem;
+            z-index: 100;
+            top: 2rem;
+            left: 50%;
+            transform: translate(-50%, 0);
             background-color: ${COLORS.red3};
             border-radius: .3rem;
             border: 1px solid ${COLORS.red4};

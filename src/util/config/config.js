@@ -1,16 +1,13 @@
 const prod = {
   url: {
-    BASENAME: process.env.REACT_APP_PRODUCTION_BASENAME,
-  },
-  proxyUrl: {
-    PROXYURL: process.env.REACT_APP_PRODUCTION_PROXY_URL,
+    BASENAME: process.env.REACT_APP_BASENAME,
+    PROXYURL: process.env.REACT_APP_PROXY_URL,
   },
 };
+
 const dev = {
   url: {
-    BASENAME: process.env.REACT_APP_DEVELOPMENT_BASENAME,
-  },
-  proxyUrl: {
+    BASENAME: process.env.REACT_APP_BASENAME,
     PROXYURL: process.env.REACT_APP_PROXY_URL,
   },
 };

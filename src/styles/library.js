@@ -304,9 +304,11 @@ export const EmpContainer = styled.div`
 
 export const Container = styled.div`
   background-color: ${COLORS.white2};
+  // height: 100%;
+  // width: 100%;
   margin: 0rem 1rem 0 1rem;
   color: ${COLORS.grey2};
-  /* position: fixed; */
+  // position: fixed;
   /* margin-bottom: 2rem; */
 
   &.inner__container {
@@ -407,7 +409,7 @@ export const Container = styled.div`
   }
 
   & .container__content {
-    overflow-x: auto;
+    // overflow-x: auto;
     display: flex;
     /* width: 100%; */
     padding: 1.5rem;
@@ -778,7 +780,7 @@ export const ProfileContent = styled("div")`
   position: absolute;
   right: 0;
   top: 4.5rem;
-  width: 20rem;
+  // width: 27rem;
   /* height: 20rem; */
   padding: 2rem;
   display: flex;

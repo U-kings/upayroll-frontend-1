@@ -88,7 +88,7 @@ const Bank = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
   const toggling5 = () => setIsOpen5(!isOpen5);
 
   //   bank name
-  const onOptionClicked5 = (bankname) => () => {
+  const onOptionClicked5 = (bankname) => {
     setSelectedOption5(bankname);
     setBankCode(bankname?.code);
     setIsOpen5(false);
@@ -96,7 +96,7 @@ const Bank = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
 
   const removeExtraSpace = (str) => {
     if (str) {
-      return str.trim().split(/ +/).join(" ");
+      return str.trim()?.split(/ +/).join(" ");
     }
   };
 
@@ -211,11 +211,17 @@ const Bank = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
   }, [adminInfo, dispatch, userRole, history]);
 
   useEffect(() => {
+    let timeoutId;
     if (verifyAccountError) {
-      setTimeout(() => {
+      timeoutId = setTimeout(() => {
         dispatch({ type: VERIFY_ACCOUNT_NUMBER_RESET });
       }, 5000);
     }
+
+    return () => {
+      // Clear the timeout when the component unmounts or when showError changes
+      clearTimeout(timeoutId);
+    };
   }, [verifyAccountError, dispatch]);
 
   useEffect(() => {
@@ -459,10 +465,7 @@ const Bank = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
                                   className="icons"
                                   onClick={(e) => onSelect(el?.id)}
                                 >
-                                  
-                                  <FontAwesomeIcon
-                                    icon={["fas", "edit"]}
-                                  />
+                                  <FontAwesomeIcon icon={["fas", "edit"]} />
                                 </div>
                               </div>
                             </td>

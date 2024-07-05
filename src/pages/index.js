@@ -2,6 +2,7 @@ export { default as Home } from "./Home/index";
 export { default as SignIn } from "./SignIn/index";
 export { default as SignUp } from "./SignUp/index";
 export { default as CreateUserRoles } from "./CreateUserRoles/index";
+export { default as CreateApprovalLevel } from "./CreateApprovalLevel/index";
 export { default as EmployeeSignIn } from "./EmployeeSignIn/index";
 export { default as Dashboard } from "./Dashboard/index";
 export { default as Users } from "./Users/index";

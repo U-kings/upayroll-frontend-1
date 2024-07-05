@@ -77,7 +77,7 @@ const AddAllowance = ({
     setIsOpen(false);
   };
 
-  const onOptionClicked3 = (feeType) => () => {
+  const onOptionClicked3 = (feeType) => {
     setSelectedOption3(feeType);
     setIsOpen3(false);
   };

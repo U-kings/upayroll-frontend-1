@@ -46,11 +46,17 @@ const NewPassword = ({ toggle }) => {
   }, [adminInfo, history, success, resetPasswordError, dispatch]);
 
   useEffect(() => {
+    let timeoutId;
     if (showError) {
-      setTimeout(() => {
+      timeoutId = setTimeout(() => {
         setShowError(null);
-      }, 5000);
+      }, 6000);
     }
+
+    return () => {
+      // Clear the timeout when the component unmounts or when showError changes
+      clearTimeout(timeoutId);
+    };
   }, [showError]);
 
   const { newPassword, confirmPassword } = formData;

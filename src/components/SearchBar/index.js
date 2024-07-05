@@ -9,6 +9,7 @@ const SearchBar = ({ term, searchKeyWord }) => {
   return (
     <>
       <input
+        style={{ width: "100%" }}
         ref={inputEl}
         type="text"
         className="search__input"

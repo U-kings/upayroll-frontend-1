@@ -1,12 +1,11 @@
 {
   "name": "upayroll",
   "type": "module",
-  
   "version": "0.1.0",
+  "homepage": ".",
   "private": true,
   "dependencies": {
     "@emotion/react": "^11.10.5",
-    "@emotion/styled": "^11.10.5",
     "@fortawesome/fontawesome-svg-core": "^1.2.36",
     "@fortawesome/free-brands-svg-icons": "^5.15.4",
     "@fortawesome/free-regular-svg-icons": "^5.15.4",
@@ -19,6 +18,7 @@
     "@testing-library/user-event": "^12.8.3",
     "axios": "^0.21.1",
     "bcryptjs": "^2.4.3",
+    "check-password-strength": "^2.0.10",
     "file-saver": "^2.0.5",
     "js-cookie": "^3.0.1",
     "jwt-decode": "^3.1.2",
@@ -47,6 +47,8 @@
   "scripts": {
     "start": "react-scripts --openssl-legacy-provider start",
     "build": "react-scripts --openssl-legacy-provider build",
+    "build:production": "cp .env.production .env && react-scripts --openssl-legacy-provider build",
+    "build:staging": "cp .env.staging .env && react-scripts --openssl-legacy-provider build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },

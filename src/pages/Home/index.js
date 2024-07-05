@@ -10,6 +10,7 @@ import partner3 from "../../../src/assets/img/partner3.png";
 
 const Home = () => {
   const theme = useTheme();
+
   return (
     <>
       <Box>

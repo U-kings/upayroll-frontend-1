@@ -44,7 +44,7 @@ const Step = ({ salarySteps, staffGrade, salaryLevels, toggle }) => {
   const toggling = () => setIsOpen(!isOpen);
   const toggling2 = () => setIsOpen2(!isOpen2);
 
-  const onOptionClicked = (staffgrade) => () => {
+  const onOptionClicked = (staffgrade) => {
     setSelectedOption(staffgrade);
     const filteredSalaryLevels = salaryLevels.filter(
       (el) => String(el.salaryGrade.id) === String(staffgrade.id)
@@ -54,7 +54,7 @@ const Step = ({ salarySteps, staffGrade, salaryLevels, toggle }) => {
     setIsOpen2(false);
     setSelectedOption2(null);
   };
-  const onOptionClicked2 = (salarylevel) => () => {
+  const onOptionClicked2 = (salarylevel) => {
     setSelectedOption2(salarylevel);
     setIsOpen2(false);
     setIsOpen(false);

@@ -34,7 +34,7 @@ export const hrCreateJuniorStaffGradeFunc = (formData) => async (dispatch) => {
     dispatch({ type: HR_CREATE_JUNIOR_STAFF_GRADE_REQUEST });
     const body = formData;
     const { data } = await axios.post(
-      `${urlConfig.proxyUrl.PROXYURL}api/salarygrade/junior-grade-paystructure/bulk`,
+      `${urlConfig.url.PROXYURL}api/salarygrade/junior-grade-paystructure/bulk`,
       body,
       config
     );
@@ -63,7 +63,7 @@ export const hrCreateMiddleStaffGradeFunc = (formData) => async (dispatch) => {
     dispatch({ type: HR_CREATE_MIDDLE_STAFF_GRADE_REQUEST });
     const body = formData;
     const { data } = await axios.post(
-      `${urlConfig.proxyUrl.PROXYURL}api/salarygrade/middle-grade-paystructure/bulk`,
+      `${urlConfig.url.PROXYURL}api/salarygrade/middle-grade-paystructure/bulk`,
       body,
       config
     );
@@ -92,7 +92,7 @@ export const hrCreateSeniorStaffGradeFunc = (formData) => async (dispatch) => {
     dispatch({ type: HR_CREATE_SENIOR_STAFF_GRADE_REQUEST });
     const body = formData;
     const { data } = await axios.post(
-      `${urlConfig.proxyUrl.PROXYURL}api/salarygrade/senior-grade-paystructure/bulk`,
+      `${urlConfig.url.PROXYURL}api/salarygrade/senior-grade-paystructure/bulk`,
       body,
       config
     );
@@ -123,7 +123,7 @@ export const hrCreateManagementStaffGradeFunc =
       dispatch({ type: HR_CREATE_MANAGEMENT_STAFF_GRADE_REQUEST });
       const body = formData;
       const { data } = await axios.post(
-        `${urlConfig.proxyUrl.PROXYURL}api/salarygrade/management-grade-paystructure/bulk`,
+        `${urlConfig.url.PROXYURL}api/salarygrade/management-grade-paystructure/bulk`,
         body,
         config
       );
@@ -157,7 +157,7 @@ export const hrCreateContractStaffGradeFunc =
       dispatch({ type: HR_CREATE_CONTRACT_STAFF_GRADE_REQUEST });
       const body = formData;
       const { data } = await axios.post(
-        `${urlConfig.proxyUrl.PROXYURL}api/salarygrade/contract-grade-paystructure/bulk`,
+        `${urlConfig.url.PROXYURL}api/salarygrade/contract-grade-paystructure/bulk`,
         body,
         config
       );

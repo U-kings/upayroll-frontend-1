@@ -65,7 +65,7 @@ export const hrGetGeneratedEmployeeLoansFunc =
       } else {
         dispatch({ type: HR_GET_ALL_GENERATED_LOANS_REQUEST });
         const { data } = await axios.get(
-          `${urlConfig.proxyUrl.PROXYURL}api/employeeloan${month && `?month=${month}`}`,
+          `${urlConfig.url.PROXYURL}api/employeeloan${month && `?month=${month}`}`,
           config
         );
         dispatch({
@@ -103,7 +103,7 @@ export const hrApprovesEmployeeRequestLoanFunc =
     try {
       dispatch({ type: HR_APPROVES_GENERATED_LOANS_REQUEST });
       await axios.patch(
-        `${urlConfig.proxyUrl.PROXYURL}api/employeeloan/create/notapproved`,
+        `${urlConfig.url.PROXYURL}api/employeeloan/create/notapproved`,
         body,
         config
       );
@@ -129,7 +129,7 @@ export const hrGetRejectedEmployeeLoansFunc = (month) => async (dispatch) => {
   try {
     dispatch({ type: HR_GET_REJECTED_GENERATED_LOANS_REQUEST });
     const { data } = await axios.get(
-      `${urlConfig.proxyUrl.PROXYURL}api/employeeloan/rejected?statusLevel=not approved,pre approved&month=${month}`,
+      `${urlConfig.url.PROXYURL}api/employeeloan/rejected?statusLevel=not approved,pre approved&month=${month}`,
       config
     );
     dispatch({
@@ -160,7 +160,7 @@ export const auditorGetNotApprovedGeneratedEmployeeLoansFunc =
     try {
       dispatch({ type: AUDITOR_GET_NOT_APPROVED_GENERATED_LOANS_REQUEST });
       const { data } = await axios.get(
-        `${urlConfig.proxyUrl.PROXYURL}api/employeeloan/notapproved?month=${month}`,
+        `${urlConfig.url.PROXYURL}api/employeeloan/notapproved?month=${month}`,
         config
       );
       dispatch({
@@ -194,7 +194,7 @@ export const auditorSetPreApprovedGeneratedEmployeeLoanFunc =
     try {
       dispatch({ type: AUDITOR_SET_PRE_APPROVED_GENERATED_LOANS_REQUEST });
       await axios.patch(
-        `${urlConfig.proxyUrl.PROXYURL}api/employeeloan/create/preapproved`,
+        `${urlConfig.url.PROXYURL}api/employeeloan/create/preapproved`,
         body,
         config
       );
@@ -230,7 +230,7 @@ export const auditorRejectNotApprovedEmployeeLoansFunc =
     try {
       dispatch({ type: AUDITOR_REJECT_NOT_APPROVED_GENERATED_LOANS_REQUEST });
       await axios.patch(
-        `${urlConfig.proxyUrl.PROXYURL}api/employeeloan/reject/notapproved`,
+        `${urlConfig.url.PROXYURL}api/employeeloan/reject/notapproved`,
         body,
         config
       );
@@ -258,7 +258,7 @@ export const ceoGetPreApprovedGeneratedEmployeeLoansFunc =
     try {
       dispatch({ type: CEO_GET_PRE_APPROVED_GENERATED_LOANS_REQUEST });
       const { data } = await axios.get(
-        `${urlConfig.proxyUrl.PROXYURL}api/employeeloan/preapproved`,
+        `${urlConfig.url.PROXYURL}api/employeeloan/preapproved`,
         config
       );
       dispatch({
@@ -288,7 +288,7 @@ export const ceoGetApprovedGeneratedEmployeeLoansFunc =
     try {
       dispatch({ type: CEO_GET_APPROVED_GENERATED_LOANS_REQUEST });
       const { data } = await axios.get(
-        `${urlConfig.proxyUrl.PROXYURL}api/employeeloan/approved`,
+        `${urlConfig.url.PROXYURL}api/employeeloan/approved`,
         config
       );
       dispatch({
@@ -322,7 +322,7 @@ export const ceoSetApprovedGeneratedEmployeeLoansFunc =
     try {
       dispatch({ type: CEO_SET_APPROVED_GENERATED_LOANS_REQUEST });
       await axios.patch(
-        `${urlConfig.proxyUrl.PROXYURL}api/employeeloan/create/approved`,
+        `${urlConfig.url.PROXYURL}api/employeeloan/create/approved`,
         body,
         config
       );
@@ -354,7 +354,7 @@ export const ceoRejectPreApprovedEmployeeLoansFunc =
       dispatch({ CEO_REJECT_PRE_APPROVED_GENERATED_LOANS_REQUEST });
 
       await axios.patch(
-        `${urlConfig.proxyUrl.PROXYURL}api/employeeloan/reject/preapproved`,
+        `${urlConfig.url.PROXYURL}api/employeeloan/reject/preapproved`,
         body,
         config
       );
@@ -380,7 +380,7 @@ export const hrDeleteGeneratedEmployeeLoanById =
     };
     try {
       dispatch({ type: HR_DELETE_EMPLOYEE_LOAN_BY_ID_REQUEST });
-      await axios.delete(`${urlConfig.proxyUrl.PROXYURL}api/employeeloan/${empLoanId}`, config);
+      await axios.delete(`${urlConfig.url.PROXYURL}api/employeeloan/${empLoanId}`, config);
       dispatch({ type: HR_DELETE_EMPLOYEE_LOAN_BY_ID_SUCCESS });
     } catch (error) {
       dispatch({
@@ -410,7 +410,7 @@ export const hrBulkDeleteGeneratedEmployeeLoans =
     try {
       dispatch({ type: HR_BULK_DELETE_EMPLOYEE_LOANS_REQUEST });
       await axios.patch(
-        `${urlConfig.proxyUrl.PROXYURL}api/employeeloan/delete-bulk`,
+        `${urlConfig.url.PROXYURL}api/employeeloan/delete-bulk`,
         body,
         config
       );
@@ -437,7 +437,7 @@ export const employeeGetAllGeneratedLoansRequestFunc =
     try {
       dispatch({ type: EMPLOYEE_GET_GENERATED_LOANS_REQUEST });
       const { data } = await axios.get(
-        `${urlConfig.proxyUrl.PROXYURL}api/employeeloan/generated-loans/employee`,
+        `${urlConfig.url.PROXYURL}api/employeeloan/generated-loans/employee`,
         config
       );
       dispatch({
@@ -469,7 +469,7 @@ export const employeeAskForLoanRequestFunc =
     try {
       dispatch({ type: EMPLOYEE_ASK_FOR_LOAN_REQUEST });
       await axios.post(
-        `${urlConfig.proxyUrl.PROXYURL}api/employeeloan/${loanId}/create`,
+        `${urlConfig.url.PROXYURL}api/employeeloan/${loanId}/create`,
         body,
         config
       );

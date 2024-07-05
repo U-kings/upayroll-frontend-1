@@ -1,9 +1,18 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { ClapSpinner } from "react-spinners-kit";
 import { COLORS } from "../../values/colors";
 import { Modal, ModalContainer } from "../../styles/LoadingSpinnerElements";
 
 const LoadingSpinner = ({ toggle }) => {
+  
+  useEffect(() => {
+    document.body.style.overflow = "hidden";
+
+    return () => {
+      document.body.style.overflow = "visible";
+    };
+  }, []);
+
   return (
     <>
       <Modal className="modal__fullwidth" toggle={toggle}>

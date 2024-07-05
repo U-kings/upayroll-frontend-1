@@ -89,11 +89,17 @@ const PaySlip = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
   }, [paySlip, searchTerm, userRole, employeePayslips]);
 
   useEffect(() => {
+    let timeoutId;
     if (employeeGetAllPayslipsError) {
-      setTimeout(() => {
+      timeoutId = setTimeout(() => {
         dispatch({ type: EMPLOYEE_GET_ALL_PAYSLIPS_RESET });
       }, 5000);
     }
+
+    return () => {
+      // Clear the timeout when the component unmounts or when showError changes
+      clearTimeout(timeoutId);
+    };
   }, [employeeGetAllPayslipsError, dispatch]);
 
   // Invoke when user click to request another page.

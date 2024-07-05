@@ -51,7 +51,10 @@ import {
   HR_CREATE_SENIOR_STAFF_GRADE_RESET,
 } from "../../types/salarystructrue";
 import { downloadPayStructureTemplateExcelFileFunc } from "../../actions/download";
-import { DOWNLOADING_ON_PROCESS_ERROR } from "../../types/download";
+import {
+  DOWNLOADING_ON_PROCESS_ERROR,
+  DOWNLOADING_ON_PROCESS_RESET,
+} from "../../types/download";
 
 const PayStructure = ({
   toggle,
@@ -193,7 +196,7 @@ const PayStructure = ({
     getStepsError,
   ]);
 
-  const handleClick = (name) => () => {
+  const handleClick = (name) => {
     switch (name) {
       case "juniorStaffGrade":
         hiddenFileInput.current?.click();
@@ -293,12 +296,25 @@ const PayStructure = ({
   };
 
   useEffect(() => {
+    let timeoutId;
     if (showError || downloadError) {
-      setTimeout(() => {
-        dispatch({ type: DOWNLOADING_ON_PROCESS_ERROR });
-        setShowError(null);
-      }, 5000);
+      if (showError !== "") {
+        timeoutId = setTimeout(() => {
+          dispatch({ type: DOWNLOADING_ON_PROCESS_RESET });
+          // popup7();
+          dispatch({ type: HR_CREATE_JUNIOR_STAFF_GRADE_RESET });
+          dispatch({ type: HR_CREATE_MIDDLE_STAFF_GRADE_RESET });
+          dispatch({ type: HR_CREATE_SENIOR_STAFF_GRADE_RESET });
+          dispatch({ type: HR_CREATE_MANAGEMENT_STAFF_GRADE_RESET });
+          setShowError("");
+        }, 6000);
+      }
     }
+
+    return () => {
+      // Clear the timeout when the component unmounts or when showError changes
+      clearTimeout(timeoutId);
+    };
   }, [dispatch, showError, downloadError]);
 
   const converToJsonData = (data, name) => {
@@ -341,12 +357,12 @@ const PayStructure = ({
     }
   };
 
-  const uploadBulk = (name) => () => {
+  const uploadBulk = (name) => {
     switch (name) {
       case "juniorStaffGrade":
         if (fileName) {
           const formData = new FormData();
-          formData.append("file", file);
+          formData.append("excelFile", file);
           dispatch(hrCreateJuniorStaffGradeFunc(formData));
           // dispatch(hrCreateJuniorStaffGradeFunc(juniorStaffGradeData));
         }
@@ -354,7 +370,7 @@ const PayStructure = ({
       case "middleStaffGrade":
         if (fileName2) {
           const formData = new FormData();
-          formData.append("file", file2);
+          formData.append("excelFile", file2);
           dispatch(hrCreateMiddleStaffGradeFunc(formData));
           // dispatch(hrCreateMiddleStaffGradeFunc(middleStaffGradeData));
         }
@@ -362,7 +378,7 @@ const PayStructure = ({
       case "seniorStaffGrade":
         if (fileName3) {
           const formData = new FormData();
-          formData.append("file", file3);
+          formData.append("excelFile", file3);
           dispatch(hrCreateSeniorStaffGradeFunc(formData));
           // dispatch(hrCreateSeniorStaffGradeFunc(seniorStaffGradeData));
         }
@@ -370,7 +386,7 @@ const PayStructure = ({
       case "managementStaffGrade":
         if (fileName4) {
           const formData = new FormData();
-          formData.append("file", file4);
+          formData.append("excelFile", file4);
           dispatch(hrCreateManagementStaffGradeFunc(formData));
           // dispatch(hrCreateManagementStaffGradeFunc(managementStaffGradeData));
         }
@@ -378,7 +394,7 @@ const PayStructure = ({
       case "contractStaffGrade":
         if (fileName5) {
           const formData = new FormData();
-          formData.append("file", file5);
+          formData.append("excelFile", file5);
           dispatch(hrCreateContractStaffGradeFunc(formData));
         }
         break;
@@ -387,7 +403,7 @@ const PayStructure = ({
     }
   };
 
-  const downloadTemplate = (type) => () => {
+  const downloadTemplate = (type) => {
     switch (type) {
       case "juniorstaffgrade":
         dispatch(downloadPayStructureTemplateExcelFileFunc(type));
@@ -425,18 +441,18 @@ const PayStructure = ({
 
   useEffect(() => {
     if (
-      managementStaffError ||
       juniorStaffError ||
       middleStaffError ||
       seniorStaffError ||
+      managementStaffError ||
       contractStaffError
       // !showError
     ) {
       setShowError(
-        managementStaffError ||
-          juniorStaffError ||
+        juniorStaffError ||
           middleStaffError ||
           seniorStaffError ||
+          managementStaffError ||
           contractStaffError
       );
     }
@@ -448,10 +464,10 @@ const PayStructure = ({
     // }
   }, [
     showError,
-    managementStaffError,
     juniorStaffError,
     middleStaffError,
     seniorStaffError,
+    managementStaffError,
     contractStaffError,
   ]);
 
@@ -542,7 +558,7 @@ const PayStructure = ({
             {/* <input type="button" value="Export Excel" onClick={exportExel} /> */}
             <Container maxWidth="xl">
               {!downloadLoading && showError && (
-                <ErrorBox fixed={true} errorMessage={showError} />
+                <ErrorBox fixed errorMessage={showError} />
               )}
               {/* {(juniorStaffError ||
                 middleStaffError ||
@@ -557,7 +573,7 @@ const PayStructure = ({
                     managementStaffError ||
                     contractStaffError
                   }
-                  fixed={true}
+                  fixed
                 />
               )} */}
               <Box sx={{ width: "100%", display: "flex" }}>
@@ -599,7 +615,7 @@ const PayStructure = ({
                     <div className="upload_empfile">
                       <p
                         className="choose__btn"
-                        onClick={handleClick("juniorStaffGrade")}
+                        onClick={() => handleClick("juniorStaffGrade")}
                       >
                         Choose a file
                       </p>
@@ -616,12 +632,12 @@ const PayStructure = ({
                       <Button
                         variant="contained"
                         children="Upload"
-                        onClick={uploadBulk("juniorStaffGrade")}
+                        onClick={() => uploadBulk("juniorStaffGrade")}
                       />
                       <Button
                         variant="contained"
                         children="Download Template"
-                        onClick={downloadTemplate("juniorstaffgrade")}
+                        onClick={() => downloadTemplate("juniorstaffgrade")}
                       />
                     </Stack>
                   </Box>
@@ -640,7 +656,7 @@ const PayStructure = ({
                     <div className="upload_empfile">
                       <p
                         className="choose__btn"
-                        onClick={handleClick("middleStaffGrade")}
+                        onClick={() => handleClick("middleStaffGrade")}
                       >
                         Choose a file
                       </p>
@@ -657,12 +673,12 @@ const PayStructure = ({
                       <Button
                         variant="contained"
                         children="Upload"
-                        onClick={uploadBulk("middleStaffGrade")}
+                        onClick={() => uploadBulk("middleStaffGrade")}
                       />
                       <Button
                         variant="contained"
                         children="Download Template"
-                        onClick={downloadTemplate("middlestaffgrade")}
+                        onClick={() => downloadTemplate("middlestaffgrade")}
                       />
                     </Stack>
                   </Box>
@@ -680,7 +696,7 @@ const PayStructure = ({
                     <div className="upload_empfile">
                       <p
                         className="choose__btn"
-                        onClick={handleClick("seniorStaffGrade")}
+                        onClick={() => handleClick("seniorStaffGrade")}
                       >
                         Choose a file
                       </p>
@@ -697,12 +713,12 @@ const PayStructure = ({
                       <Button
                         variant="contained"
                         children="Upload"
-                        onClick={uploadBulk("seniorStaffGrade")}
+                        onClick={() => uploadBulk("seniorStaffGrade")}
                       />
                       <Button
                         variant="contained"
                         children="Download Template"
-                        onClick={downloadTemplate("seniorstaffgrade")}
+                        onClick={() => downloadTemplate("seniorstaffgrade")}
                       />
                     </Stack>
                   </Box>
@@ -720,7 +736,7 @@ const PayStructure = ({
                     <div className="upload_empfile">
                       <p
                         className="choose__btn"
-                        onClick={handleClick("managementStaffGrade")}
+                        onClick={() => handleClick("managementStaffGrade")}
                       >
                         Choose a file
                       </p>
@@ -737,12 +753,12 @@ const PayStructure = ({
                       <Button
                         variant="contained"
                         children="Upload"
-                        onClick={uploadBulk("managementStaffGrade")}
+                        onClick={() => uploadBulk("managementStaffGrade")}
                       />
                       <Button
                         variant="contained"
                         children="Download Template"
-                        onClick={downloadTemplate("managementstaffgrade")}
+                        onClick={() => downloadTemplate("managementstaffgrade")}
                       />
                     </Stack>
                   </Box>
@@ -760,7 +776,7 @@ const PayStructure = ({
                     <div className="upload_empfile">
                       <p
                         className="choose__btn"
-                        onClick={handleClick("contractStaffGrade")}
+                        onClick={() => handleClick("contractStaffGrade")}
                       >
                         Choose a file
                       </p>
@@ -777,12 +793,12 @@ const PayStructure = ({
                       <Button
                         variant="contained"
                         children="Upload"
-                        onClick={uploadBulk("contractStaffGrade")}
+                        onClick={() => uploadBulk("contractStaffGrade")}
                       />
                       <Button
                         variant="contained"
                         children="Download Template"
-                        onClick={downloadTemplate("contractstaffgrade")}
+                        onClick={() => downloadTemplate("contractstaffgrade")}
                       />
                     </Stack>
                   </Box>

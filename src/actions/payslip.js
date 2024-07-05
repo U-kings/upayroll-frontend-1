@@ -80,7 +80,7 @@ export const adminGetAllGeneratedPayslips =
       try {
         dispatch({ type: GET_ALL_GENERATED_PAYSLIP_REQUEST });
         const { data } = await axios.get(
-          `${urlConfig.proxyUrl.PROXYURL}api/payslips/generatedslips?month=${month}&page=${page}&perPage=${perPage}`,
+          `${urlConfig.url.PROXYURL}api/payslips/generatedslips?month=${month}&page=${page}&perPage=${perPage}`,
           config
         );
         dispatch({ type: GET_ALL_GENERATED_PAYSLIP_SUCCESS, payload: data });
@@ -110,7 +110,7 @@ export const hrGetRejectedPayslipsFunc =
         type: HR_GET_REJECTED_PAYSLIPS_REQUEST,
       });
       const { data } = await axios.get(
-        `${urlConfig.proxyUrl.PROXYURL}api/payslips/rejected?statusLevel=not approved,pre approved&month=${month}&page=${page}&perPage=${perPage}`,
+        `${urlConfig.url.PROXYURL}api/payslips/rejected?statusLevel=not approved,pre approved&month=${month}&page=${page}&perPage=${perPage}`,
         config
       );
       dispatch({
@@ -146,7 +146,8 @@ export const hrSetToNotApprovedSalaryslips =
         paySlipsArr: salarySlipsIds,
       });
       await axios.patch(
-        `${urlConfig.proxyUrl.PROXYURL}api/payslips/create/notapproved`,
+        `${urlConfig.url.PROXYURL}api/payslips/create/level-one`,
+        // `${urlConfig.url.PROXYURL}api/payslips/create/notapproved`,
         body,
         config
       );
@@ -179,7 +180,8 @@ export const hrSetToNotApprovedSalaryslipsAll =
         // paySlipsArr: salarySlipsIds,
       });
       const { data } = await axios.patch(
-        `${urlConfig.proxyUrl.PROXYURL}api/payslips/create/notapproved/all?month=${month}`,
+        `${urlConfig.url.PROXYURL}api/payslips/create/level-one/all?month=${month}`,
+        // `${urlConfig.url.PROXYURL}api/payslips/create/notapproved/all?month=${month}`,
         body,
         config
       );
@@ -211,7 +213,7 @@ export const ceoGetApprovedSalaryslipsFunc =
     try {
       dispatch({ type: CEO_GET_APPROVED_SALARYSLIPS_REQUEST });
       const { data } = await axios.get(
-        `${urlConfig.proxyUrl.PROXYURL}api/payslips/approved?month=${month}&page=${page}&perPage=${perPage}`,
+        `${urlConfig.url.PROXYURL}api/payslips/approved?month=${month}&page=${page}&perPage=${perPage}`,
         config
       );
       dispatch({
@@ -248,7 +250,8 @@ export const ceoGetPreApprovedSalaryslipsFunc =
       try {
         dispatch({ type: CEO_GET_PRE_APPROVED_SALARYSLIPS_REQUEST });
         const { data } = await axios.get(
-          `${urlConfig.proxyUrl.PROXYURL}api/payslips/preapproved?month=${month}&page=${page}&perPage=${perPage}`,
+          `${urlConfig.url.PROXYURL}api/payslips/level-two?month=${month}&page=${page}&perPage=${perPage}`,
+          // `${urlConfig.url.PROXYURL}api/payslips/preapproved?month=${month}&page=${page}&perPage=${perPage}`,
           config
         );
         dispatch({
@@ -284,7 +287,8 @@ export const ceoSetApprovedSalaryslipsFunc =
         paySlipsArr: salarySlipsIds,
       });
       await axios.patch(
-        `${urlConfig.proxyUrl.PROXYURL}api/payslips/create/approved`,
+        `${urlConfig.url.PROXYURL}api/payslips/create/level-three`,
+        // `${urlConfig.url.PROXYURL}api/payslips/create/approved`,
         body,
         config
       );
@@ -316,7 +320,8 @@ export const ceoSetApprovedSalaryslipsAllFunc = (month) => async (dispatch) => {
       // paySlipsArr: salarySlipsIds,
     });
     const { data } = await axios.patch(
-      `${urlConfig.proxyUrl.PROXYURL}api/payslips/create/approved/all?month=${month}`,
+      `${urlConfig.url.PROXYURL}api/payslips/create/level-three/all?month=${month}`,
+      // `${urlConfig.url.PROXYURL}api/payslips/create/approved/all?month=${month}`,
       body,
       config
     );
@@ -350,7 +355,8 @@ export const accountantGetApprovedSalaryslispFunc =
         type: ACCOUNTANT_GET_APPROVED_SALARYSLIPS_REQUEST,
       });
       const { data } = await axios.get(
-        `${urlConfig.proxyUrl.PROXYURL}api/payslips/approved?month=${month}&page=${page}&perPage=${perPage}`,
+        `${urlConfig.url.PROXYURL}api/payslips/level-three?month=${month}&page=${page}&perPage=${perPage}`,
+        // `${urlConfig.url.PROXYURL}api/payslips/approved?month=${month}&page=${page}&perPage=${perPage}`,
         config
       );
       dispatch({
@@ -381,7 +387,8 @@ export const auditorGetNotApprovedSalaryslipsFunc =
     try {
       dispatch({ type: AUDITOR_GET_NOT_APPROVED_SALARYSLIPS_REQUEST });
       const { data } = await axios.get(
-        `${urlConfig.proxyUrl.PROXYURL}api/payslips/notapproved?month=${month}&page=${page}&perPage=${perPage}`,
+        `${urlConfig.url.PROXYURL}api/payslips/level-one?month=${month}&page=${page}&perPage=${perPage}`,
+        // `${urlConfig.url.PROXYURL}api/payslips/notapproved?month=${month}&page=${page}&perPage=${perPage}`,
         config
       );
       dispatch({
@@ -401,7 +408,7 @@ export const auditorGetNotApprovedSalaryslipsFunc =
   };
 
 export const auditorRejectNotApprovedPayslipsFunc =
-  (salaryArrIdswithComments, month, companyId, userRole) =>
+  (salaryArrIdswithComments, month, companyId, userRole, level) =>
   async (dispatch) => {
     const token = cookie.get("token");
     const config = {
@@ -417,7 +424,8 @@ export const auditorRejectNotApprovedPayslipsFunc =
         paySlipsArr: salaryArrIdswithComments,
       });
       await axios.patch(
-        `${urlConfig.proxyUrl.PROXYURL}api/payslips/reject/notapproved?companyId=${companyId}&role=${userRole}`,
+        `${urlConfig.url.PROXYURL}api/payslips/reject/levels?level=${level}`,
+        // `${urlConfig.url.PROXYURL}api/payslips/reject/notapproved?companyId=${companyId}&role=${userRole}`,
         body,
         config
       );
@@ -451,7 +459,7 @@ export const auditorAndCeoRejectExcelPayslipsFunc =
         paySlipsArr: salarySlips,
       });
       await axios.patch(
-        `${urlConfig.proxyUrl.PROXYURL}api/payslips/reject/excelbulk?type=${type}`,
+        `${urlConfig.url.PROXYURL}api/payslips/reject/excelbulk?type=${type}`,
         body,
         config
       );
@@ -473,7 +481,7 @@ export const auditorAndCeoRejectExcelPayslipsFunc =
   };
 
 export const ceoRejectPreApprovedPayslipsFunc =
-  (salaryArrIdswithComments, month, companyId, userRole) =>
+  (salaryArrIdswithComments, month, companyId, userRole, level) =>
   async (dispatch) => {
     const token = cookie.get("token");
     const config = {
@@ -488,7 +496,8 @@ export const ceoRejectPreApprovedPayslipsFunc =
         paySlipsArr: salaryArrIdswithComments,
       });
       await axios.patch(
-        `${urlConfig.proxyUrl.PROXYURL}api/payslips/reject/preapproved?companyId=${companyId}?role=${userRole}`,
+        `${urlConfig.url.PROXYURL}api/payslips/reject/levels?level=${level}`,
+        // `${urlConfig.url.PROXYURL}api/payslips/reject/preapproved?companyId=${companyId}?role=${userRole}`,
         body,
         config
       );
@@ -521,7 +530,7 @@ export const adminGeneratePayslip =
       dispatch({ type: GENERATE_PAYSLIP_REQUEST });
       const body = JSON.stringify(slipData);
       await axios.post(
-        `${urlConfig.proxyUrl.PROXYURL}api/payslips/generate/slip/${employeeId}`,
+        `${urlConfig.url.PROXYURL}api/payslips/generate/slip/${employeeId}`,
         body,
         config
       );
@@ -556,7 +565,7 @@ export const adminGenerateBulkPayslips = (bulkSlips) => async (dispatch) => {
       paySlipsArr: bulkSlips,
     });
     await axios.post(
-      `${urlConfig.proxyUrl.PROXYURL}api/payslips/generate-bulk`,
+      `${urlConfig.url.PROXYURL}api/payslips/generate-bulk`,
       body,
       config
     );
@@ -589,7 +598,7 @@ export const adminGenerateBulkPayslipsAll = (month) => async (dispatch) => {
       // paySlipsArr: bulkSlips,
     });
     const { data } = await axios.post(
-      `${urlConfig.proxyUrl.PROXYURL}api/payslips/generate-bulk/all?month=${month}`,
+      `${urlConfig.url.PROXYURL}api/payslips/generate-bulk/all?month=${month}`,
       body,
       config
     );
@@ -618,7 +627,10 @@ export const adminDeleteGeneratedPayslip =
     };
     try {
       dispatch({ type: DELETE_GENERATED_PAYSLIP_BY_ID_REQUEST });
-      await axios.delete(`${urlConfig.proxyUrl.PROXYURL}api/payslips/${slipId}`, config);
+      await axios.delete(
+        `${urlConfig.url.PROXYURL}api/payslips/${slipId}`,
+        config
+      );
       dispatch({ type: DELETE_GENERATED_PAYSLIP_BY_ID_SUCCESS });
       dispatch(adminGetAllGeneratedPayslips(month, type));
     } catch (error) {
@@ -649,7 +661,7 @@ export const adminDeleteBulkPayslips =
         paySlipsArrIds: paySlipIds,
       });
       await axios.patch(
-        `${urlConfig.proxyUrl.PROXYURL}api/payslips/delete-bulk`,
+        `${urlConfig.url.PROXYURL}api/payslips/delete-bulk`,
         body,
         config
       );
@@ -682,7 +694,8 @@ export const auditorSetPreApprovedPayslipsFunc =
         paySlipsArr: salarySlipsIds,
       });
       await axios.patch(
-        `${urlConfig.proxyUrl.PROXYURL}api/payslips/create/preapproved`,
+        `${urlConfig.url.PROXYURL}api/payslips/create/level-two`,
+        // `${urlConfig.url.PROXYURL}api/payslips/create/preapproved`,
         body,
         config
       );
@@ -717,7 +730,8 @@ export const auditorSetPreApprovedPayslipsAllFunc =
         // paySlipsArr: salarySlipsIds,
       });
       const { data } = await axios.patch(
-        `${urlConfig.proxyUrl.PROXYURL}api/payslips/create/preapproved/all?month=${month}`,
+        `${urlConfig.url.PROXYURL}api/payslips/create/level-two/all?month=${month}`,
+        // `${urlConfig.url.PROXYURL}api/payslips/create/preapproved/all?month=${month}`,
         body,
         config
       );

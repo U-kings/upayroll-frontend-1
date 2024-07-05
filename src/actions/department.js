@@ -37,7 +37,7 @@ export const getAllDepartment =
       });
 
       const { data } = await axios.get(
-        `${urlConfig.proxyUrl.PROXYURL}api/departments?page=${page}&perPage=${perPage}`,
+        `${urlConfig.url.PROXYURL}api/departments?page=${page}&perPage=${perPage}`,
         config
       );
       dispatch({
@@ -68,7 +68,7 @@ export const getPositionsByDepartment = (id) => async (dispatch) => {
   try {
     dispatch({ type: GET_POSITION_BY_DEPARTMENT_REQUEST });
     const { data } = await axios.get(
-      `${urlConfig.proxyUrl.PROXYURL}api/positions/${id}`,
+      `${urlConfig.url.PROXYURL}api/positions/${id}`,
       config
     );
     dispatch({
@@ -101,7 +101,7 @@ export const adminCreateDepartment = (formData) => async (dispatch) => {
       type: ADMIN_CREATE_DEPARTMENT_REQUEST,
     });
     const body = JSON.stringify(formData);
-    await axios.post(`${urlConfig.proxyUrl.PROXYURL}api/departments`, body, config);
+    await axios.post(`${urlConfig.url.PROXYURL}api/departments`, body, config);
     dispatch({
       type: ADMIN_CREATE_DEPARTMENT_SUCCESS,
     });
@@ -133,7 +133,7 @@ export const adminUpdateDepartmentById =
       });
       const body = JSON.stringify(formData);
       await axios.patch(
-        `${urlConfig.proxyUrl.PROXYURL}api/departments/${departId}`,
+        `${urlConfig.url.PROXYURL}api/departments/${departId}`,
         body,
         config
       );
@@ -164,7 +164,7 @@ export const adminDeleteDepartmentById = (departId) => async (dispatch) => {
       type: ADMIN_DELETE_DEPARTMENT_BY_ID_REQUEST,
     });
     await axios.delete(
-      `${urlConfig.proxyUrl.PROXYURL}api/departments/${departId}`,
+      `${urlConfig.url.PROXYURL}api/departments/${departId}`,
       config
     );
     dispatch({

@@ -1,5 +1,6 @@
-import React from "react";
+import React, { useState } from "react";
 import { ModalBackground, ModalContainer2 } from "../../styles/library";
+import cookie from "js-cookie";
 
 const Comment = ({
   isOpen3,
@@ -11,6 +12,11 @@ const Comment = ({
   currentSlip,
   currentVoucher,
 }) => {
+  const [approvalLevel] = useState(cookie.get("approvalLevel"));
+  const [totalApprovalLevel] = useState(
+    Number(cookie.get("totalApprovalLevel"))
+  );
+
   const onChange = (e) => {
     setRejectComment(e.target.value);
   };
@@ -18,7 +24,9 @@ const Comment = ({
   return (
     <>
       {(userRole === "HR" && currentSlip) ||
-      (userRole === "Accountant" && currentVoucher) ? (
+      ((userRole === "Accountant" ||
+        (approvalLevel === "Level-2" && totalApprovalLevel === 2)) &&
+        currentVoucher) ? (
         <>
           <ModalBackground isOpen3={isOpen3} onClick={popup3} />
           <ModalContainer2 isOpen3={isOpen3}>

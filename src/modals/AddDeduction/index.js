@@ -79,7 +79,7 @@ const AddDeduction = ({
     setIsOpen(false);
   };
 
-  const onOptionClicked2 = (feeType) => () => {
+  const onOptionClicked2 = (feeType) => {
     setSelectedOption2(feeType);
     setIsOpen2(false);
   };
@@ -173,7 +173,7 @@ const AddDeduction = ({
                 isOpen={isOpen}
                 toggling={toggling}
                 selectedOption={selectedOption}
-                text={selectedOption || "-- Select an deduction"}
+                text={selectedOption || "-- Select a deduction"}
                 dataSet={deductions}
                 onOptionClicked={onOptionClicked}
               />

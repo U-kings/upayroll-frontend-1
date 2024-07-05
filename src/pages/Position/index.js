@@ -72,7 +72,6 @@ const Position = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
   // func state
   const [isOpen4, setIsOpen4] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
-  const [isOpen7, setIsOpen7] = useState(false);
   const [pageNumber, setPageNumber] = useState(0);
   const [usersPerpageCount, setUsersPerpageCount] = useState(0);
   const [selectedOption, setSelectedOption] = useState(null);
@@ -90,15 +89,15 @@ const Position = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
 
   const hiddenFileInput = useRef(null);
 
-  const onOptionClicked = (department) => () => {
+  const onOptionClicked = (department) => {
     setSelectedOption(department);
     setIsOpen(false);
   };
 
   const onSelect = (id) => {
     let findPos;
-    if (positions?.length > 0) {
-      findPos = positions.find((el) => String(el?.id) === String(id));
+    if (positions?.positions?.length > 0) {
+      findPos = positions?.positions.find((el) => String(el?.id) === String(id));
       if (findPos) {
         setSelectedOption(findPos?.department);
         setFormData({ name: findPos?.name, id: findPos?.id });
@@ -140,7 +139,7 @@ const Position = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
       setFileName(null);
     }
 
-    setIsOpen7(false);
+    hiddenFileInput.current.value = null;
   };
 
   const onSave = (e) => {
@@ -162,7 +161,7 @@ const Position = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
     dispatch(downloadPositionTemplateExcelFileFunc());
   };
 
-  const handleFile = () => (e) => {
+  const handleFile = (e) => {
     let selectedFile = e.target.files[0];
     const fileType = ["application/vnd.ms-excel"];
     const fileType2 = [
@@ -194,12 +193,27 @@ const Position = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
     }
   };
 
+  useEffect(() => {
+    let timeoutId;
+
+    if (showError !== "") {
+      timeoutId = setTimeout(() => {
+        setShowError("");
+      }, 6000);
+    }
+
+    return () => {
+      // Clear the timeout when the component unmounts or when showError changes
+      clearTimeout(timeoutId);
+    };
+  }, [showError]);
+
   // Invoke when user click to request another page.
   const usersPerpage = 100;
   const pagesVisited = pageNumber * usersPerpage;
-  const pageCount = Math.ceil(Number(positions?.length) / usersPerpage);
+  const pageCount = Math.ceil(Number(positions?.resultLength) / usersPerpage);
 
-  const handleClick = (name) => () => {
+  const handleClick = () => {
     hiddenFileInput.current?.click();
   };
 
@@ -216,7 +230,8 @@ const Position = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
     // }
 
     const formData = new FormData();
-    formData.append("file", file);
+    // formData.append("file", file);
+    formData.append("excelFile", file);
     dispatch(adminCreateBulkPosition(formData));
   };
 
@@ -255,14 +270,21 @@ const Position = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
   ]);
 
   useEffect(() => {
+    let timeoutId;
     if (showError || downloadError || createPositionError || createBulkError) {
-      setTimeout(() => {
+      timeoutId = setTimeout(() => {
         dispatch({ type: DOWNLOADING_ON_PROCESS_ERROR });
         dispatch({ type: ADMIN_CREATE_POSITION_RESET });
         dispatch({ type: ADMIN_CREATE_BULK_POSITION_RESET });
         setShowError(null);
+        hiddenFileInput.current.value = null;
       }, 5000);
     }
+
+    return () => {
+      // Clear the timeout when the component unmounts or when showError changes
+      clearTimeout(timeoutId);
+    };
   }, [
     dispatch,
     showError,
@@ -281,15 +303,15 @@ const Position = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
   useEffect(() => {
     if (pageNumber > 0) {
       let usersPerpageNum;
-      if (positions?.length / (pageNumber + 1) > 100) {
+      if (positions?.resultLength / (pageNumber + 1) > 100) {
         usersPerpageNum = (pageNumber + 1) * 100;
       } else {
-        usersPerpageNum = positions?.length;
+        usersPerpageNum = positions?.resultLength;
       }
       setUsersPerpageCount(usersPerpageNum);
     } else {
-      if (positions?.length < 100) {
-        setUsersPerpageCount(positions?.length);
+      if (positions?.resultLength < 100) {
+        setUsersPerpageCount(positions?.resultLength);
       } else {
         setUsersPerpageCount(100);
       }
@@ -315,12 +337,10 @@ const Position = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
 
       <Successful
         isOpen7={
-          isOpen7 ||
           (updatePositionSuccess && !updatePositionError) ||
           createPositionSuccess ||
           (!createBulkError && createBulkSuccess)
         }
-        setIsOpen7={setIsOpen7}
         popup7={popup7}
         message={
           createBulkSuccess
@@ -434,9 +454,9 @@ const Position = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
                       />
                     </div>
                     <div className="upload__content">
-                      <h2> download Template</h2>
+                      <h2> Upload positions</h2>
                       <div className="upload_empfile">
-                        <p className="choose__btn" onClick={handleClick()}>
+                        <p className="choose__btn" onClick={handleClick}>
                           Choose a file
                         </p>
                         <p>{fileName}</p>
@@ -444,7 +464,7 @@ const Position = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
                       <input
                         type="file"
                         ref={hiddenFileInput}
-                        onChange={handleFile("juniorStaffGrade")}
+                        onChange={handleFile}
                         accept=".xls,.xlsx,.csv"
                         style={{ display: "none" }}
                       />
@@ -479,7 +499,7 @@ const Position = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
                         </tr>
                       </thead>
                       <tbody>
-                        {positions?.map((position, indexes) => (
+                        {positions?.positions?.map((position, indexes) => (
                           <tr key={position?.id}>
                             <td>{++indexes}</td>
                             <td>{position?.department?.name}</td>
@@ -491,10 +511,7 @@ const Position = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
                                   className="icons"
                                   onClick={(e) => onSelect(position?.id)}
                                 >
-                                  
-                                  <FontAwesomeIcon
-                                    icon={["fas", "edit"]}
-                                  />
+                                  <FontAwesomeIcon icon={["fas", "edit"]} />
                                 </div>
                                 {/* <div
                                   title="Delete"
@@ -562,13 +579,13 @@ const Position = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
                         <p style={{ fontSize: "1.3rem", fontWeight: "500" }}>
                           {`Showing : ${
                             // searchResult?.length < 1
-                            positions?.length < 1
+                            positions?.resultLength < 1
                               ? 0
                               : `${
                                   pageNumber > 0 ? pageNumber * 100 + 1 : 1
                                 } - ${usersPerpageCount}`
                           }
-                    of ${positions?.length}`}
+                    of ${positions?.resultLength}`}
                           {/* of ${vouchers?.resultLength}`} */}
                         </p>
                       </div>

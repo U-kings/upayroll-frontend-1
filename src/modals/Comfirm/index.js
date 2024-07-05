@@ -32,11 +32,14 @@ import {
   CEO_REJECT_PRE_APPROVED_PAYSLIPS_RESET,
   AUDITOR_AND_CEO_REJECT_EXCEL_PAYSLIPS_RESET,
   ADMIN_GENERATE_BULK_PAYSLIPS_ALL_RESET,
+  CEO_SET_APPROVED_GENERATED_PAYSLIPS_ALL_FAIL,
+  CEO_SET_APPROVED_GENERATED_PAYSLIPS_ALL_RESET,
 } from "../../types/payslip";
 import { CEO_APPROVE_BANKSCHEDULES_RESET } from "../../types/bankschedules";
 import { useHistory } from "react-router-dom";
 import {
   ACCOUNTANT_CREATE_NOT_APPROVED_VOUCHERS_FROM_SALARYSLIPS_RESET,
+  ACCOUNTANT_CREATE_NOT_APPROVED_VOUCHERS_FROM_SALARYSLIPS_ALL_RESET,
   ACCOUNTANT_DELETE_BULK_VOUCHERS_RESET,
   ACCOUNTANT_DELETE_VOUCHER_BY_ID_RESET,
   AUDITOR_PRE_APPROVE_VOUCHERS_RESET,
@@ -54,6 +57,7 @@ import { SUPER_ADMIN_BULK_DELETE_USERS_RESET } from "../../types/users";
 import { superAdminDeleteUser } from "../../actions/users";
 
 const Comfirm = ({
+  deleteRole,
   isOpen4,
   setIsOpen4,
   empId,
@@ -206,6 +210,7 @@ const Comfirm = ({
     success: generateAllBulkPayslipSuccess,
     error: generateAllBulkPayslipError,
     isLoading: generateAllBulkPayslipLoading,
+    message: generateAllBulkPayslipMessage,
   } = useSelector((state) => state.adminGenerateBulkPayslipsAll);
 
   const {
@@ -239,6 +244,12 @@ const Comfirm = ({
   } = useSelector((state) => state.ceoSetApprovedPayslips);
 
   const {
+    success: ceoSetApprovedSalaryslipsAllSuccess,
+    error: ceoSetApprovedSalaryslipsAllError,
+    // isLoading: ceoSetApprovedSalaryslipsAllLoading,
+  } = useSelector((state) => state.ceoSetApprovedPayslipsAll);
+
+  const {
     success: ceoApprovedBankScheduleSuccess,
     isLoading: ceoApprovedBankScheduleLoading,
     error: ceoApprovedBankScheduleError,
@@ -251,10 +262,22 @@ const Comfirm = ({
   } = useSelector((state) => state.accountantCreateNotApprovedVouchers);
 
   const {
+    success: accountantCreateNotApprovedVouchersAllSuccess,
+    error: accountantCreateNotApprovedVouchersAllError,
+    isLoading: accountantCreateNotApprovedVouchersAllLoading,
+  } = useSelector((state) => state.accountantCreateNotApprovedVouchersAll);
+
+  const {
     success: auditorPreApprovedVoucherSuccess,
     error: auditorPreApprovedVoucherError,
     isLoading: auditorPreApprovedVoucherLoading,
   } = useSelector((state) => state.auditorPreApproveVouchers);
+
+  const {
+    success: auditorPreApprovedVoucherAllSuccess,
+    message: auditorPreApprovedVoucherAllMessage,
+    error: auditorPreApprovedVoucherAllError,
+  } = useSelector((state) => state.auditorPreApproveVouchersAll);
 
   const {
     success: ceoApproveVoucherSuccess,
@@ -331,6 +354,7 @@ const Comfirm = ({
   const [isOpen7, setIsOpen7] = useState(false);
 
   const onDelete = () => {
+    deleteRole && deleteRole();
     if (empId) {
       dispatch(adminDeleteEmployeeById(empId, month));
     }
@@ -479,7 +503,7 @@ const Comfirm = ({
     }
 
     if (approvedBulk) {
-      setApprovedBankScheduleBulk(false);
+      setApprovedBankScheduleBulk && setApprovedBankScheduleBulk(false);
     }
 
     if (voucherBulk) {
@@ -561,16 +585,15 @@ const Comfirm = ({
     ) {
       dispatch({ type: ADMIN_GENERATE_BULK_PAYSLIPS_RESET });
       dispatch({ type: ADMIN_GENERATE_BULK_PAYSLIPS_ALL_RESET });
-      setIsOpen4(false);
-
+      // setIsOpen4(false);
       history.push("payroll");
     } else if (
       (generatePayslipSuccess && !generatePayslipError) ||
       generateAllBulkPayslipSuccess
     ) {
       dispatch({ type: GENERATE_PAYSLIP_RESET });
+      dispatch({ type: ADMIN_GENERATE_BULK_PAYSLIPS_RESET });
       setIsOpen4(false);
-
       history.push("payroll");
     } else if (deleteBulkUsersSuccess && !deleteBulkUsersError) {
       dispatch({ type: SUPER_ADMIN_BULK_DELETE_USERS_RESET });
@@ -610,11 +633,15 @@ const Comfirm = ({
       setCurrentSlip(false);
       setIsOpen4(false);
     } else if (
-      ceoSetApprovedSalaryslipsSuccess &&
-      !ceoSetApprovedSalaryslipsError
+      (ceoSetApprovedSalaryslipsSuccess ||
+        ceoSetApprovedSalaryslipsAllSuccess) &&
+      (!ceoSetApprovedSalaryslipsError || !ceoSetApprovedSalaryslipsAllError)
     ) {
       dispatch({
         type: CEO_SET_APPROVED_GENERATED_PAYSLIPS_RESET,
+      });
+      dispatch({
+        type: CEO_SET_APPROVED_GENERATED_PAYSLIPS_ALL_RESET,
       });
 
       setApprovedBulk(false);
@@ -632,11 +659,17 @@ const Comfirm = ({
       setIsOpen4(false);
       // setCurrentSlip(false);
     } else if (
-      accountantCreateNotApprovedSuccess &&
-      !accountantCreateNotApprovedError
+      (accountantCreateNotApprovedSuccess &&
+        !accountantCreateNotApprovedError) ||
+      (accountantCreateNotApprovedVouchersAllSuccess &&
+        !accountantCreateNotApprovedVouchersAllError &&
+        !accountantCreateNotApprovedVouchersAllLoading)
     ) {
       dispatch({
         type: ACCOUNTANT_CREATE_NOT_APPROVED_VOUCHERS_FROM_SALARYSLIPS_RESET,
+      });
+      dispatch({
+        type: ACCOUNTANT_CREATE_NOT_APPROVED_VOUCHERS_FROM_SALARYSLIPS_ALL_RESET,
       });
       setVoucherBulk(false);
       setCurrentSlip(false);
@@ -738,6 +771,13 @@ const Comfirm = ({
     // }
   };
 
+  // console.log(generatePayslipSuccess, generateBulkPayslipSuccess);
+  // console.log(
+  //   generatePayslipSuccess,
+  //   !generatePayslipError,
+  //   !generatePayslipLoading
+  // );
+
   return (
     <>
       {deleteAllowanceLoading && <LoadingSpinner toggle={toggle} />}
@@ -763,6 +803,9 @@ const Comfirm = ({
       {ceoSetApprovedSalaryslipsLoading && <LoadingSpinner toggle={toggle} />}
       {ceoApprovedBankScheduleLoading && <LoadingSpinner toggle={toggle} />}
       {accountantCreateNotApprovedLoading && <LoadingSpinner toggle={toggle} />}
+      {accountantCreateNotApprovedVouchersAllLoading && (
+        <LoadingSpinner toggle={toggle} />
+      )}
       {auditorPreApprovedVoucherLoading && <LoadingSpinner toggle={toggle} />}
       {ceoApproveVoucherLoading && <LoadingSpinner toggle={toggle} />}
       {accountantCreateBankScheduleLoading && (
@@ -835,6 +878,24 @@ const Comfirm = ({
       />
       <Successful
         isOpen7={
+          generateBulkPayslipSuccess &&
+          !generateBulkPayslipError &&
+          !generateBulkPayslipLoading
+        }
+        popup7={popup7}
+        message="Your request is being processed"
+      />
+      <Successful
+        isOpen7={
+          isOpen7 ||
+          (!generateAllBulkPayslipLoading && generateAllBulkPayslipSuccess)
+        }
+        setIsOpen7={setIsOpen7}
+        popup7={popup7}
+        message={generateAllBulkPayslipMessage}
+      />
+      <Successful
+        isOpen7={
           deleteSalarySlipSuccess &&
           !deleteSalarySlipError &&
           !deleteSalarySlipLoading
@@ -858,7 +919,7 @@ const Comfirm = ({
           !hrSetNotApprovedSalaryslipsIsLoading
         }
         popup7={popup7}
-        message="Payslips sent to HR!"
+        message="Payslips sent to Level-1"
       />
       <Successful
         isOpen7={
@@ -871,23 +932,18 @@ const Comfirm = ({
       />
       <Successful
         isOpen7={
-          ceoSetApprovedSalaryslipsSuccess &&
+          (ceoSetApprovedSalaryslipsSuccess ||
+            ceoSetApprovedSalaryslipsAllSuccess) &&
           !ceoSetApprovedSalaryslipsError &&
           !ceoSetApprovedSalaryslipsLoading
         }
         popup7={popup7}
-        message="Payslips approved successfully!"
-      />
-      <Successful
-        isOpen7={
-          ceoApproveVoucherSuccess &&
-          !ceoApproveVoucherError &&
-          !ceoApproveVoucherLoading
+        message={
+          ceoSetApprovedSalaryslipsAllSuccess
+            ? "Your request is being processed"
+            : "Payslips approved successfully!"
         }
-        popup7={popup7}
-        message="Voucher approved successfully!"
       />
-
       <Successful
         isOpen7={
           ceoApprovedBankScheduleSuccess &&
@@ -897,27 +953,6 @@ const Comfirm = ({
         popup7={popup7}
         message="Bank schedules approved successfully!"
       />
-
-      <Successful
-        isOpen7={
-          accountantCreateNotApprovedSuccess &&
-          !accountantCreateNotApprovedError &&
-          !accountantCreateNotApprovedLoading
-        }
-        popup7={popup7}
-        message="Vouchers created successfully!"
-      />
-
-      <Successful
-        isOpen7={
-          auditorPreApprovedVoucherSuccess &&
-          !auditorPreApprovedVoucherError &&
-          !ceoApproveVoucherLoading
-        }
-        popup7={popup7}
-        message="Pre approved vouchers rejected successfully!"
-      />
-
       <Successful
         isOpen7={
           ceoApproveVoucherSuccess &&
@@ -927,7 +962,34 @@ const Comfirm = ({
         popup7={popup7}
         message="Vouchers approved successfully!"
       />
+      <Successful
+        isOpen7={
+          accountantCreateNotApprovedSuccess &&
+          !accountantCreateNotApprovedError &&
+          !accountantCreateNotApprovedLoading
+        }
+        popup7={popup7}
+        message="Vouchers created successfully!"
+      />
+      <Successful
+        isOpen7={
+          accountantCreateNotApprovedVouchersAllSuccess &&
+          !accountantCreateNotApprovedVouchersAllError &&
+          !accountantCreateNotApprovedVouchersAllLoading
+        }
+        popup7={popup7}
+        message="Your request is being processed"
+      />
 
+      <Successful
+        isOpen7={
+          auditorPreApprovedVoucherSuccess &&
+          !auditorPreApprovedVoucherError &&
+          !ceoApproveVoucherLoading
+        }
+        popup7={popup7}
+        message="Pre approved vouchers successfully!"
+      />
       <Successful
         isOpen7={
           accountantCreateBankScheduleSuccess &&
@@ -1081,15 +1143,14 @@ const Comfirm = ({
               </h2>
             )}
           <h2>
-            {notApprovedBulk && "Submit selected items to auditor ?"}
+            {notApprovedBulk && "Submit selected items to Level-1 ?"}
             {preApprovedBulk && "Pre approved selected items ?"}
             {approvedBulk && "Approved selected items ?"}
             {approvedBankScheduleBulk && "Approved Selected Items ?"}
             {voucherBulk && "Create vouchers from selected items ?"}
             {preApprovedVoucherBulk &&
               "Pre approved vouchers from selected items ?"}
-            {approveVoucherBulk &&
-              "Create approve vouchers from selected items ?"}
+            {approveVoucherBulk && "Approve vouchers from selected items ?"}
             {bankScheduleBulk &&
               "Create bank schedule from selected approved vouchers ?"}
             {currentBankScheduleId && "Delete selected bank schedule items ?"}

@@ -100,13 +100,20 @@ const EditUser = ({ isOpen3, popup3, user, month, toggle }) => {
   };
 
   useEffect(() => {
+    let timeoutId;
     if (superAdminUpdateUserError || superAdminUpdateUserRoleError) {
       // popup3();
-      setTimeout(() => {
+
+      timeoutId = setTimeout(() => {
         dispatch({ type: SUPER_ADMIN_UPDATE_USER_RESET });
         dispatch({ type: SUPER_ADMIN_UPDATE_USER_ROLE_RESET });
-      }, 4000);
+      }, 6000);
     }
+
+    return () => {
+      // Clear the timeout when the component unmounts or when showError changes
+      clearTimeout(timeoutId);
+    };
   }, [dispatch, superAdminUpdateUserError, superAdminUpdateUserRoleError]);
 
   return (

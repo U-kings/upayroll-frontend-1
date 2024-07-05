@@ -7,7 +7,7 @@ const convertToFloat = (amount) => {
 
 export const commafy = (num) => {
   if (num) {
-    let str = num?.toString().split(".");
+    let str = num?.toString()?.split(".");
     if (str[0].length >= 3) {
       str[0] = str[0].replace(/(\d)(?=(\d{3})+$)/g, "$1,");
     }

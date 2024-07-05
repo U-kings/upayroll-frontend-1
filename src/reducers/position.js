@@ -35,7 +35,7 @@ export const adminGetAllPositionReducer = (state = {}, action) => {
       return {
         ...state,
         isLoading: false,
-        positions: payload.positions,
+        positions: payload,
         error: null,
       };
 

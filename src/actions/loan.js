@@ -32,7 +32,7 @@ export const hrGetAllLoansFunc = () => async (dispatch) => {
   };
   try {
     dispatch({ type: HR_GET_ALL_LOAN_REQUEST });
-    const { data } = await axios.get(`${urlConfig.proxyUrl.PROXYURL}api/loan`, config);
+    const { data } = await axios.get(`${urlConfig.url.PROXYURL}api/loan`, config);
     dispatch({ type: HR_GET_ALL_LOAN_SUCCESS, payload: data.loans });
   } catch (error) {
     dispatch({
@@ -57,7 +57,7 @@ export const hrCreateLoanFunc = (formData) => async (dispatch) => {
   try {
     dispatch({ type: HR_CREATE_LOAN_REQUEST });
     const body = JSON.stringify(formData);
-    await axios.post(`${urlConfig.proxyUrl.PROXYURL}api/loan`, body, config);
+    await axios.post(`${urlConfig.url.PROXYURL}api/loan`, body, config);
     dispatch({
       type: HR_CREATE_LOAN_SUCCESS,
     });
@@ -86,7 +86,7 @@ export const hrUpdateLoanFunc = (loanId, formData) => async (dispatch) => {
   const body = JSON.stringify(formData);
   try {
     dispatch({ type: HR_UPDATE_LOAN_REQUEST });
-    await axios.patch(`${urlConfig.proxyUrl.PROXYURL}api/loan/${loanId}`, body, config);
+    await axios.patch(`${urlConfig.url.PROXYURL}api/loan/${loanId}`, body, config);
     dispatch({ type: HR_UPDATE_LOAN_SUCCESS });
     dispatch(hrGetAllLoansFunc());
   } catch (error) {
@@ -111,7 +111,7 @@ export const hrDeleteLoanFunc = (loanId) => async (dispatch) => {
 
   try {
     dispatch({ type: HR_DELETE_LOAN_REQUEST });
-    await axios.delete(`${urlConfig.proxyUrl.PROXYURL}api/loan/${loanId}`, config);
+    await axios.delete(`${urlConfig.url.PROXYURL}api/loan/${loanId}`, config);
     dispatch({ type: HR_DELETE_LOAN_SUCCESS });
     dispatch(hrGetAllLoansFunc());
   } catch (error) {
@@ -138,7 +138,7 @@ export const hrUpdateRepaymentPercentFunc = (formData) => async (dispatch) => {
   try {
     dispatch({ type: HR_UPDATE_ALL_LOANS_REPAYMENT_PERCENTAGE_REQUEST });
     await axios.patch(
-      `${urlConfig.proxyUrl.PROXYURL}api/loan/update-repayment-percentage`,
+      `${urlConfig.url.PROXYURL}api/loan/update-repayment-percentage`,
       body,
       config
     );
@@ -168,7 +168,7 @@ export const hrUpdateManagementCarAmountFunc =
     try {
       dispatch({ type: HR_UPDATE_MANAGEMENT_CAR_LOAN_REQUEST });
       await axios.patch(
-        `${urlConfig.proxyUrl.PROXYURL}api/loan/${loanId}/update-management-car-loan`,
+        `${urlConfig.url.PROXYURL}api/loan/${loanId}/update-management-car-loan`,
         body,
         config
       );

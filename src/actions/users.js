@@ -31,7 +31,7 @@ export const superAdminGetAllUsers =
     try {
       dispatch({ type: SUPER_ADMIN_GET_ALL_USERS_REQUEST });
       const { data } = await axios.get(
-        `${urlConfig.proxyUrl.PROXYURL}api/super-admin/users?page=${page}&perPage=${perPage}`,
+        `${urlConfig.url.PROXYURL}api/super-admin/users?page=${page}&perPage=${perPage}`,
         config
       );
       dispatch({ type: SUPER_ADMIN_GET_ALL_USERS_SUCCESS, payload: data });
@@ -58,7 +58,7 @@ export const superAdminUpdateUser = (formData, userId) => async (dispatch) => {
     dispatch({ type: SUPER_ADMIN_UPDATE_USER_REQUEST });
     const body = JSON.stringify(formData);
     const { data } = await axios.patch(
-      `${urlConfig.proxyUrl.PROXYURL}api/super-admin/${userId}`,
+      `${urlConfig.url.PROXYURL}api/super-admin/${userId}`,
       body,
       config
     );
@@ -87,7 +87,7 @@ export const superAdminUpdateUserRole =
       dispatch({ type: SUPER_ADMIN_UPDATE_USER_ROLE_REQUEST });
       const body = JSON.stringify(formData);
       const { data } = await axios.patch(
-        `${urlConfig.proxyUrl.PROXYURL}api/super-admin/update/role/${userId}`,
+        `${urlConfig.url.PROXYURL}api/super-admin/update/role/${userId}`,
         body,
         config
       );
@@ -114,7 +114,7 @@ export const superAdminDeleteUser = (id) => async (dispatch) => {
     dispatch({ type: SUPER_ADMIN_DELETE_USER_REQUEST });
     // const body = JSON.stringify(formData);
     const { data } = await axios.delete(
-      `${urlConfig.proxyUrl.PROXYURL}api/super-admin/${id}`,
+      `${urlConfig.url.PROXYURL}api/super-admin/${id}`,
       // body,
       config
     );
@@ -142,7 +142,7 @@ export const superAdminBulkDeleteUser = (formData) => async (dispatch) => {
     dispatch({ type: SUPER_ADMIN_DELETE_USER_REQUEST });
     const body = JSON.stringify({ usersArr: formData });
     const { data } = await axios.patch(
-      `${urlConfig.proxyUrl.PROXYURL}api/super-admin/delete/bulk-users`,
+      `${urlConfig.url.PROXYURL}api/super-admin/delete/bulk-users`,
       body,
       config
     );
@@ -170,7 +170,7 @@ export const superAdminGetAllLogs =
     try {
       dispatch({ type: SUPER_ADMIN_GET_ALL_LOGS_REQUEST });
       const { data } = await axios.get(
-        `${urlConfig.proxyUrl.PROXYURL}api/super-admin/logs?page=${page}&perPage=${perPage}`,
+        `${urlConfig.url.PROXYURL}api/super-admin/logs?page=${page}&perPage=${perPage}`,
         config
       );
       dispatch({ type: SUPER_ADMIN_GET_ALL_LOGS_SUCCESS, payload: data });

@@ -32,7 +32,7 @@ export const adminGetAllPosition =
     try {
       dispatch({ type: ADMIN_GET_ALL_POSITION_REQUEST });
       const { data } = await axios.get(
-        `${urlConfig.proxyUrl.PROXYURL}api/positions?page=${page}&perPage=${perPage}`,
+        `${urlConfig.url.PROXYURL}api/positions?page=${page}&perPage=${perPage}`,
         config
       );
       dispatch({ type: ADMIN_GET_ALL_POSITION_SUCCESS, payload: data });
@@ -64,7 +64,7 @@ export const adminCreatePosition = (departId, formData) => async (dispatch) => {
     });
     const body = JSON.stringify(formData);
     await axios.post(
-      `${urlConfig.proxyUrl.PROXYURL}api/positions/${departId}/create`,
+      `${urlConfig.url.PROXYURL}api/positions/${departId}/create`,
       body,
       config
     );
@@ -99,7 +99,7 @@ export const adminCreateBulkPosition = (formData) => async (dispatch) => {
     });
     const body = formData;
     await axios.post(
-      `${urlConfig.proxyUrl.PROXYURL}api/positions/create-bulk`,
+      `${urlConfig.url.PROXYURL}api/positions/create-bulk`,
       body,
       config
     );
@@ -135,7 +135,7 @@ export const adminUpdatePositionById =
       });
       const body = JSON.stringify(formData);
       await axios.patch(
-        `${urlConfig.proxyUrl.PROXYURL}api/positions/${postId}/${departId}/update`,
+        `${urlConfig.url.PROXYURL}api/positions/${postId}/${departId}/update`,
         body,
         config
       );
@@ -166,7 +166,7 @@ export const adminDeletePositionById = (postId) => async (dispatch) => {
     dispatch({
       type: ADMIN_DELETE_POSITION_BY_ID_REQUEST,
     });
-    await axios.delete(`${urlConfig.proxyUrl.PROXYURL}api/positions/${postId}`, config);
+    await axios.delete(`${urlConfig.url.PROXYURL}api/positions/${postId}`, config);
     dispatch({
       type: ADMIN_DELETE_POSITION_BY_ID_SUCCESS,
     });

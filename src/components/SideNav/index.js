@@ -1,5 +1,5 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   LeftSide,
   TextLink,
@@ -7,6 +7,9 @@ import {
   NavLink,
   MenuModal,
 } from "../../styles/SidenavElements";
+import cookie from "js-cookie";
+import { getUserApprovalLevel } from "../../actions/auth";
+import { useSelector } from "react-redux";
 
 const SideNav = ({
   dash,
@@ -30,6 +33,27 @@ const SideNav = ({
   mobileToggle,
   toggleMobileMenu,
 }) => {
+  // redux state
+  const { adminInfo } = useSelector((state) => state.adminLoginStatus);
+  const [approvalLevelPayslip] = useState(cookie.get("approvalLevel-Payslip"));
+  const [approvalLevelVoucher] = useState(cookie.get("approvalLevel-Voucher"));
+  const [totalApprovalLevel] = useState(
+    Number(cookie.get("totalApprovalLevel"))
+  );
+
+  const [isSuperAdmin] = useState(adminInfo?.user?.isSuperAdmin || false);
+
+  // console.log(adminInfo);
+
+  useEffect(() => {
+    getUserApprovalLevel(
+      userRole,
+      slp === "active" ? "Payslip" : vch === "active" ? "Voucher" : ""
+    );
+
+    return () => {};
+  }, [userRole, slp, vch]);
+
   return (
     <>
       <MenuModal mobileToggle={mobileToggle} onClick={toggleMobileMenu} />
@@ -76,39 +100,6 @@ const SideNav = ({
                   <p>Dashboard</p>
                 </li>
               </NavLink>
-              <NavLink to="/employee">
-                <li className={emp}>
-                  <FontAwesomeIcon className="icons" icon={["fas", "users"]} />
-                  <p>Empolyee</p>
-                </li>
-              </NavLink>
-              <NavLink to="/payroll">
-                <li className={slp}>
-                  <FontAwesomeIcon
-                    className="icons"
-                    icon={["fas", "money-check"]}
-                  />
-                  <p>Payroll</p>
-                </li>
-              </NavLink>
-              <NavLink to="/pay-head">
-                <li className={phd}>
-                  <FontAwesomeIcon
-                    className="icons"
-                    icon={["fas", "hand-holding-usd"]}
-                  />
-                  <p>Pay Head</p>
-                </li>
-              </NavLink>
-              <NavLink to="/monthly-payhead">
-                <li className={mph}>
-                  <FontAwesomeIcon
-                    className="icons"
-                    icon={["fas", "money-bill-alt"]}
-                  />
-                  <p>Monthly Pay Head</p>
-                </li>
-              </NavLink>
               <NavLink to="/department">
                 <li className={dpt}>
                   <FontAwesomeIcon
@@ -127,15 +118,25 @@ const SideNav = ({
                   <p>Position</p>
                 </li>
               </NavLink>
-              {/* <NavLink to="/loan">
-                <li className={loan}>
+
+              <NavLink to="/monthly-payhead">
+                <li className={mph}>
                   <FontAwesomeIcon
                     className="icons"
-                    icon={["fas", "money-check-alt"]}
+                    icon={["fas", "money-bill-alt"]}
                   />
-                  <p>Loan</p>
+                  <p>Monthly Pay Head</p>
                 </li>
-              </NavLink> */}
+              </NavLink>
+              <NavLink to="/pay-head">
+                <li className={phd}>
+                  <FontAwesomeIcon
+                    className="icons"
+                    icon={["fas", "hand-holding-usd"]}
+                  />
+                  <p>Pay Head</p>
+                </li>
+              </NavLink>
               <NavLink to="/pay-structure">
                 <li className={sfl}>
                   <FontAwesomeIcon
@@ -143,6 +144,21 @@ const SideNav = ({
                     icon={["fas", "layer-group"]}
                   />
                   <p>Pay Structure</p>
+                </li>
+              </NavLink>
+              <NavLink to="/employee">
+                <li className={emp}>
+                  <FontAwesomeIcon className="icons" icon={["fas", "users"]} />
+                  <p>Empolyee</p>
+                </li>
+              </NavLink>
+              <NavLink to="/payroll">
+                <li className={slp}>
+                  <FontAwesomeIcon
+                    className="icons"
+                    icon={["fas", "money-check"]}
+                  />
+                  <p>Payroll</p>
                 </li>
               </NavLink>
               <NavLink to="/bank-schedule">
@@ -154,10 +170,21 @@ const SideNav = ({
                   <p>Bank Schedule</p>
                 </li>
               </NavLink>
+
+              {/* <NavLink to="/loan">
+                <li className={loan}>
+                  <FontAwesomeIcon
+                    className="icons"
+                    icon={["fas", "money-check-alt"]}
+                  />
+                  <p>Loan</p>
+                </li>
+              </NavLink> */}
             </>
           )}
-          {(userRole === "Internal Auditor" || userRole === "CEO") && (
-            <>
+
+          {userRole !== "HR" && (
+            <div>
               <NavLink to="/dashboard">
                 <li className={dash}>
                   <FontAwesomeIcon className="icons" icon={["fas", "home"]} />
@@ -182,23 +209,6 @@ const SideNav = ({
                   <p>Voucher</p>
                 </li>
               </NavLink>
-
-              {userRole === "Internal Auditor" && (
-                <NavLink to="/bank-schedule">
-                  <li className={bnkschd}>
-                    <FontAwesomeIcon
-                      className="icons"
-                      icon={["fas", "clipboard-list"]}
-                    />
-                    <p>Bank Schedule</p>
-                  </li>
-                </NavLink>
-              )}
-            </>
-          )}
-
-          {userRole === "CEO" && (
-            <>
               <NavLink to="/bank-schedule">
                 <li className={bnkschd}>
                   <FontAwesomeIcon
@@ -208,6 +218,20 @@ const SideNav = ({
                   <p>Bank Schedule</p>
                 </li>
               </NavLink>
+            </div>
+          )}
+
+          {userRole === "Accountant" && (
+            <NavLink to="/bank">
+              <li className={bnklst}>
+                <FontAwesomeIcon className="icons" icon={["fas", "list"]} />
+                <p>Bank Account Settings</p>
+              </li>
+            </NavLink>
+          )}
+
+          {isSuperAdmin && (
+            <div>
               <NavLink to="/users">
                 <li className={usersActive}>
                   <FontAwesomeIcon className="icons" icon={["fas", "users"]} />
@@ -223,51 +247,9 @@ const SideNav = ({
                   <p>Audit Log</p>
                 </li>
               </NavLink>
-            </>
+            </div>
           )}
-          {userRole === "Accountant" && (
-            <>
-              <NavLink to="/dashboard">
-                <li className={dash}>
-                  <FontAwesomeIcon className="icons" icon={["fas", "home"]} />
-                  <p>Dashboard</p>
-                </li>
-              </NavLink>
-              <NavLink to="/payroll">
-                <li className={slp}>
-                  <FontAwesomeIcon
-                    className="icons"
-                    icon={["fas", "money-check"]}
-                  />
-                  <p>Payroll</p>
-                </li>
-              </NavLink>
-              <NavLink to="/voucher">
-                <li className={vch}>
-                  <FontAwesomeIcon
-                    className="icons"
-                    icon={["fas", "file-invoice-dollar"]}
-                  />
-                  <p>Voucher</p>
-                </li>
-              </NavLink>
-              <NavLink to="/bank-schedule">
-                <li className={bnkschd}>
-                  <FontAwesomeIcon
-                    className="icons"
-                    icon={["fas", "clipboard-list"]}
-                  />
-                  <p>Bank Schedule</p>
-                </li>
-              </NavLink>
-              <NavLink to="/bank">
-                <li className={bnklst}>
-                  <FontAwesomeIcon className="icons" icon={["fas", "list"]} />
-                  <p>Bank Account Settings</p>
-                </li>
-              </NavLink>
-            </>
-          )}
+
           {userRole === "Employee" && (
             <>
               <NavLink to="/dashboard">

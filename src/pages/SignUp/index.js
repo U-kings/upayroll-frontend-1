@@ -30,7 +30,7 @@ import { Spinner, Successful } from "../../modals";
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import { urlConfig } from "../../util/config/config";
-
+import { passwordStrength } from "check-password-strength";
 
 const SignUp = () => {
   const theme = useTheme();
@@ -64,6 +64,7 @@ const SignUp = () => {
   });
 
   const [showPassword, setShowPassword] = useState(false);
+  const [passwordStrengthText, setPasswordStrengthText] = useState("");
 
   const handleClickShowPassword = () => setShowPassword((show) => !show);
 
@@ -116,59 +117,198 @@ const SignUp = () => {
       history.push("dashboard");
       dispatch({ type: CHECK_COOKIE_TOKEN_VALID_RESET });
     }
+    setShowError("");
+    return () => {};
   }, [dispatch, history, cookieValid]);
 
+  function validateEmail(email) {
+    const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return regex.test(email);
+  }
+  function validatePhone(phone) {
+    const regex = /^[0-9]+$/;
+    return regex.test(phone);
+  }
+
+  useEffect(() => {
+    let timeoutId;
+
+    if (showError !== "") {
+      timeoutId = setTimeout(() => {
+        setShowError("");
+      }, 6000);
+    }
+
+    return () => {
+      // Clear the timeout when the component unmounts or when showError changes
+      clearTimeout(timeoutId);
+    };
+  }, [showError]);
+
+  const handleKeyup = (e) => {
+    if (e.target.name === "contactPersonEmail") {
+      if (!validateEmail(e.target.value)) {
+        setShowError("Invalid email");
+      } else if (validateEmail(e.target.value)) {
+        setShowError("");
+      }
+      // setFormData({ ...formData, [e.target.name]: e.target.value });
+    }
+    if (e.target.name === "contactPersonMobile") {
+      if (e.target.value !== "" && !validatePhone(e.target.value)) {
+        console.log(e.target.value);
+        setShowError("Not a number");
+      } else if (e.target.value !== "" && validatePhone(e.target.value)) {
+        setShowError("");
+      }
+    }
+  };
+
+  const validateNumber = (event) => {
+    const keyCode = event.keyCode;
+    const excludedKeys = [8, 37, 39, 46];
+    if (
+      !(
+        (keyCode >= 48 && keyCode <= 57) ||
+        (keyCode >= 96 && keyCode <= 105) ||
+        excludedKeys.includes(keyCode)
+      )
+    ) {
+      event.preventDefault();
+    }
+  };
+
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    // const emailRegex =
+    //   /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/;
+
+    // if (validatePhone(e.target.value)) {
+    // setFormData({ ...formData, [e.target.name]: e.target.value });
+    // }
+
+    if (
+      e.target.value?.length < 21 &&
+      e.target.name === "contactPersonMobile"
+    ) {
+      setFormData({ ...formData, [e.target.name]: e.target.value });
+    }
+
+    if (e.target.name === "contactPersonEmail") {
+      setFormData({ ...formData, [e.target.name]: e.target.value });
+    }
+
+    if (
+      e.target.name !== "contactPersonMobile" &&
+      e.target.name !== "contactPersonEmail"
+    ) {
+      setFormData({ ...formData, [e.target.name]: e.target.value });
+    }
+    if (e.target.name === "password") {
+      console.log(passwordStrength(e.target.value?.trim()).value);
+      const passwordText = passwordStrength(e.target.value?.trim()).value;
+      setPasswordStrengthText(passwordText);
+    }
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    const formData = new FormData();
-    formData.append("logo", file);
-    formData.append("name", name);
-    formData.append("contactPersonfirstName", contactPersonfirstName);
-    formData.append("contactPersonlastName", contactPersonlastName);
-    formData.append("contactPersonEmail", contactPersonEmail);
-    formData.append("contactPersonMobile", contactPersonMobile);
-    formData.append("companyAddress", companyAddress);
-    formData.append("role", role);
+    if (!validateEmail(contactPersonEmail)) {
+      setShowError("Invalid email");
+      return;
+    }
+    if (!validatePhone(contactPersonMobile)) {
+      setShowError("Invalid phone number");
+      return;
+    }
+    if (password?.length < 8) {
+      setShowError("Your Password is too short");
+      return;
+    }
+
+    if (passwordStrengthText === "Too Weak") {
+      setShowError("Your password is too weak");
+      return;
+    } else if (passwordStrengthText === "Weak") {
+      setShowError("Your password is weak");
+      return;
+    } else if (passwordStrengthText === "Medium") {
+      setShowError("Your password strength is medium");
+      return;
+    }
+    // else if (passwordStrengthText === "Strong") {
+    //   // setShowError("Your password is strong");
+    // }
+
+    // const formData = new FormData();
+    // formData.append("logo", file);
+    // formData.append("name", name);
+    // formData.append("contactPersonfirstName", contactPersonfirstName);
+    // formData.append("contactPersonlastName", contactPersonlastName);
+    // formData.append("contactPersonEmail", contactPersonEmail);
+    // formData.append("contactPersonMobile", contactPersonMobile);
+    // formData.append("companyAddress", companyAddress);
+    // formData.append("role", role);
+    // formData.append("password", password);
+
     // formData.append("authType", authType);
-    formData.append("password", password);
     dispatch(registerFunc(formData));
     // dispatch(registerFunc(formData));
   };
 
   const getCloudinaryKeys = async () => {
     const { data } = await axios.get(
-      `${urlConfig.proxyUrl.PROXYURL}api/cloudinary/keys`
+      `${urlConfig.url.PROXYURL}api/cloudinary/keys`
     );
     return data;
   };
 
-  const onUploadSignature = async (selectedFile) => {
+  // const onUploadCompanyLogo = async (selectedFile) => {
+  //   //do whatever you want to do
+  //   try {
+  //     const cloudinaryRes = await getCloudinaryKeys();
+  //     const imageData = new FormData();
+  //     imageData.append("file", selectedFile);
+  //     imageData.append("upload_preset", "upayroll");
+  //     imageData.append("cloud_name", cloudinaryRes.cloudinaryKeyName);
+
+  //     const res = await fetch(
+  //       `https://api.cloudinary.com/v1_1/${cloudinaryRes.cloudinaryKeyName}/image/upload`,
+  //       {
+  //         method: "post",
+  //         body: imageData,
+  //       }
+  //     );
+  //     const data = await res.json();
+  //     setFormData({ ...formData, logo: data.secure_url });
+  //     // setFormData({ ...formData, logo: data.secure_url });
+
+  //     // dispatch(ceoUploadSignatureFunc(data.secure_url));
+  //   } catch (error) {
+  //     setShowError(error.message);
+  //   }
+  // };
+  const onUploadCompanyLogo = async (selectedFile) => {
     //do whatever you want to do
     try {
-      const cloudinaryRes = await getCloudinaryKeys();
       const imageData = new FormData();
-      imageData.append("file", selectedFile);
-      imageData.append("upload_preset", "upayroll");
-      imageData.append("cloud_name", cloudinaryRes.cloudinaryKeyName);
+      imageData.append("imageFile", selectedFile);
 
-      const res = await fetch(
-        `https://api.cloudinary.com/v1_1/${cloudinaryRes.cloudinaryKeyName}/image/upload`,
-        {
-          method: "post",
-          body: imageData,
-        }
+      const { data } = await axios.post(
+        `${urlConfig.url.PROXYURL}api/upload/image`,
+        imageData
       );
-      const data = await res.json();
-      setFormData({ ...formData, logo: data.secure_url });
-      // setFormData({ ...formData, logo: data.secure_url });
 
-      // dispatch(ceoUploadSignatureFunc(data.secure_url));
+      setFormData({ ...formData, logo: data.url });
     } catch (error) {
-      setShowError(error.message);
+      // setShowError(error.message);
+      setShowError(
+        error?.response &&
+          (error?.response?.data?.detail || error?.response?.data?.errors)
+          ? error?.response?.data?.detail ||
+              error?.response?.data?.errors?.map((el) => el?.msg)?.join(" ")
+          : error?.message
+      );
+      setFormData({ ...formData, logo: "" });
     }
   };
 
@@ -189,7 +329,7 @@ const SignUp = () => {
         // extFile === "gif"
       ) {
         setFile(e.target.files[0]);
-        onUploadSignature(selectedFile);
+        onUploadCompanyLogo(selectedFile);
       } else {
         setShowError("Only jpg, jpeg and png files are allowed!");
         // setShowError("Only jpg/jpeg, png, gif and svg files are allowed!");
@@ -200,13 +340,39 @@ const SignUp = () => {
     }
   };
 
+  const colorChange = () => {
+    switch (passwordStrengthText) {
+      case "Too weak":
+        return "#f01e2c";
+      case "Weak":
+        return "#f01e2c";
+      case "Medium":
+        return "#FFBF00";
+      case "Strong":
+        return "#3cb043";
+      default:
+        return;
+    }
+  };
+
+  // const colorChange =
+  //   passwordStrengthText === "Too weak"
+  //     ? "#f01e2c"
+  //     : passwordStrengthText === "Weak"
+  //     ? "#f01e2c"
+  //     : passwordStrengthText === "Medium"
+  //     ? "#FFBF00"
+  //     : passwordStrengthText === "Strong"
+  //     ? "#3cb043"
+  //     : "";
+
   return (
     <>
       {adminRegister?.isLoading && <Spinner />}
       <Successful
         isOpen7={adminRegister?.success && !adminRegister?.error}
         popup7={popup7}
-        message="Account Created Successfully! Check your mail to verify your account."
+        message="Account Created Successfully!, Check your mail to verify your account."
       />
       <Box>
         <Box sx={{ display: "flex", height: "100vh" }}>
@@ -236,6 +402,7 @@ const SignUp = () => {
                 {(showError ||
                   (!adminRegister?.isLoading && adminRegister?.error)) && (
                   <ErrorBox
+                    fixed
                     errorMessage={
                       adminRegister?.error ===
                       "Request failed with status code 500"
@@ -404,6 +571,7 @@ const SignUp = () => {
                       value={contactPersonEmail}
                       required
                       onChange={handleChange}
+                      onKeyUp={handleKeyup}
                     />
                   </Box>
                 </Grid>
@@ -426,6 +594,8 @@ const SignUp = () => {
                       value={contactPersonMobile}
                       required
                       onChange={handleChange}
+                      onKeyUp={handleKeyup}
+                      onKeyDown={validateNumber}
                     />
                   </Box>
                 </Grid>
@@ -515,6 +685,13 @@ const SignUp = () => {
                           </InputAdornment>
                         }
                       />
+                      <p
+                        style={{
+                          color: colorChange,
+                        }}
+                      >
+                        {password !== "" && passwordStrengthText}
+                      </p>
                     </FormControl>
                     {/* <TextField
                       id="comfirmpassword"

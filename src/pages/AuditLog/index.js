@@ -39,6 +39,7 @@ import {
 } from "../../actions/payslip";
 import {
   ADMIN_DELETE_ALL_EMPLOYEES_RESET,
+  ADMIN_DELETE_BULK_EMPLOYEES_BY_IDS_RESET,
   ADMIN_DELETE_EMPLOYEE_ALLOWANCE_BY_ID_RESET,
   ADMIN_DELETE_EMPLOYEE_BY_ID_RESET,
   ADMIN_DELETE_EMPLOYEE_DEDUCTION_BY_ID_RESET,
@@ -201,7 +202,7 @@ const AuditLog = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
   };
 
   // months drop down
-  const onOptionClicked10 = (month) => () => {
+  const onOptionClicked10 = (month) => {
     setSelectedOption10(month);
     setIsOpen10(false);
   };
@@ -226,11 +227,17 @@ const AuditLog = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
   };
 
   useEffect(() => {
+    let timeoutId;
     if (downloadStatusError) {
-      setTimeout(() => {
+      timeoutId = setTimeout(() => {
         dispatch({ type: DOWNLOADING_ON_PROCESS_ERROR });
       }, 5000);
     }
+
+    return () => {
+      // Clear the timeout when the component unmounts or when showError changes
+      clearTimeout(timeoutId);
+    };
   }, [dispatch, downloadStatusError]);
 
   useEffect(() => {
@@ -322,11 +329,16 @@ const AuditLog = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
   }, [history, userRole, selectedOption10, dispatch, pageNumber]);
 
   useEffect(() => {
+    let timeoutId;
     if (superAdminGetAllLogsError) {
-      setTimeout(() => {
+      timeoutId = setTimeout(() => {
         dispatch({ type: ADMIN_GET_ALL_EMPLOYEE_RESET });
       }, 4000);
     }
+    return () => {
+      // Clear the timeout when the component unmounts or when showError changes
+      clearTimeout(timeoutId);
+    };
   }, [superAdminGetAllLogsError, dispatch]);
 
   useEffect(() => {
@@ -523,6 +535,21 @@ const AuditLog = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
     }
   };
 
+  useEffect(() => {
+    let timeoutId;
+
+    if (showError !== "") {
+      timeoutId = setTimeout(() => {
+        setShowError("");
+      }, 6000);
+    }
+
+    return () => {
+      // Clear the timeout when the component unmounts or when showError changes
+      clearTimeout(timeoutId);
+    };
+  }, [showError]);
+
   const calculateAllPayslipByIds = () => {
     // if (!dropdown()) {
     //   setShowError('Please uncheck the "View All Employee" Checkbox');
@@ -711,6 +738,7 @@ const AuditLog = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
       (deleteBulkEmployeeSuccess && !deleteBulkEmployeeError)
     ) {
       dispatch({ type: ADMIN_DELETE_EMPLOYEE_BY_ID_RESET });
+      dispatch({ type: ADMIN_DELETE_BULK_EMPLOYEES_BY_IDS_RESET });
     }
 
     if (deleteAllEmployeeSuccess && !deleteAllEmployeeError) {

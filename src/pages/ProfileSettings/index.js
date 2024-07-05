@@ -62,12 +62,13 @@ const ProfileSettings = ({
   const [userRoleName] = useState(adminInfo?.user?.name || "");
   const [profileImg] = useState(adminInfo?.user?.photo || "");
   const [loading, setLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const [PasswordInputType, ToggleIcon] = usePasswordToggle();
 
   useEffect(() => {
     if (!adminInfo?.isAuthenticated || !adminInfo?.user?.name) {
-      history.push("/");
+      history.push("/signin");
     }
 
     if (updateAdminDetailsSuccess) {
@@ -103,12 +104,20 @@ const ProfileSettings = ({
     if (confirmPassword !== newPassword) {
       setShowError("Password do not match");
     } else {
-      const formData = new FormData();
-      formData.append("name", name);
-      formData.append("email", email);
-      formData.append("oldPassword", oldPassword);
-      formData.append("newPassword", newPassword);
-      formData.append("photo", file);
+      // const formData = new FormData();
+      // formData.append("name", name);
+      // formData.append("email", email);
+      // formData.append("oldPassword", oldPassword);
+      // formData.append("newPassword", newPassword);
+      // formData.append("photo", file);
+
+      const formData = {
+        name: name,
+        email: email,
+        oldPassword: oldPassword,
+        newPassword: newPassword,
+        photo: profileImage,
+      };
 
       dispatch(adminUpdateDetails(formData));
       // dispatch(
@@ -123,9 +132,24 @@ const ProfileSettings = ({
     }
   };
 
+  useEffect(() => {
+    let timeoutId;
+
+    if (showError !== "") {
+      timeoutId = setTimeout(() => {
+        setShowError("");
+      }, 6000);
+    }
+
+    return () => {
+      // Clear the timeout when the component unmounts or when showError changes
+      clearTimeout(timeoutId);
+    };
+  }, [showError]);
+
   const getCloudinaryKeys = async () => {
     const { data } = await axios.get(
-      `${urlConfig.proxyUrl.PROXYURL}api/cloudinary/keys`
+      `${urlConfig.url.PROXYURL}api/cloudinary/keys`
     );
     return data;
   };
@@ -133,9 +157,25 @@ const ProfileSettings = ({
   const onUploadSignature = async () => {
     //up signature to database.
 
-    const formData = new FormData();
-    formData.append("signature", file2);
-    dispatch(ceoUploadSignatureFunc(formData));
+    try {
+      setIsLoading(true);
+      const imageData = new FormData();
+      imageData.append("imageFile", file2);
+
+      const { data } = await axios.post(
+        `${urlConfig.url.PROXYURL}api/upload/image`,
+        imageData
+      );
+
+      if (data) {
+        dispatch(ceoUploadSignatureFunc({ signaturePhoto: data.url }));
+      }
+    } catch (error) {
+      setIsLoading(false);
+      setShowError(error.message);
+    } finally {
+      setIsLoading(false);
+    }
 
     // try {
     //   const cloudinaryRes = await getCloudinaryKeys();
@@ -156,14 +196,6 @@ const ProfileSettings = ({
     //   setShowError(error.message);
     // }
   };
-
-  useEffect(() => {
-    if (showError) {
-      setTimeout(() => {
-        setShowError(null);
-      }, 5000);
-    }
-  }, [showError]);
 
   const popup7 = () => {
     if (
@@ -220,6 +252,7 @@ const ProfileSettings = ({
             setFile2(e.target.files[0]);
             setSignatureImage(selectedFile);
             setFileName(selectedFile?.name);
+            handleFileChangeDocHandler(e);
 
             break;
           default:
@@ -239,28 +272,71 @@ const ProfileSettings = ({
     //do whatever you want to do
     setLoading(true);
     try {
-      const cloudinaryRes = await getCloudinaryKeys();
-      const formData = new FormData();
-      formData.append("file", profileImage);
-      formData.append("upload_preset", "upayroll");
-      formData.append("cloud_name", cloudinaryRes.cloudinaryKeyName);
+      const imageData = new FormData();
+      imageData.append("imageFile", profileImage);
 
-      const res = await fetch(
-        `https://api.cloudinary.com/v1_1/${cloudinaryRes.cloudinaryKeyName}/image/upload`,
-        {
-          method: "post",
-          body: formData,
-        }
+      const { data } = await axios.post(
+        `${urlConfig.url.PROXYURL}api/upload/image`,
+        imageData
       );
-      const data = await res.json();
-      setProfileImage(data.secure_url);
+
+      setProfileImage(data.url);
       setLoading(false);
       // dispatch(ceoUploadSignatureFunc(data.secure_url));
     } catch (error) {
       setShowError(error.message);
       setLoading(false);
     }
+    // setLoading(true);
+    // try {
+    //   const cloudinaryRes = await getCloudinaryKeys();
+    //   const formData = new FormData();
+    //   formData.append("file", profileImage);
+    //   formData.append("upload_preset", "upayroll");
+    //   formData.append("cloud_name", cloudinaryRes.cloudinaryKeyName);
+
+    //   const res = await fetch(
+    //     `https://api.cloudinary.com/v1_1/${cloudinaryRes.cloudinaryKeyName}/image/upload`,
+    //     {
+    //       method: "post",
+    //       body: formData,
+    //     }
+    //   );
+    //   const data = await res.json();
+    //   setProfileImage(data.secure_url);
+    //   setLoading(false);
+    //   // dispatch(ceoUploadSignatureFunc(data.secure_url));
+    // } catch (error) {
+    //   setShowError(error.message);
+    //   setLoading(false);
+    // }
   };
+
+  const handleFileChangeDocHandler = async (event) => {
+    const file = event.target.files?.["0"];
+    let convertedFile = "";
+    // console.log(event.target.files?.["0"], "selectedFile");
+    await new Promise((resolve, reject) => {
+      const blober = URL.createObjectURL(file);
+      setTimeout(() => {
+        // setSelectedFile(blober);
+        // form.setValue("profileImageUrl", blober);
+        // console.log(selectedFile, "select");
+      }, 1000);
+      convertedFile = blober;
+      // setLocalImgUrl(blober);
+      // console.log(blober);
+      resolve();
+    });
+    // setFileHandler(file);
+    setSignatureImage(convertedFile);
+  };
+
+  // console.log(eSignature);
+  // console.log(signatureImage);
+  // console.log(adminInfo);
+  // console.log(adminInfo?.user?.signaturePhoto);
+  // console.log(signatureImage);
 
   return (
     <>
@@ -440,7 +516,7 @@ const ProfileSettings = ({
                           className={
                             // !newPassword ||
                             // !confirmPassword ||
-                            !signatureImage
+                            !signatureImage || isLoading
                               ? "disabled__btn margin__top"
                               : "save__btn profile__save margin__top"
                           }
@@ -449,13 +525,19 @@ const ProfileSettings = ({
                             // !newPassword ||
                             // !confirmPassword ||
                             // newPassword !== confirmPassword || !name || !email
-                            !signatureImage
+                            !signatureImage ||
+                            ceoUploadSignatureLoading ||
+                            isLoading
                           }
                         />
                       </div>
                       {eSignature && (
                         <div style={{ margin: "auto 1rem" }}>
-                          <img alt="eSignature" height="35" src={eSignature} />
+                          <img
+                            alt="eSignature"
+                            height="35"
+                            src={signatureImage || eSignature}
+                          />
                         </div>
                       )}
                     </div>

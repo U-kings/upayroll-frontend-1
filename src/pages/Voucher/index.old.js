@@ -3,10 +3,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import ReactPaginate from "react-paginate";
 import { useDispatch, useSelector } from "react-redux";
 import { useHistory } from "react-router-dom";
-import {
-  accountantCreateBankscheduleAllFunc,
-  accountantCreateBankscheduleFunc,
-} from "../../actions/bankschedules";
+import { accountantCreateBankscheduleFunc } from "../../actions/bankschedules";
 import {
   accountantDeleteBulkVoucherFunc,
   accountantDeleteVoucherByIdFunc,
@@ -73,6 +70,11 @@ const Voucher = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
   } = useSelector((state) => state.auditorGetNotApprovedVouchers);
 
   const {
+    vouchers: ceoPreApprovedVouchers,
+    isLoading: ceoPreApprovedVouchersLoading,
+  } = useSelector((state) => state.ceoGetPreApprovedVouchers);
+
+  const {
     success: auditorPreApprovedVoucherSuccess,
     error: auditorPreApprovedVoucherError,
   } = useSelector((state) => state.auditorPreApproveVouchers);
@@ -82,11 +84,6 @@ const Voucher = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
     message: auditorPreApprovedVoucherAllMessage,
     error: auditorPreApprovedVoucherAllError,
   } = useSelector((state) => state.auditorPreApproveVouchersAll);
-
-  const {
-    vouchers: ceoPreApprovedVouchers,
-    isLoading: ceoPreApprovedVouchersLoading,
-  } = useSelector((state) => state.ceoGetPreApprovedVouchers);
 
   const { success: ceoApproveVoucherSuccess, error: ceoApproveVoucherError } =
     useSelector((state) => state.ceoApprovedPreApprovedVouchers);
@@ -150,7 +147,7 @@ const Voucher = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
   const [companyId] = useState(adminInfo?.user?.companyId || "");
   const [userRoleName] = useState(adminInfo?.user?.name || "");
   const [profileImg] = useState(adminInfo?.user?.photo || "");
-  const [approvalLevel] = useState(cookie.get("approvalLevel-Voucher"));
+  const [approvalLevel] = useState(cookie.get("approvalLevel"));
   const [paymentMethod, setPaymentMethod] = useState("");
   const [rejectComment, setRejectComment] = useState("");
   const [viewReject, setViewReject] = useState(false);
@@ -200,9 +197,8 @@ const Voucher = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
         ceoApproveVoucherSuccess ||
         ceoApproveVoucherAllSuccess ||
         auditorPreApprovedVoucherSuccess ||
-        auditorPreApprovedVoucherAllSuccess
-        // ||
-        // accountantCreateBankScheduleSuccess
+        auditorPreApprovedVoucherAllSuccess ||
+        accountantCreateBankScheduleSuccess
       ) {
         if (userRole === "Accountant") {
           dispatch(
@@ -214,8 +210,7 @@ const Voucher = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
             )
           );
           dispatch(adminGetAllBanksFunc());
-        }
-        if (approvalLevel === "Level-1") {
+        } else if (userRole === "Internal Auditor") {
           dispatch(
             auditorGetnotApprovedVouchersFunc(
               selectedOption10,
@@ -223,8 +218,7 @@ const Voucher = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
               100
             )
           );
-        }
-        if (approvalLevel === "Level-2") {
+        } else if (userRole === "CEO") {
           if (selectedOption === "Approved") {
             dispatch(
               accountGetApprovedVouchersFunc(
@@ -235,7 +229,6 @@ const Voucher = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
               )
             );
           }
-
           if (selectedOption === "Pre-Approved") {
             dispatch(
               ceoGetPreApprovedVouchersFunc(
@@ -251,7 +244,6 @@ const Voucher = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
     // }, [dispatch, history, adminLogin]);
   }, [
     history,
-    approvalLevel,
     adminInfo,
     userRole,
     pageNumber,
@@ -262,28 +254,14 @@ const Voucher = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
     ceoApproveVoucherAllSuccess,
     auditorPreApprovedVoucherSuccess,
     auditorPreApprovedVoucherAllSuccess,
-    // accountantCreateBankScheduleSuccess,
+    accountantCreateBankScheduleSuccess,
   ]);
-
-  const getApprovedVouchers = () => {
-    // if (userRole === "Accountant") {
-    //   dispatch(
-    //     accountGetApprovedVouchersFunc(
-    //       selectedOption10,
-    //       selectedOption,
-    //       pageNumber ? pageNumber + 1 : 1,
-    //       100
-    //     )
-    //   );
-    //   dispatch(adminGetAllBanksFunc());
-    // }
-  };
 
   useEffect(() => {
     if (userRole === "Accountant") {
       setDropdownData(dropdown1);
       // setVoucherType(voucherTypedropdown);
-    } else if (approvalLevel === "Level-2") {
+    } else if (userRole === "CEO") {
       setDropdownData(dropdown2);
     }
 
@@ -298,8 +276,7 @@ const Voucher = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
       userRole === "Accountant" &&
       selectedOption === "Approved"
     ) {
-      setBankVoucher(vouchers?.vouchersLevel);
-      // setBankVoucher(vouchers?.approved);
+      setBankVoucher(vouchers?.approved);
     }
     if (
       vouchers &&
@@ -308,37 +285,20 @@ const Voucher = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
     ) {
       setBankVoucher(vouchers?.rejectedBankVouchers);
     }
-    if (
-      auditorPreApprovedVouchers &&
-      (approvalLevel === "Level-1" || userRole === "Accountant")
-    ) {
-      setBankVoucher(
-        auditorPreApprovedVouchers?.vouchersLevel?.length > 0
-          ? auditorPreApprovedVouchers?.vouchersLevel
-          : vouchers?.vouchersLevel
-      );
-
-      // console.log(auditorPreApprovedVouchers);
-      // console.log(vouchers);
-      // setBankVoucher(auditorPreApprovedVouchers?.notapproved);
+    if (auditorPreApprovedVouchers && userRole === "Internal Auditor") {
+      setBankVoucher(auditorPreApprovedVouchers?.notapproved);
     }
-    if (
-      vouchers &&
-      approvalLevel === "Level-2" &&
-      selectedOption === "Approved"
-    ) {
-      setBankVoucher(vouchers?.vouchersLevel);
-      // setBankVoucher(vouchers?.approved);
+    if (vouchers && userRole === "CEO" && selectedOption === "Approved") {
+      setBankVoucher(vouchers?.approved);
       dispatch({ type: CEO_GET_PRE_APPROVED_VOUCHERS_RESET });
     }
 
     if (
       ceoPreApprovedVouchers &&
-      approvalLevel === "Level-2" &&
+      userRole === "CEO" &&
       selectedOption === "Pre-Approved"
     ) {
-      setBankVoucher(ceoPreApprovedVouchers?.vouchersLevel);
-      // setBankVoucher(ceoPreApprovedVouchers?.preapproved);
+      setBankVoucher(ceoPreApprovedVouchers?.preapproved);
       dispatch({ type: ACCOUNTANT_GET_APPROVED_VOUCHERS_RESET });
     }
 
@@ -347,7 +307,6 @@ const Voucher = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
     }
   }, [
     userRole,
-    approvalLevel,
     vouchers,
     dispatch,
     auditorPreApprovedVouchers,
@@ -470,13 +429,8 @@ const Voucher = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
 
   const pageCount = Math.ceil(
     Number(
-      (
-        (vouchers?.vouchersLevel?.length > 0 && vouchers) ||
-        (auditorPreApprovedVouchers?.vouchersLevel?.length > 0 &&
-          auditorPreApprovedVouchers) ||
-        (ceoPreApprovedVouchers?.vouchersLevel?.length > 0 &&
-          ceoPreApprovedVouchers)
-      )?.resultLength
+      (vouchers || auditorPreApprovedVouchers || ceoPreApprovedVouchers)
+        ?.resultLength
     ) / usersPerpage
   );
   // const pageCount = Math.ceil(paySlip.length / usersPerpage);
@@ -488,45 +442,28 @@ const Voucher = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
     if (pageNumber > 0) {
       let usersPerpageNum;
       if (
-        (
-          (vouchers?.vouchersLevel?.length > 0 && vouchers) ||
-          (auditorPreApprovedVouchers?.vouchersLevel?.length > 0 &&
-            auditorPreApprovedVouchers) ||
-          (ceoPreApprovedVouchers?.vouchersLevel?.length > 0 &&
-            ceoPreApprovedVouchers)
-        )?.resultLength /
+        (vouchers || auditorPreApprovedVouchers || ceoPreApprovedVouchers)
+          ?.resultLength /
           (pageNumber + 1) >
         100
       ) {
         usersPerpageNum = (pageNumber + 1) * 100;
       } else {
         usersPerpageNum = (
-          (vouchers?.vouchersLevel?.length > 0 && vouchers) ||
-          (auditorPreApprovedVouchers?.vouchersLevel?.length > 0 &&
-            auditorPreApprovedVouchers) ||
-          (ceoPreApprovedVouchers?.vouchersLevel?.length > 0 &&
-            ceoPreApprovedVouchers)
+          vouchers ||
+          auditorPreApprovedVouchers ||
+          ceoPreApprovedVouchers
         )?.resultLength;
       }
       setUsersPerpageCount(usersPerpageNum);
     } else {
       if (
-        (
-          (vouchers?.vouchersLevel?.length > 0 && vouchers) ||
-          (auditorPreApprovedVouchers?.vouchersLevel?.length > 0 &&
-            auditorPreApprovedVouchers) ||
-          (ceoPreApprovedVouchers?.vouchersLevel?.length > 0 &&
-            ceoPreApprovedVouchers)
-        )?.resultLength < 100
+        (vouchers || auditorPreApprovedVouchers || ceoPreApprovedVouchers)
+          ?.resultLength < 100
       ) {
         setUsersPerpageCount(
-          (
-            (vouchers?.vouchersLevel?.length > 0 && vouchers) ||
-            (auditorPreApprovedVouchers?.vouchersLevel?.length > 0 &&
-              auditorPreApprovedVouchers) ||
-            (ceoPreApprovedVouchers?.vouchersLevel?.length > 0 &&
-              ceoPreApprovedVouchers)
-          )?.resultLength
+          (vouchers || auditorPreApprovedVouchers || ceoPreApprovedVouchers)
+            ?.resultLength
         );
       } else {
         setUsersPerpageCount(100);
@@ -570,8 +507,10 @@ const Voucher = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
   //auditor preapprove voucher by ids
   const auditorPreApproveVoucherByIds = () => {
     const voucherIds = arrayIds.map((voucher) => voucher?.id);
-
-    if (voucherIds?.length === 100) {
+    if (
+      (vouchers || auditorPreApprovedVouchers || ceoPreApprovedVouchers)
+        ?.resultLength > 100
+    ) {
       dispatch(auditorPreApprovedVouchersAllFunc(selectedOption10));
     } else {
       dispatch(auditorPreApprovedVouchersFunc(voucherIds, selectedOption10));
@@ -581,7 +520,10 @@ const Voucher = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
   //ceo approve voucher by ids
   const ceoApprovedVoucherByIds = () => {
     const voucherIds = arrayIds.map((voucher) => voucher.id);
-    if (voucherIds?.length === 100) {
+    if (
+      (vouchers || auditorPreApprovedVouchers || ceoPreApprovedVouchers)
+        ?.resultLength > 100
+    ) {
       dispatch(ceoApprovedVouchersAllFunc(selectedOption10));
     } else {
       dispatch(ceoApprovedVouchersFunc(voucherIds, selectedOption10));
@@ -589,58 +531,28 @@ const Voucher = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
   };
 
   const onCreateBankScheduleFromApprovedVouchers = () => {
-    const voucherIds = arrayIds.map((voucher) => voucher.id);
-    // const vouchers = searchResult?.map((voucher) => {
-    //   return {
-    //     month: voucher?.month,
-    //     id: voucher?.id,
-    //   };
-    // });
-    const vouchers = voucherIds?.map((voucherId) => {
-      const selectedVouchers = searchResult?.filter((voucher) => {
-        return voucher.id === voucherId;
-      });
-
-      console.log(selectedVouchers);
+    const vouchers = searchResult?.map((voucher) => {
       return {
-        month: selectedVouchers[0]?.month,
-        id: selectedVouchers[0]?.id,
+        month: voucher?.month,
+        id: voucher?.id,
       };
     });
     const amountArray = searchResult?.map((voucher) => voucher?.amount);
     const subTotal = amountArray?.reduce((prev, next) => prev + next, 0);
-
-    if (voucherIds?.length === 100) {
-      dispatch(
-        accountantCreateBankscheduleAllFunc(
-          // vouchers,
-          selectedOption6?.name,
-          "Netpay Only",
-          // selectedOption7,
-          selectedOption10,
-          {
-            // subTotal,
-            paidBy: adminInfo?.user?.name,
-            paymentMethod,
-          }
-        )
-      );
-    } else {
-      dispatch(
-        accountantCreateBankscheduleFunc(
-          vouchers,
-          selectedOption6?.name,
-          "Netpay Only",
-          // selectedOption7,
-          selectedOption10,
-          {
-            subTotal,
-            paidBy: adminInfo?.user?.name,
-            paymentMethod,
-          }
-        )
-      );
-    }
+    dispatch(
+      accountantCreateBankscheduleFunc(
+        vouchers,
+        selectedOption6?.name,
+        "Netpay Only",
+        // selectedOption7,
+        selectedOption10,
+        {
+          subTotal,
+          paidBy: adminInfo?.user?.name,
+          paymentMethod,
+        }
+      )
+    );
   };
 
   const auditorOrCeoRejectVoucherBulk = () => {
@@ -653,27 +565,25 @@ const Voucher = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
       };
     });
 
-    if (approvalLevel === "Level-1") {
+    if (userRole === "Internal Auditor") {
       dispatch(
         auditorRejectNotApprovedVouchersFunc(
           voucherWithComments,
           selectedOption10,
           companyId,
-          userRole,
-          approvalLevel
+          userRole
         )
       );
     }
 
-    if (approvalLevel === "Level-2") {
+    if (userRole === "CEO") {
       // dispatch ceo action
       dispatch(
         ceoRejectPreApprovedVouchersFunc(
           voucherWithComments,
           selectedOption10,
           companyId,
-          userRole,
-          approvalLevel
+          userRole
         )
       );
     }
@@ -702,7 +612,7 @@ const Voucher = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
     );
   };
 
-  // confirm Modal popup to create bank schudule
+  // confirm Modal popup
   const onOpenConfirm = () => {
     if (isOpen4 === false || bankScheduleBulk === false) {
       setIsOpen4(true);
@@ -830,19 +740,16 @@ const Voucher = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
 
   const noBankVoucherDisplay = bankVoucher?.length === 0 && (
     <p className="no__data">
-      {/* {approvalLevel === "Level-1" && "No generated bank vouchers to Display "} */}
-      {approvalLevel === "Level-2" &&
+      {userRole === "Internal Auditor" &&
+        "No generated bank vouchers to Display "}
+      {userRole === "CEO" &&
         (selectedOption === "Approved"
-          ? "No approved bank vouchers to display"
-          : "No pre approved bank vouchers to display")}
-      {userRole === "Accountant"
-        ? selectedOption === "Approved"
-          ? // ? "No approved bank vouchers to Display"
-            "No data to display"
-          : "No rejected bank vouchers to display"
-        : approvalLevel === "Level-1"
-        ? "No data to display"
-        : ""}
+          ? "No approved bank vouchers to Display"
+          : "No pre approved bank vouchers to Display")}
+      {userRole === "Accountant" &&
+        (selectedOption === "Approved"
+          ? "No approved bank vouchers to Display"
+          : "No rejected bank vouchers to Display")}
     </p>
   );
 
@@ -896,23 +803,6 @@ const Voucher = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
     return isTrue;
   };
 
-  // const isApproved = () => {
-  //   const test = searchResult.some((el) => {
-  //     return el?.status !== 3 ? true : false;
-  //   });
-
-  //   console.log(test);
-  //   return test;
-  // };
-
-  // console.log(isApproved());
-
-  // console.log(
-  //   accountantCreateBankScheduleSuccess,
-  //   accountantCreateBankScheduleError,
-  //   accountantCreateBankScheduleLoading
-  // );
-
   const vch = "active";
 
   return (
@@ -931,13 +821,9 @@ const Voucher = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
           toggle={toggle}
         />
       )}
-      {(auditorPreApprovedVoucherAllSuccess ||
-        auditorPreApprovedVoucherSuccess) && (
+      {auditorPreApprovedVoucherAllSuccess && (
         <Successful
-          isOpen7={
-            auditorPreApprovedVoucherAllSuccess ||
-            auditorPreApprovedVoucherSuccess
-          }
+          isOpen7={auditorPreApprovedVoucherAllSuccess}
           popup7={popup8}
           message={
             auditorPreApprovedVoucherAllMessage ||
@@ -1084,7 +970,7 @@ const Voucher = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
               )}
               <EmpContainer>
                 <div className="row">
-                  {(userRole === "CEO" || approvalLevel === "Level-2") && (
+                  {userRole === "CEO" && (
                     <DropdownList
                       // list={true}
                       isOpen={isOpen2}
@@ -1100,9 +986,7 @@ const Voucher = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
                   )}
                   {(userRole === "Accountant" ||
                     userRole === "CEO" ||
-                    userRole === "Internal Auditor" ||
-                    approvalLevel === "Level-1" ||
-                    approvalLevel === "Level-2") && (
+                    userRole === "Internal Auditor") && (
                     <DropdownList
                       // list={true}
                       isOpen={isOpen8}
@@ -1116,56 +1000,46 @@ const Voucher = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
                       onOptionClicked={onOptionClicked10}
                     />
                   )}
-                  {userRole === "Accountant" &&
-                    vouchers?.vouchersLevel?.length > 0 && (
-                      <>
-                        <input
-                          type="button"
-                          className={
-                            bankVoucher?.length > 0 &&
-                            bankVoucher?.every(
-                              (voucher) =>
-                                voucher?.statusLevel === "approved" &&
-                                voucher?.status === 3 &&
-                                !voucher?.processDoneAsSchedule
-                            ) &&
-                            selectedOption6?.name &&
-                            // selectedOption7 &&
+                  {userRole === "Accountant" && (
+                    <>
+                      <input
+                        type="button"
+                        className={
+                          bankVoucher?.length > 0 &&
+                          bankVoucher?.every(
+                            (voucher) =>
+                              voucher?.statusLevel === "approved" &&
+                              voucher?.status === 3 &&
+                              !voucher?.processDoneAsSchedule
+                          ) &&
+                          selectedOption6 &&
+                          // selectedOption7 &&
 
-                            disableButton()
-                              ? "general__btn margin__left2 mobile__margin__top save__btn"
-                              : "general__btn margin__left2 mobile__margin__top disabled__btn"
-                          }
-                          value="Create Bank Schedule"
-                          disabled={
-                            !bankVoucher?.length > 0 ||
+                          disableButton()
+                            ? "general__btn margin__left2 mobile__margin__top save__btn"
+                            : "general__btn margin__left2 mobile__margin__top disabled__btn"
+                        }
+                        value="Create Bank Schedule"
+                        disabled={
+                          (bankVoucher?.length === 0 ||
+                            !selectedOption6 ||
+                            // !selectedOption7 ||
                             !bankVoucher?.every(
                               (voucher) =>
                                 voucher?.statusLevel === "approved" &&
                                 voucher?.status === 3 &&
                                 !voucher?.processDoneAsSchedule
-                            ) ||
-                            !selectedOption6?.name ||
-                            !disableButton()
-                            // ((bankVoucher?.length > 0 ||
-                            // !selectedOption6 )||
-                            // // !selectedOption7 ||
-                            // bankVoucher?.every(
-                            //   (voucher) =>
-                            //     voucher?.statusLevel === "approved" &&
-                            //     voucher?.status === 3 &&
-                            //     !voucher?.processDoneAsSchedule
-                            // ) )&&
-                            // !disableButton()
-                          }
-                          onClick={() => {
-                            setIsOpen5(true);
-                            popup3(true);
-                            // setDelBulkPayslip(true);
-                          }}
-                        />
-                      </>
-                    )}
+                            )) &&
+                          !disableButton()
+                        }
+                        onClick={() => {
+                          setIsOpen5(true);
+                          popup3(true);
+                          // setDelBulkPayslip(true);
+                        }}
+                      />
+                    </>
+                  )}
                   {userRole === "Accountant" &&
                     selectedOption === "Rejected" && (
                       <>
@@ -1187,10 +1061,7 @@ const Voucher = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
                         />
                       </>
                     )}
-                  {(userRole === "Internal Auditor" ||
-                    userRole === "CEO" ||
-                    approvalLevel === "Level-1" ||
-                    approvalLevel === "Level-2") && (
+                  {(userRole === "Internal Auditor" || userRole === "CEO") && (
                     <>
                       <input
                         // style={{
@@ -1204,22 +1075,12 @@ const Voucher = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
                             ? "general__btn green__btn margin__left2"
                             : "general__btn disabled__btn margin__left2"
                         }
-                        value={
-                          userRole === "CEO" || approvalLevel === "Level-2"
-                            ? "Approve"
-                            : "Pre-Approve"
-                        }
+                        value={userRole === "CEO" ? "Approve" : "Pre-Approve"}
                         onClick={() => {
-                          if (
-                            userRole === "Internal Auditor" ||
-                            approvalLevel === "Level-1"
-                          ) {
+                          if (userRole === "Internal Auditor") {
                             setIsOpen4(true);
                             setPreApprovedVoucherBulk(true);
-                          } else if (
-                            userRole === "CEO" ||
-                            approvalLevel === "Level-2"
-                          ) {
+                          } else if (userRole === "CEO") {
                             setIsOpen4(true);
                             setApproveVoucherBulk(true);
                           }
@@ -1292,16 +1153,6 @@ const Voucher = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
                     </>
                   )}
                 </div>
-                {/* {userRole === "Accountant" && (
-                  <div>
-                    <input
-                      className="general__btn save__btn"
-                      type="button"
-                      onClick={getApprovedVouchers}
-                      value="Get Approved"
-                    />
-                  </div>
-                )} */}
                 <div className="search__container mobile__margin__top">
                   <SearchBar term={searchTerm} searchKeyWord={searchHandler} />
                   <span className="icons search__icon">
@@ -1502,37 +1353,21 @@ const Voucher = ({ toggle, toggleMenu, mobileToggle, toggleMobileMenu }) => {
                   <p style={{ fontSize: "1.3rem", fontWeight: "500" }}>
                     {`Showing : ${
                       (
-                        (vouchers?.vouchersLevel?.length > 0 && vouchers) ||
-                        (auditorPreApprovedVouchers?.vouchersLevel?.length >
-                          0 &&
-                          auditorPreApprovedVouchers) ||
-                        (ceoPreApprovedVouchers?.vouchersLevel?.length > 0 &&
-                          ceoPreApprovedVouchers)
-                      )?.resultLength
-                        ? (
-                            (vouchers?.vouchersLevel?.length > 0 && vouchers) ||
-                            (auditorPreApprovedVouchers?.vouchersLevel?.length >
-                              0 &&
-                              auditorPreApprovedVouchers) ||
-                            (ceoPreApprovedVouchers?.vouchersLevel?.length >
-                              0 &&
-                              ceoPreApprovedVouchers)
-                          )?.resultLength < 1
-                          ? 0
-                          : `${
-                              pageNumber > 0 ? pageNumber * 100 + 1 : 1
-                            } - ${usersPerpageCount}`
-                        : 0
+                        vouchers ||
+                        auditorPreApprovedVouchers ||
+                        ceoPreApprovedVouchers
+                      )?.resultLength < 1
+                        ? 0
+                        : `${
+                            pageNumber > 0 ? pageNumber * 100 + 1 : 1
+                          } - ${usersPerpageCount}`
                     }
                     of ${
                       (
-                        (vouchers?.vouchersLevel?.length > 0 && vouchers) ||
-                        (auditorPreApprovedVouchers?.vouchersLevel?.length >
-                          0 &&
-                          auditorPreApprovedVouchers) ||
-                        (ceoPreApprovedVouchers?.vouchersLevel?.length > 0 &&
-                          ceoPreApprovedVouchers)
-                      )?.resultLength || 0
+                        vouchers ||
+                        auditorPreApprovedVouchers ||
+                        ceoPreApprovedVouchers
+                      )?.resultLength
                     }`}
                   </p>
                 </div>

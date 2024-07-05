@@ -37,7 +37,7 @@ export const ceoGetNotApprovedBankSchedulesFunc =
     try {
       dispatch({ type: CEO_GET_NOT_APPROVED_BANKSCHEDULES_REQUEST });
       const { data } = await axios.get(
-        `${urlConfig.proxyUrl.PROXYURL}api/bankschedule/notapproved?month=${month}&page=${page}&perPage=${perPage}`,
+        `${urlConfig.url.PROXYURL}api/bankschedule/notapproved?month=${month}&page=${page}&perPage=${perPage}`,
         config
       );
       dispatch({
@@ -72,7 +72,7 @@ export const ceoApproveBankSchedulesFunc =
         notApprovedBankSchedulesArr: notApprovedBankSchedules,
       });
       await axios.patch(
-        `${urlConfig.proxyUrl.PROXYURL}api/bankschedule/approve`,
+        `${urlConfig.url.PROXYURL}api/bankschedule/approve`,
         body,
         config
       );
@@ -102,7 +102,7 @@ export const accountantGetApprovedScheduleVouchersFunc =
     try {
       dispatch({ type: ACCOUNTANT_GET_APPROVED_BANKSCHEDULE_VOUCHERS_REQUEST });
       const { data } = await axios.get(
-        `${urlConfig.proxyUrl.PROXYURL}api/vouchers/approved-asschedule`,
+        `${urlConfig.url.PROXYURL}api/vouchers/approved-asschedule`,
         config
       );
       dispatch({
@@ -137,7 +137,41 @@ export const accountantCreateBankscheduleFunc =
         scheduleData: scheduleData,
       });
       await axios.post(
-        `${urlConfig.proxyUrl.PROXYURL}api/bankschedule?bankName=${bankName}&paymentType=${paymentType}`,
+        `${urlConfig.url.PROXYURL}api/bankschedule?bankName=${bankName}&paymentType=${paymentType}`,
+        body,
+        config
+      );
+      dispatch({ type: ACCOUNTANT_CREATE_BANKSCHEDULE_SUCCESS });
+      dispatch(accountGetApprovedVouchersFunc(month, "Approved"));
+    } catch (error) {
+      dispatch({
+        type: ACCOUNTANT_CREATE_BANKSCHEDULE_FAIL,
+        payload:
+          error.response && error.response.data.detail
+            ? error.response.data.detail
+            : error.message,
+      });
+    }
+  };
+
+  export const accountantCreateBankscheduleAllFunc =
+  ( bankName, paymentType, month, scheduleData) =>
+  async (dispatch) => {
+    const token = cookie.get("token");
+    const config = {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+    };
+    try {
+      dispatch({ type: ACCOUNTANT_CREATE_BANKSCHEDULE_REQUEST });
+      const body = JSON.stringify({
+        // approvedVouchers: approvedVoucherArrs,
+        scheduleData: scheduleData,
+      });
+      await axios.post(
+        `${urlConfig.url.PROXYURL}api/bankschedule/all?month=${month}&bankName=${bankName}&paymentType=${paymentType}`,
         body,
         config
       );
@@ -166,7 +200,7 @@ export const accountantGetMonthlyBankschedulesFunc =
     try {
       dispatch({ type: ACCOUNTANT_GET_MONTHLY_BANKSCHEDULE_REQUEST });
       const { data } = await axios.get(
-        `${urlConfig.proxyUrl.PROXYURL}api/bankschedule${
+        `${urlConfig.url.PROXYURL}api/bankschedule${
           bankName
             ? `?bankName=${bankName}&page=${page}&perPage=${perPage}`
             : `?page=${page}&perPage=${perPage}`
@@ -199,7 +233,7 @@ export const accountantDeleteBankscheduleByIdFunc =
     };
     try {
       dispatch({ type: ACCOUNTANT_DELETE_BANKSCHEDULE_BY_ID_REQUEST });
-      await axios.delete(`${urlConfig.proxyUrl.PROXYURL}api/bankschedule/${id}`, config);
+      await axios.delete(`${urlConfig.url.PROXYURL}api/bankschedule/${id}`, config);
       dispatch({ type: ACCOUNTANT_DELETE_BANKSCHEDULE_BY_ID_SUCCESS });
       dispatch(accountantGetMonthlyBankschedulesFunc(bankName));
     } catch (error) {

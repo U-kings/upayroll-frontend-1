@@ -42,7 +42,7 @@ const SalaryLevel = ({ salaryLevels, staffGrade , toggle}) => {
 
   const toggling = () => setIsOpen(!isOpen);
 
-  const onOptionClicked = (salarygrades) => () => {
+  const onOptionClicked = (salarygrades) => {
     setSelectedOption(salarygrades);
     setIsOpen(false);
   };

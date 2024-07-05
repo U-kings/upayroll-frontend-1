@@ -29,7 +29,7 @@ export const adminGetAllAllowance = () => async (dispatch) => {
 
   try {
     dispatch({ type: ADMIN_GET_ALL_ALLOWANCES_REQUEST });
-    const { data } = await axios.get(`${urlConfig.proxyUrl.PROXYURL}api/allowances`, config);
+    const { data } = await axios.get(`${urlConfig.url.PROXYURL}api/allowances`, config);
     dispatch({ type: ADMIN_GET_ALL_ALLOWANCES_SUCCESS, payload: data });
   } catch (error) {
     dispatch({
@@ -56,7 +56,7 @@ export const adminCreateAllowance = (formdata) => async (dispatch) => {
       type: ADMIN_CREATE_ALLOWANCE_REQUEST,
     });
     const body = JSON.stringify(formdata);
-    await axios.post(`${urlConfig.proxyUrl.PROXYURL}api/allowances`, body, config);
+    await axios.post(`${urlConfig.url.PROXYURL}api/allowances`, body, config);
     dispatch({
       type: ADMIN_CREATE_ALLOWANCE_SUCCESS,
     });
@@ -87,7 +87,7 @@ export const adminUpdateAllowanceById =
       });
       const body = JSON.stringify(formData);
       await axios.patch(
-        `${urlConfig.proxyUrl.PROXYURL}api/allowances/${allowanceId}`,
+        `${urlConfig.url.PROXYURL}api/allowances/${allowanceId}`,
         body,
         config
       );
@@ -117,7 +117,7 @@ export const adminDeleteAllowanceById = (allowanceId) => async (dispatch) => {
     dispatch({
       type: ADMIN_DELETE_ALLOWANCE_BY_ID_REQUEST,
     });
-    await axios.delete(`${urlConfig.proxyUrl.PROXYURL}api/allowances/${allowanceId}`, config);
+    await axios.delete(`${urlConfig.url.PROXYURL}api/allowances/${allowanceId}`, config);
     dispatch({
       type: ADMIN_DELETE_ALLOWANCE_BY_ID_SUCCESS,
     });

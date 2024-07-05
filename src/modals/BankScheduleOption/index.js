@@ -15,7 +15,7 @@ const BankScheduleOption = ({
 
   const toggling = () => setIsOpen(!isOpen);
 
-  const onOptionClicked = (value) => () => {
+  const onOptionClicked = (value) => {
     setSelectOption(value);
     setIsOpen(false);
   };
@@ -23,6 +23,7 @@ const BankScheduleOption = ({
   useEffect(() => {
     setPaymentMethod(selectedOption);
   }, [selectedOption, setPaymentMethod]);
+  
   return (
     <>
       <ModalBackground isOpen3={isopen} onClick={popup} />

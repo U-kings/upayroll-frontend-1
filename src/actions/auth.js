@@ -51,7 +51,10 @@ import {
   CHECK_EMPLOYEE_LOGIN_STATUS_SUCCESS,
   CHECK_EMPLOYEE_LOGIN_STATUS_FAIL,
 } from "../types/auth";
-import { urlConfig } from "../util/config/config";
+import { config as Config, urlConfig } from "../util/config/config";
+
+console.log(Config.url.PROXYURL);
+console.log(Config.url.BASENAME);
 
 export const adminLoginStatus = () => async (dispatch) => {
   const token = cookie.get("token");
@@ -64,9 +67,10 @@ export const adminLoginStatus = () => async (dispatch) => {
   try {
     dispatch({ type: CHECK_ADMIN_LOGIN_STATUS_REQUEST });
     const { data } = await axios.get(
-      `${urlConfig.proxyUrl.PROXYURL}api/users/admin-status`,
+      `${urlConfig.url.PROXYURL}api/users/admin-status`,
       config
     );
+    
     dispatch({
       type: CHECK_ADMIN_LOGIN_STATUS_SUCCESS,
       payload: data,
@@ -75,6 +79,8 @@ export const adminLoginStatus = () => async (dispatch) => {
     // cookie.set("companyLogo", data?.user?.company?.logo);
     cookie.set("adminStatusData", JSON.stringify(data));
     cookie.set("requiresPasswordChange", data?.user?.requiresPasswordChange);
+
+    // getUserApprovalLevel(data.user.userRole);
   } catch (error) {
     dispatch({
       type: CHECK_ADMIN_LOGIN_STATUS_FAIL,
@@ -99,7 +105,7 @@ export const employeeLoginStatus = () => async (dispatch) => {
   try {
     dispatch({ type: CHECK_EMPLOYEE_LOGIN_STATUS_REQUEST });
     const { data } = await axios.get(
-      `${urlConfig.proxyUrl.PROXYURL}api/employees/loginuser/details`,
+      `${urlConfig.url.PROXYURL}api/employees/loginuser/details`,
       config
     );
     dispatch({
@@ -123,6 +129,63 @@ export const employeeLoginStatus = () => async (dispatch) => {
   }
 };
 
+export const getUserApprovalLevel = async (userRole, page) => {
+  const token = cookie.get("token");
+  // const companyId = cookie.get("companyId");
+  // console.log(page);
+  const config = {
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+  };
+
+  try {
+    const { data } = await axios.get(
+      `${urlConfig.url.PROXYURL}api/approval-levels`,
+      config
+    );
+    // console.log(data);
+    if (data?.status === "success") {
+      data?.approvalLevelRoles
+        ?.filter((el) => {
+          // return console.log(el);
+          // return console.log(page === el?.approvalType);
+          // return console.log(el.approvalTypeLevelRole)
+          // return console.log(el.approvalType)
+          return (
+            // page === el?.approvalType && el?.approvalTypeLevelRole === userRole
+            el?.approvalTypeLevelRole === userRole
+          );
+        })
+        ?.map((el) =>
+          cookie.set(`approvalLevel-${el?.approvalType}`, el.approvalTypeLevel)
+        );
+
+      const totalApprovalLevel = data?.approvalLevelRoles?.length;
+
+      if (totalApprovalLevel === 4) {
+        cookie.set("totalApprovalLevel", 2);
+      } else if (totalApprovalLevel === 5) {
+        cookie.set("totalApprovalLevel", 3);
+      }
+    }
+  } catch (error) {
+    console.log(
+      error?.response &&
+        (error?.response?.data?.detail || error?.response?.data?.errors)
+        ? error?.response?.data?.detail ||
+            error?.response?.data?.errors?.map((el) => el?.msg)?.join(" ")
+        : error?.message
+    );
+    // error?.response &&
+    //     (error?.response?.data?.detail || error?.response?.data?.errors)
+    //       ? error?.response?.data?.detail ||
+    //         error?.response?.data?.errors?.map((el) => el?.msg)?.join(" ")
+    //       : error?.message
+  }
+};
+
 export const adminLoginFunc = (formData) => async (dispatch) => {
   const config = {
     headers: {
@@ -134,8 +197,9 @@ export const adminLoginFunc = (formData) => async (dispatch) => {
       type: LOGIN_ADMIN_USER_REQUEST,
     });
     const body = JSON.stringify(formData);
+    console.log(urlConfig.url.PROXYURL);
     const { data } = await axios.post(
-      `${urlConfig.proxyUrl.PROXYURL}api/users/login`,
+      `${urlConfig.url.PROXYURL}api/users/login`,
       body,
       config
     );
@@ -143,6 +207,8 @@ export const adminLoginFunc = (formData) => async (dispatch) => {
       type: LOGIN_ADMIN_USER_SUCCESS,
     });
     cookie.set("token", data?.token);
+    console.log(data);
+    // cookie.set("companyName", data);
     sessionStorage.setItem("item_key", data?.token);
     dispatch(adminLoginStatus());
     dispatch(employeeLoginStatus());
@@ -171,7 +237,7 @@ export const confirmEmailFunc = (resetToken) => async (dispatch) => {
     });
     const body = JSON.stringify({});
     await axios.patch(
-      `${urlConfig.proxyUrl.PROXYURL}api/users/confirm-email/${resetToken}`,
+      `${urlConfig.url.PROXYURL}api/users/confirm-email/${resetToken}`,
       body,
       config
     );
@@ -194,7 +260,8 @@ export const confirmEmailFunc = (resetToken) => async (dispatch) => {
 export const registerFunc = (formData) => async (dispatch) => {
   const config = {
     headers: {
-      "Content-Type": "multipart/form-data",
+      "Content-Type": "application/json",
+      // "Content-Type": "multipart/form-data",
     },
   };
   try {
@@ -202,11 +269,12 @@ export const registerFunc = (formData) => async (dispatch) => {
       type: REGISTER_COMPANY_REQUEST,
     });
     const body = formData;
-    await axios.post(`${urlConfig.proxyUrl.PROXYURL}api/company`, body, config);
+    await axios.post(`${urlConfig.url.PROXYURL}api/company`, body, config);
     dispatch({
       type: REGISTER_COMPANY_SUCCESS,
     });
   } catch (error) {
+    console.log(error);
     dispatch({
       type: REGISTER_COMPANY_FAIL,
       payload:
@@ -234,7 +302,7 @@ export const registerCompanyAdminFunc = (formData) => async (dispatch) => {
     });
     const body = JSON.stringify(formData);
     await axios.post(
-      `${urlConfig.proxyUrl.PROXYURL}api/users/register/admin/${companyId}`,
+      `${urlConfig.url.PROXYURL}api/users/register/admin/${companyId}`,
       body,
       config
     );
@@ -269,7 +337,7 @@ export const getNotCreatedRolesFunc = () => async (dispatch) => {
     });
     const body = JSON.stringify({});
     const { data } = await axios.get(
-      `${urlConfig.proxyUrl.PROXYURL}api/users/not-createdroles/company`,
+      `${urlConfig.url.PROXYURL}api/users/not-createdroles/company`,
       body,
       config
     );
@@ -301,7 +369,7 @@ export const adminLoggedinDetails = () => async (dispatch) => {
   try {
     dispatch({ type: ADMIN_LOGGEDIN_DETAILS_REQUEST });
     const { data } = await axios.get(
-      `${urlConfig.proxyUrl.PROXYURL}api/users/admin-details`,
+      `${urlConfig.url.PROXYURL}api/users/admin-details`,
       config
     );
     dispatch({ type: ADMIN_LOGGEDIN_DETAILS_SUCCESS, payload: data });
@@ -322,7 +390,8 @@ export const ceoUploadSignatureFunc = (formData) => async (dispatch) => {
   const token = cookie.get("token");
   const config = {
     headers: {
-      "Content-Type": "multipart/form-data",
+      "Content-Type": "application/json",
+      // "Content-Type": "multipart/form-data",
       Authorization: `Bearer ${token}`,
     },
   };
@@ -332,7 +401,7 @@ export const ceoUploadSignatureFunc = (formData) => async (dispatch) => {
     const body = formData;
 
     await axios.patch(
-      `${urlConfig.proxyUrl.PROXYURL}api/users/signature-upload`,
+      `${urlConfig.url.PROXYURL}api/users/signature-upload`,
       body,
       config
     );
@@ -355,7 +424,8 @@ export const adminUpdateDetails = (formData) => async (dispatch, getState) => {
   const token = cookie.get("token");
   const config = {
     headers: {
-      "Content-Type": "multipart/form-data",
+      // "Content-Type": "multipart/form-data",
+      "Content-Type": "application/json",
       Authorization: `Bearer ${token}`,
     },
   };
@@ -364,7 +434,7 @@ export const adminUpdateDetails = (formData) => async (dispatch, getState) => {
     dispatch({ type: ADMIN_UPDATE_LOGGEDIN_DETAILS_REQUEST });
     const body = formData;
     await axios.patch(
-      `${urlConfig.proxyUrl.PROXYURL}api/users/update-admin`,
+      `${urlConfig.url.PROXYURL}api/users/update-admin`,
       body,
       config
     );
@@ -395,7 +465,7 @@ export const adminForgotPasswordFunc = (adminEmail) => async (dispatch) => {
     dispatch({ type: ADMIN_FORGOT_PASSWORD_REQUEST });
     const body = JSON.stringify(adminEmail);
     await axios.post(
-      `${urlConfig.proxyUrl.PROXYURL}api/users/forgotPassword`,
+      `${urlConfig.url.PROXYURL}api/users/forgotPassword`,
       body,
       config
     );
@@ -424,7 +494,7 @@ export const adminResetPasswordFunc = (token, formData) => async (dispatch) => {
     dispatch({ type: ADMIN_RESET_PASSWORD_REQUEST });
     const body = JSON.stringify(formData);
     await axios.patch(
-      `${urlConfig.proxyUrl.PROXYURL}api/users/resetPassword/${token}`,
+      `${urlConfig.url.PROXYURL}api/users/resetPassword/${token}`,
       body,
       config
     );
@@ -456,7 +526,7 @@ export const adminSetPasswordFunc = (userId) => async (dispatch) => {
     dispatch({ type: ADMIN_SET_PASSWORD_REQUEST });
     const body = JSON.stringify({});
     const { data } = await axios.patch(
-      `${urlConfig.proxyUrl.PROXYURL}api/users/setPassword/user/${userId}`,
+      `${urlConfig.url.PROXYURL}api/users/setPassword/user/${userId}`,
       body,
       config
     );
@@ -491,7 +561,7 @@ export const verifyAccountNumberFunc = (formData) => async (dispatch) => {
     dispatch({ type: VERIFY_ACCOUNT_NUMBER_REQUEST });
     const body = JSON.stringify(formData);
     const { data } = await axios.post(
-      `${urlConfig.proxyUrl.PROXYURL}api/paystack/verify-account`,
+      `${urlConfig.url.PROXYURL}api/paystack/verify-account`,
       body,
       config
     );
@@ -526,7 +596,7 @@ export const verifyBulkAcctountNumberFunc = (formData) => async (dispatch) => {
     dispatch({ type: VERIFY_BULK_ACCOUNT_NUMBER_REQUEST });
     const body = JSON.stringify({ accounts: formData });
     const { data } = await axios.post(
-      `${urlConfig.proxyUrl.PROXYURL}api/paystack/verify-account/bulk`,
+      `${urlConfig.url.PROXYURL}api/paystack/verify-account/bulk`,
       body,
       config
     );
@@ -576,12 +646,14 @@ export const logoutAdmin =
   async (dispatch) => {
     const checkSession = sessionStorage.getItem("item_key");
     if (!status) {
-      await axios.post(`${urlConfig.proxyUrl.PROXYURL}api/users/logout`);
+      await axios.post(`${urlConfig.url.PROXYURL}api/users/logout`);
     }
 
     dispatch({
       type: LOGOUT_ADMIN_USER,
     });
+
+    console.log(!checkSession);
 
     if (!checkSession) {
     } else {
@@ -595,6 +667,9 @@ export const logoutAdmin =
       cookie.remove("ia");
       cookie.remove("ceo");
       cookie.remove("acct");
+      cookie.remove("approvalLevel-Payslip");
+      cookie.remove("approvalLevel-Voucher");
+      cookie.remove("totalApprovalLevel");
       sessionStorage.removeItem("item_key");
     }
 

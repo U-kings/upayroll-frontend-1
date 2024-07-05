@@ -32,6 +32,7 @@ const Header = ({
   // const [companyLogo] = useState(cookie.get("companyLogo"));
 
   const [companyLogo] = useState(adminInfo?.user?.company?.logo || "");
+  const [approvalLevel] = useState(cookie.get("approvalLevel"));
   // console.log(companyLogo);
 
   //   toggle func for modals
@@ -148,13 +149,16 @@ const Header = ({
                       value="Profile Settings"
                     />
                   </Link>
-                  {(userRole === "HR" || userRole === "CEO") &&
+                  {(userRole === "HR" ||
+                    userRole === "CEO" ||
+                    approvalLevel === "Level-2") &&
                     !buttonDisabled && (
                       <h3
                         style={{
                           padding: ".5rem",
                           marginBottom: "1rem",
                           fontSize: "2.5rem",
+                          textWrap: "nowrap",
                         }}
                         className="row save__btn"
                       >
@@ -168,11 +172,37 @@ const Header = ({
                           }}
                           // className="full__width save__btn"
                           to="create-user-roles"
+                          // to="create-user-roles"
                         >
                           Create User Roles
                         </Link>
                       </h3>
                     )}
+                  {(userRole === "HR" || userRole === "CEO") && (
+                    <h3
+                      style={{
+                        padding: ".5rem",
+                        marginBottom: "1rem",
+                        fontSize: "2.5rem",
+                        textWrap: "nowrap",
+                      }}
+                      className="row save__btn"
+                    >
+                      <Link
+                        style={{
+                          color: "#fff",
+                          // padding: "1rem",
+                          margin: "auto",
+                          // width: "100%",
+                          fontWeight: "400",
+                        }}
+                        // className="full__width save__btn"
+                        to="create-approval-levels"
+                      >
+                        Create Approval Levels
+                      </Link>
+                    </h3>
+                  )}
                   <SignoutButton />
                 </div>
               </ProfileContent>
